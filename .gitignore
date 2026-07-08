@@ -1,0 +1,8 @@
+# macOS junk
+.DS_Store
+
+# Logs
+*.log
+
+# Dependencies (only if we add tooling later)
+node_modules/
