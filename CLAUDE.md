@@ -76,6 +76,22 @@ I have no coding experience. Please:
 - [ ] Tested with real users
 - [ ] Deployed / shared with the hospital team (e.g. Vercel)
 
+## Session Buzzwords (Spanish only — never trigger on the English equivalent)
+
+Two Spanish buzzwords control the session workflow. They ONLY trigger when written in
+**Spanish**, exactly as shown. If the user writes the English equivalent, do NOT trigger.
+
+- **"Principio"** = start of session. Run the `/principio` routine: pull the repo and
+  load `SESSION_CONTEXT.md`, then recap the most recent changes and the next step.
+  Do NOT trigger on English words like "beginning", "start", or "begin".
+- **"Termino"** = end of session. Run the `/termino` routine: update `SESSION_CONTEXT.md`
+  with this session's changes/discoveries, then `add` + `commit` (brief message) + `push`
+  to GitHub. Do NOT trigger on English words like "end", "finish", "done", or "stop".
+
+Whether the user types the word plainly (e.g. `Principio`) or the slash command
+(`/principio`), do the same thing. The saved commands live in `.claude/commands/`.
+`SESSION_CONTEXT.md` is our rolling between-session memory.
+
 ## How We Track Progress (please maintain this)
 
 This `## Session Notes` log is our shared memory across sessions — the user should not
