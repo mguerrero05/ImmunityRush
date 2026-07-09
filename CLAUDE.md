@@ -103,9 +103,11 @@ above. Newest entry goes at the bottom.
 
 The full game is now in the repo (`index.html`, `style.css`, `script.js`), adopted from
 the archived prototype and being improved phase by phase per **`BUILD_PLAN.md`**.
-Milestones A, B, C are DONE. **Next: Milestone D** — make the maze feel like a hospital
-(floor, corridors, labeled rooms, mini-games as named destinations). Read `BUILD_PLAN.md`
-and `GAME_SPEC.md` first. Run with `npm run dev` (live reload).
+Milestones A, B, C, D are DONE, plus the character redesign (friendly healthcare worker
+in blue scrubs + walk cycle). **Next: finish the "Character & Timers" milestone** — add
+the maze count-up timer and a ~60s countdown to each mini-game — then Milestone E (maze
+difficulty). Also do a visual review of the new character. Read `BUILD_PLAN.md` and
+`GAME_SPEC.md` first. Run with `npm run dev` (live reload).
 
 ## Session Notes
 

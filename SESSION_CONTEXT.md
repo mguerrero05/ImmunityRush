@@ -9,9 +9,13 @@
 
 - **Code in repo:** the full game is now here (`index.html`, `style.css`, `script.js`),
   adopted from the archived Desktop prototype and being improved phase by phase.
-- **Roadmap:** `BUILD_PLAN.md` — Milestones A, B, C are DONE. Next up: **Milestone D**
-  (make the maze feel like a hospital: floor, corridors, labeled rooms, mini-games as
-  named destinations).
+- **Roadmap:** `BUILD_PLAN.md` — Milestones A, B, C, D are DONE. A new milestone
+  **"Character & Timers"** was inserted (user request): the **character redesign is
+  DONE** (friendly healthcare worker in blue scrubs + walk cycle); the **timers are
+  still TO DO** (maze count-up timer; ~60s countdown in each mini-game). After that:
+  Milestone E (maze difficulty).
+- **⚠️ Needs visual review:** the new character art is code-complete but the user
+  hasn't eyeballed it yet — check proportions/face/SHN badge in the browser and tune.
 - **Dev server:** `npm run dev` (live reload at http://localhost:5678/). node lives at
   `~/.local/node/bin` — add it to PATH in a plain shell: `export PATH="$HOME/.local/node/bin:$PATH"`.
 - **Key files:** `BUILD_PLAN.md` (roadmap), `GAME_SPEC.md` (design), `CLAUDE.md` (context).
@@ -32,3 +36,12 @@
   particles, screen shake; visible power-up effects — shield bubble + countdown, speed
   trail + countdown, health popup). User tested B+C in the browser — all good.
   Next: **Milestone D** (hospital-themed maze).
+- 2026-07-09 — Completed **Milestone D** (hospital-themed maze: tiled floor, labeled
+  rooms — Reception/Pharmacy/Waiting/Staff Lounge/VaxFacts+ Clinic, mini-games as named
+  destinations, wayfinding signs). Then, per user request, inserted a **"Character &
+  Timers"** milestone and did the **character redesign**: replaced the placeholder blob
+  with a friendly CSS healthcare worker in blue scrubs (V-neck, pocket, SHN badge on
+  chest), head + face + arms + legs + shoes, and a continuous walk/bob animation on the
+  maze player + sprint runner (used a user-provided reference PNG for style). STILL TO DO:
+  the timers (maze count-up + ~60s mini-game countdowns), and a visual review of the new
+  character. Next: finish timers, then Milestone E.
