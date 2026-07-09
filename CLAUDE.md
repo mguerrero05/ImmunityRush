@@ -68,11 +68,11 @@ I have no coding experience. Please:
 
 - [x] Machine fully set up (VSCode + extensions, Node.js, Git)
 - [x] Fresh project folder created & connected to GitHub (`ImmunityRush`, home folder)
-- [ ] Claude Code signed in on VSCode
-- [ ] Tech stack chosen and project initialized
-- [ ] Home screen built
-- [ ] Remaining screens built
-- [ ] Game content finalized
+- [x] Claude Code signed in on VSCode
+- [x] Tech stack chosen and project initialized (plain HTML/CSS/JS + npm dev tooling)
+- [x] Home screen built (adopted from prototype baseline)
+- [x] Remaining screens built (all screens + 4 mini-games present in baseline)
+- [~] Game content finalized (Milestone B content upgrades done; mini-game rebuilds pending)
 - [ ] Tested with real users
 - [ ] Deployed / shared with the hospital team (e.g. Vercel)
 
@@ -101,10 +101,11 @@ above. Newest entry goes at the bottom.
 
 ## ▶️ Where we left off / do this next
 
-The full game design is now captured in **`GAME_SPEC.md`** (screens, 4 mini-games,
-collectibles, all message/fact/myth content, tone rules, end-screen text). Read that
-first when building. Nothing has been coded yet — the next step is to build the
-**Home screen** in plain HTML/CSS/JS from scratch.
+The full game is now in the repo (`index.html`, `style.css`, `script.js`), adopted from
+the archived prototype and being improved phase by phase per **`BUILD_PLAN.md`**.
+Milestones A, B, C are DONE. **Next: Milestone D** — make the maze feel like a hospital
+(floor, corridors, labeled rooms, mini-games as named destinations). Read `BUILD_PLAN.md`
+and `GAME_SPEC.md` first. Run with `npm run dev` (live reload).
 
 ## Session Notes
 
@@ -125,3 +126,10 @@ first when building. Nothing has been coded yet — the next step is to build th
   mini-games, collectibles, slogans/facts/myths content, tone rules, and exact
   end-screen/VaxFacts+ text). No game code written yet — user chose to just capture
   the spec this session. Next: build the Home screen in plain HTML/CSS/JS.
+- 2026-07-08 (session 3 — build): Reversed the earlier "rebuild from scratch" call —
+  ADOPTED the archived prototype into the repo as the v1 baseline (all screens + 4
+  mini-games) plus npm/Prettier/ESLint tooling. Wrote `BUILD_PLAN.md` (14-milestone
+  roadmap). Completed Milestone B (content/message upgrades) and Milestone C (game-feel
+  toolkit: floating text, Web Audio SFX + mute, particles, shake; visible power-up
+  effects). User tested B+C in the browser — all good. Next: Milestone D (hospital-themed
+  maze). See `SESSION_CONTEXT.md`.
