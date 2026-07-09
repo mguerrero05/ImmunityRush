@@ -250,119 +250,322 @@ body {
   transform: scale(1.1);
 }
 
+/* =========================================================
+   HEALTHCARE-WORKER CHARACTER (CSS-shape, friendly 3D style)
+   Layered bottom-up: legs+shoes, arms, scrubs body, head+face.
+   Colours come from --skin / --hair / --eyes / --scrubs (customizable).
+   ========================================================= */
+
 /* Head */
-.character-stage::before {
-  content: "";
+.char-head {
   position: absolute;
-  top: 20px;
+  bottom: 90px;
   left: 50%;
   transform: translateX(-50%);
   width: 46px;
   height: 46px;
   background: var(--skin);
   border-radius: 50%;
-  z-index: 2;
+  z-index: 4;
+  box-shadow:
+    inset -5px -6px 0 rgba(0, 0, 0, 0.1),
+    inset 3px 3px 0 rgba(255, 255, 255, 0.15);
 }
-/* Hair (as a cap over the head) */
-.character-stage::after {
-  content: "";
+/* Ears */
+.char-ear {
   position: absolute;
-  top: 14px;
+  top: 20px;
+  width: 8px;
+  height: 11px;
+  background: var(--skin);
+  border-radius: 50%;
+  z-index: 0;
+  box-shadow: inset -1px -1px 0 rgba(0, 0, 0, 0.12);
+}
+.char-ear.left {
+  left: -3px;
+}
+.char-ear.right {
+  right: -3px;
+}
+/* Base hair (short cap over the forehead) */
+.char-hair {
+  position: absolute;
+  top: -5px;
   left: 50%;
   transform: translateX(-50%);
-  width: 52px;
-  height: 30px;
+  width: 50px;
+  height: 26px;
   background: var(--hair);
-  border-radius: 26px 26px 10px 10px;
-  z-index: 3;
+  border-radius: 26px 26px 8px 8px;
+  z-index: 1;
 }
-/* Eyes are drawn with two small dots via child spans */
-.char-eyes {
+/* Eyebrows */
+.char-brows {
   position: absolute;
-  top: 40px;
+  top: 15px;
   left: 50%;
   transform: translateX(-50%);
   width: 30px;
   display: flex;
   justify-content: space-between;
-  z-index: 4;
+  z-index: 3;
 }
-.char-eyes span {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+.char-brows span {
+  width: 9px;
+  height: 3px;
+  border-radius: 3px;
   background: var(--eyes);
 }
-
-/* Body / scrubs */
-.char-body {
+/* Eyes */
+.char-eyes {
   position: absolute;
-  bottom: 6px;
+  top: 21px;
   left: 50%;
   transform: translateX(-50%);
-  width: 70px;
-  height: 86px;
-  background: var(--scrubs);
-  border-radius: 22px 22px 14px 14px;
-  z-index: 1;
+  width: 28px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 3;
 }
-/* V-neck */
+.char-eyes span {
+  width: 8px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--eyes);
+  box-shadow: inset 2px -2px 0 rgba(255, 255, 255, 0.55);
+}
+/* Nose */
+.char-nose {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--skin) 80%, #b5794f);
+  z-index: 3;
+}
+/* Friendly smile */
+.char-smile {
+  position: absolute;
+  top: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 8px;
+  border: 2px solid color-mix(in srgb, var(--skin) 55%, #7a3b2e);
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  z-index: 3;
+}
+
+/* Arms (skin) hanging at the sides */
+.char-arm {
+  position: absolute;
+  bottom: 44px;
+  width: 13px;
+  height: 42px;
+  background: var(--skin);
+  border-radius: 8px;
+  z-index: 0;
+  transform-origin: top center;
+  box-shadow: inset -2px 0 0 rgba(0, 0, 0, 0.1);
+}
+.char-arm.left {
+  left: 7px;
+}
+.char-arm.right {
+  right: 7px;
+}
+
+/* Body / scrubs top */
+.char-body {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64px;
+  height: 70px;
+  background: var(--scrubs);
+  border-radius: 22px 22px 16px 16px;
+  z-index: 2;
+  box-shadow:
+    inset -7px -9px 0 rgba(0, 0, 0, 0.12),
+    inset 4px 4px 0 rgba(255, 255, 255, 0.12);
+}
+/* Short sleeves capping the shoulders */
+.char-sleeve {
+  position: absolute;
+  top: 2px;
+  width: 20px;
+  height: 24px;
+  background: var(--scrubs);
+  z-index: 1;
+  box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.12);
+}
+.char-sleeve.left {
+  left: -8px;
+  border-radius: 12px 6px 8px 12px;
+}
+.char-sleeve.right {
+  right: -8px;
+  border-radius: 6px 12px 12px 8px;
+}
+/* V-neck collar */
 .char-body::before {
   content: "";
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-top: 16px solid var(--skin);
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-top: 15px solid var(--skin);
+  z-index: 3;
 }
-/* SHN badge on the uniform */
+/* Chest pocket (right side) */
+.char-pocket {
+  position: absolute;
+  bottom: 16px;
+  right: 12px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  z-index: 3;
+}
+/* SHN badge on the chest (left side) — marks the player as an SHN worker */
 .char-badge {
   position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 30px;
+  left: 12px;
   background: #fff;
   color: var(--shn-blue);
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
-  padding: 2px 5px;
-  border-radius: 4px;
-  z-index: 5;
+  padding: 2px 4px;
+  border-radius: 3px;
+  z-index: 4;
   letter-spacing: 1px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
-/* Long hair option — extra strands down the sides */
-.character-stage[data-hairstyle="long"] .char-hair-extra {
-  content: "";
+
+/* Legs / scrub pants + shoes */
+.char-legs {
   position: absolute;
-  top: 30px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 56px;
+  width: 44px;
+  height: 46px;
+  z-index: 1;
+}
+.char-leg {
+  position: absolute;
+  top: 0;
+  width: 18px;
   height: 40px;
+  background: var(--scrubs);
+  border-radius: 7px 7px 5px 5px;
+  transform-origin: top center;
+  box-shadow: inset -3px 0 0 rgba(0, 0, 0, 0.12);
+}
+.char-leg.left {
+  left: 2px;
+}
+.char-leg.right {
+  right: 2px;
+}
+.char-shoe {
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-52%);
+  width: 22px;
+  height: 11px;
+  background: #2c2c30;
+  border-radius: 6px 11px 8px 6px;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Long hair option — extra strands down the sides */
+.character-stage[data-hairstyle="long"] .char-hair-extra {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 54px;
+  height: 38px;
   background: var(--hair);
   border-radius: 0 0 20px 20px;
-  z-index: 1;
+  z-index: 0;
   display: block;
 }
 .char-hair-extra {
   display: none;
 }
+/* Bun option */
 .character-stage[data-hairstyle="bun"] .char-bun {
   display: block;
   position: absolute;
-  top: 6px;
+  top: -12px;
   left: 50%;
   transform: translateX(-50%);
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   background: var(--hair);
   border-radius: 50%;
-  z-index: 3;
+  z-index: 2;
 }
 .char-bun {
   display: none;
+}
+
+/* Walking animation — legs/arms swing + head bob. Applied via the .walking
+   class on the maze player and sprint runner so they feel alive while moving. */
+.walking .char-leg.left {
+  animation: legSwing 0.5s ease-in-out infinite;
+}
+.walking .char-leg.right {
+  animation: legSwing 0.5s ease-in-out infinite reverse;
+}
+.walking .char-arm.left {
+  animation: armSwing 0.5s ease-in-out infinite reverse;
+}
+.walking .char-arm.right {
+  animation: armSwing 0.5s ease-in-out infinite;
+}
+.walking .char-head {
+  animation: headBob 0.5s ease-in-out infinite;
+}
+@keyframes legSwing {
+  0%,
+  100% {
+    transform: rotate(15deg);
+  }
+  50% {
+    transform: rotate(-15deg);
+  }
+}
+@keyframes armSwing {
+  0%,
+  100% {
+    transform: rotate(12deg);
+  }
+  50% {
+    transform: rotate(-12deg);
+  }
+}
+@keyframes headBob {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -2px);
+  }
 }
 
 /* ---------- Customize layout ---------- */
@@ -626,11 +829,12 @@ body {
   z-index: 10;
   transition: none;
   transform-origin: bottom center;
-  transform: rotateX(calc(-1 * var(--tilt)));
+  /* Scale the full-size character down to a maze-sized footprint, then stand it
+     upright against the tilted floor. */
+  transform: rotateX(calc(-1 * var(--tilt))) scale(0.5);
 }
 .maze-player .char-badge {
-  bottom: 22px;
-  font-size: 6px;
+  font-size: 7px;
 }
 
 /* Directional arrows around the edge */

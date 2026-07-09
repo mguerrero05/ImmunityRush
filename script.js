@@ -436,11 +436,29 @@ function shake() {
 // Build the CSS-shape character inside a given container element.
 function buildCharacter(el) {
   el.innerHTML = `
-    <div class="char-bun"></div>
-    <div class="char-hair-extra"></div>
-    <div class="char-eyes"><span></span><span></span></div>
-    <div class="char-body"></div>
-    <div class="char-badge">SHN</div>
+    <div class="char-arm left"></div>
+    <div class="char-arm right"></div>
+    <div class="char-legs">
+      <div class="char-leg left"><span class="char-shoe"></span></div>
+      <div class="char-leg right"><span class="char-shoe"></span></div>
+    </div>
+    <div class="char-body">
+      <div class="char-sleeve left"></div>
+      <div class="char-sleeve right"></div>
+      <div class="char-pocket"></div>
+      <div class="char-badge">SHN</div>
+    </div>
+    <div class="char-head">
+      <span class="char-ear left"></span>
+      <span class="char-ear right"></span>
+      <div class="char-hair"></div>
+      <div class="char-hair-extra"></div>
+      <div class="char-bun"></div>
+      <div class="char-brows"><span></span><span></span></div>
+      <div class="char-eyes"><span></span><span></span></div>
+      <div class="char-nose"></div>
+      <div class="char-smile"></div>
+    </div>
   `;
   applyCharacter(el);
 }
@@ -682,7 +700,9 @@ function buildMaze() {
   player.x = 430;
   player.y = 300;
   player.speed = 4;
-  buildCharacter(document.getElementById("player"));
+  const playerEl = document.getElementById("player");
+  buildCharacter(playerEl);
+  playerEl.classList.add("walking"); // continuous walk cycle in the maze
   buildDirectionArrows();
 }
 
@@ -1004,7 +1024,9 @@ function startSprint() {
   const stage = document.getElementById("sprint-stage");
   stage.innerHTML = `<div class="sprint-ground"></div>
                      <div class="sprint-runner character-stage"></div>`;
-  buildCharacter(stage.querySelector(".sprint-runner"));
+  const runnerEl = stage.querySelector(".sprint-runner");
+  buildCharacter(runnerEl);
+  runnerEl.classList.add("walking"); // same character, running through the sprint
 
   sprint = { score: 0, time: 30, y: 0, vy: 0, jumping: false, objs: [] };
   document.getElementById("sprint-score").textContent = 0;
