@@ -462,6 +462,7 @@ function beginGame() {
 
   showScreen("screen-maze");
   buildMaze();
+  resetPowerups();
   updateHUD();
 
   // Camera zoom-out transition into the maze.
@@ -668,6 +669,12 @@ function loopMaze() {
   if (keys.right) dx += spd;
   if (dx || dy) moverPlayer(dx, dy);
 
+  // Speed trail: drop fading dots in the world so they fall behind the player.
+  if (state.speedBoost && (dx || dy)) {
+    trailCounter = (trailCounter + 1) % 3;
+    if (trailCounter === 0) spawnTrail(player.x + player.w / 2, player.y + player.h / 2);
+  }
+
   // Position player element.
   const pEl = document.getElementById("player");
   pEl.style.left = player.x + "px";
@@ -702,20 +709,15 @@ function checkCollectibles() {
 
 function collect(data) {
   addScore(data.points);
-  // Apply the effect.
+  // Apply the effect (with clear, visible feedback — see power-up functions below).
   if (data.effect === "shield") {
-    state.shielded = true;
-    setTimeout(() => {
-      state.shielded = false;
-      updateHUD();
-    }, 6000);
+    activateShield(6);
   } else if (data.effect === "speed") {
-    state.speedBoost = true;
-    setTimeout(() => {
-      state.speedBoost = false;
-    }, 5000);
+    activateSpeed(5);
   } else if (data.effect === "health") {
     state.health = Math.min(5, state.health + 1);
+    const hc = centerOf(document.getElementById("player"));
+    floatText("+1 Health", hc.x, hc.y - 24, "#ff6b81");
   }
   // "bonus" effect (Family Token, Wellness Star) is a pure score bonus — no state change.
   updateHUD();
@@ -728,6 +730,96 @@ function collect(data) {
   floatText(`+${data.points}`, c.x, c.y, color, warm);
   burst(c.x, c.y, color);
   playSound("collect");
+}
+
+/* ---------- Power-up effects (Phase 6 — clear, visible feedback) ---------- */
+let shieldTimer = null;
+let shieldCountdown = null;
+let speedTimer = null;
+let speedCountdown = null;
+let trailCounter = 0;
+
+// Shield: a bubble around the player + a HUD countdown. Absorbs one hazard hit
+// (see the sprint hit code, which checks state.shielded).
+function activateShield(seconds = 6) {
+  state.shielded = true;
+  const pEl = document.getElementById("player");
+  pEl.classList.remove("shield-break");
+  pEl.classList.add("shielded");
+  updateHUD();
+  let remaining = seconds;
+  const hud = document.getElementById("hud-shield");
+  hud.textContent = `🛡 ${remaining}`;
+  clearInterval(shieldCountdown);
+  shieldCountdown = setInterval(() => {
+    remaining--;
+    hud.textContent = remaining > 0 ? `🛡 ${remaining}` : "🛡";
+    if (remaining <= 0) clearInterval(shieldCountdown);
+  }, 1000);
+  clearTimeout(shieldTimer);
+  shieldTimer = setTimeout(endShield, seconds * 1000);
+}
+function endShield() {
+  state.shielded = false;
+  const pEl = document.getElementById("player");
+  pEl.classList.remove("shielded");
+  pEl.classList.add("shield-break"); // brief break animation
+  setTimeout(() => pEl.classList.remove("shield-break"), 400);
+  document.getElementById("hud-shield").textContent = "🛡";
+  updateHUD();
+}
+
+// Speed: faster movement + a trail in the world + a HUD countdown.
+function activateSpeed(seconds = 5) {
+  state.speedBoost = true;
+  const c = centerOf(document.getElementById("player"));
+  floatText("Speed Boost!", c.x, c.y - 22, "#6fd3ff");
+  let remaining = seconds;
+  const hud = document.getElementById("hud-speed");
+  hud.textContent = `⚡ ${remaining}`;
+  hud.classList.add("on");
+  clearInterval(speedCountdown);
+  speedCountdown = setInterval(() => {
+    remaining--;
+    hud.textContent = remaining > 0 ? `⚡ ${remaining}` : "";
+    if (remaining <= 0) {
+      clearInterval(speedCountdown);
+      hud.classList.remove("on");
+    }
+  }, 1000);
+  clearTimeout(speedTimer);
+  speedTimer = setTimeout(() => {
+    state.speedBoost = false;
+  }, seconds * 1000);
+}
+
+// Drop a fading dot into the world behind the player (used while speeding).
+function spawnTrail(x, y) {
+  const world = document.getElementById("maze-world");
+  if (!world) return;
+  const d = document.createElement("div");
+  d.className = "trail";
+  d.style.left = x + "px";
+  d.style.top = y + "px";
+  world.appendChild(d);
+  setTimeout(() => d.remove(), 450);
+}
+
+// Clear all power-up visuals/timers at the start of a run.
+function resetPowerups() {
+  clearTimeout(shieldTimer);
+  clearInterval(shieldCountdown);
+  clearTimeout(speedTimer);
+  clearInterval(speedCountdown);
+  const pEl = document.getElementById("player");
+  if (pEl) pEl.classList.remove("shielded", "shield-break");
+  const hs = document.getElementById("hud-shield");
+  if (hs) hs.textContent = "🛡";
+  const sp = document.getElementById("hud-speed");
+  if (sp) {
+    sp.textContent = "";
+    sp.classList.remove("on");
+  }
 }
 
 // Detect when the player stands on a mini-game zone.

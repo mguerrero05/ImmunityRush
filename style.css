@@ -979,3 +979,82 @@ body {
 .mute-btn:hover {
   background: #fff;
 }
+
+/* =========================================================
+   POWER-UP EFFECTS (shield bubble, speed trail, HUD speed)
+   ========================================================= */
+
+/* Shield bubble around the player while shielded. */
+.maze-player.shielded::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150%;
+  height: 150%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 3px solid rgba(111, 211, 255, 0.9);
+  background: radial-gradient(circle, rgba(111, 211, 255, 0.18), transparent 70%);
+  box-shadow: 0 0 12px rgba(111, 211, 255, 0.7);
+  pointer-events: none;
+  animation: shieldPulse 1.2s ease-in-out infinite;
+}
+@keyframes shieldPulse {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+/* Brief "pop" when the shield ends. */
+.maze-player.shield-break::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150%;
+  height: 150%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 3px solid rgba(111, 211, 255, 0.9);
+  pointer-events: none;
+  animation: shieldBreak 0.4s ease-out forwards;
+}
+@keyframes shieldBreak {
+  to {
+    opacity: 0;
+    width: 220%;
+    height: 220%;
+  }
+}
+
+/* Fading trail dots left behind while speeding. */
+.trail {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(111, 211, 255, 0.55);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: trailFade 0.45s ease-out forwards;
+}
+@keyframes trailFade {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+}
+
+/* HUD speed countdown — hidden until a speed boost is active. */
+.hud-speed {
+  color: #1f9dd6;
+  font-weight: 700;
+  opacity: 0;
+}
+.hud-speed.on {
+  opacity: 1;
+}
