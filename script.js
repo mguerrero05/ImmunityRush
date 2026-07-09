@@ -153,12 +153,17 @@ const FREEZE_GOOD_MSG = [
   "Keep your weekend.",
   "Be there for the people who count.",
 ];
-const FREEZE_BAD_MSG = [
-  "Oops — flu season can interrupt real plans.",
-  "Try again — protect the moments you care about.",
-  "Careful — don't let flu season decide your weekend.",
-  "Stay focused — keep your plans on track.",
-];
+// A specific consequence message for each negative item (shown only after a mistake).
+const FREEZE_BAD_MSG = {
+  "Flu Virus": "Flu can spread fast — protection helps stop the chain.",
+  "Sick Day": "If you get the flu, staying home and avoiding spread is recommended.",
+  "Cancelled Plans": "Flu can take you out for days, including plans you cannot easily reschedule.",
+  "Missed Shift": "Flu can mean missed shifts and leaving your team short-staffed.",
+  "Missed Family Dinner": "Flu can mean staying home and missing the people you planned to see.",
+  "Low Energy": "Flu can drain your energy long after the worst is over.",
+  "Weekend Cancelled": "Flu doesn't check your calendar — it can cancel your weekend.",
+  "Missed Vacation": "Flu can interrupt trips, weekends, and time with family.",
+};
 
 // --- Vaccine Darts statements ---
 const DARTS_MYTHS = [
@@ -186,16 +191,46 @@ const DARTS_FACT_CORRECTIONS = [
   "That was true — asking questions is okay, and VaxFacts+ is there to help.",
 ];
 
-// --- Memory Match pairs (benefit  <->  outcome) ---
+// --- Memory Match pairs ---
+// Each pair connects two related cards (a <-> b) and has its own message shown on a match.
+// (Card icons/illustrations come later in Milestone F4 — this is the text/data.)
 const MEMORY_PAIRS = [
-  ["Vaccination", "Family Protection"],
-  ["Vaccination", "Staying Healthy"],
-  ["Vaccination", "Vacation Plans"],
-  ["Vaccination", "Fewer Missed Shifts"],
-  ["Vaccination", "Wellness"],
-  ["Vaccination", "Protecting Patients"],
-  ["Vaccination", "Protecting Coworkers"],
-  ["Vaccination", "Important Moments"],
+  {
+    a: "Annual Flu Shot",
+    b: "Changing Flu Viruses",
+    msg: "Flu viruses can change, so protection is recommended every year.",
+  },
+  { a: "Flu Shot", b: "Cannot Give You Flu", msg: "The flu shot cannot give you the flu." },
+  {
+    a: "Healthcare Worker",
+    b: "Patient Protection",
+    msg: "Healthcare workers can help protect patients by staying protected.",
+  },
+  {
+    a: "Healthy Person",
+    b: "Still At Risk",
+    msg: "Being healthy does not mean you cannot get the flu.",
+  },
+  {
+    a: "Grandparents",
+    b: "Higher-Risk Loved Ones",
+    msg: "Older adults can be hit harder by flu season.",
+  },
+  {
+    a: "Baby Under 6 Months",
+    b: "Too Young For Own Shot",
+    msg: "Babies under 6 months are too young for their own flu shot — protection around them matters.",
+  },
+  {
+    a: "Calendar Plans",
+    b: "Fewer Missed Moments",
+    msg: "Flu season can interrupt weekends, work, and family plans.",
+  },
+  {
+    a: "VaxFacts+",
+    b: "Judgement-Free Questions",
+    msg: "Questions are normal. VaxFacts+ offers judgement-free vaccine conversations.",
+  },
 ];
 const MEMORY_MESSAGES = [
   "Connect the benefits.",
@@ -835,9 +870,10 @@ function startFreeze() {
 function spawnFreezeItem() {
   const stage = document.getElementById("freeze-stage");
   const good = Math.random() > 0.42;
+  const label = good ? rand(FREEZE_GOOD) : rand(FREEZE_BAD);
   const el = document.createElement("div");
   el.className = "fly-item " + (good ? "fly-good" : "fly-bad");
-  el.textContent = good ? rand(FREEZE_GOOD) : rand(FREEZE_BAD);
+  el.textContent = label;
   const startX = Math.random() * (stage.clientWidth - 120);
   el.style.left = startX + "px";
   el.style.top = stage.clientHeight + "px";
@@ -865,7 +901,8 @@ function spawnFreezeItem() {
     } else {
       freeze.lives--;
       document.getElementById("freeze-lives").textContent = freeze.lives;
-      toast(rand(FREEZE_BAD_MSG), 1400);
+      // Show the specific consequence for the item that was sliced.
+      toast(FREEZE_BAD_MSG[label] || "Flu can interrupt the moments that matter.", 1600);
       if (freeze.lives <= 0) {
         finishFreeze();
       }
@@ -948,7 +985,7 @@ function spawnDartTarget() {
     if (isMyth) {
       darts.score += 10;
       addScore(10);
-      toast("Myth busted! 🎯", 1100);
+      toast(`Myth cleared! ${rand(DARTS_FACTS)}`, 1600);
     } else {
       darts.score = Math.max(0, darts.score - 5);
       toast(correction, 2200);
@@ -984,8 +1021,8 @@ function startMemory() {
   // Build a deck: each pair becomes two cards that share a pairId.
   let deck = [];
   MEMORY_PAIRS.forEach((pair, i) => {
-    deck.push({ pairId: i, text: pair[0] });
-    deck.push({ pairId: i, text: pair[1] });
+    deck.push({ pairId: i, text: pair.a });
+    deck.push({ pairId: i, text: pair.b });
   });
   // Shuffle.
   deck.sort(() => Math.random() - 0.5);
@@ -1027,7 +1064,8 @@ function flipCard(el) {
     memory.pairs++;
     document.getElementById("memory-pairs").textContent = memory.pairs;
     addScore(15);
-    toast(rand(MEMORY_MESSAGES), 1200);
+    // Show the message tied to THIS pair (not a random slogan).
+    toast(MEMORY_PAIRS[Number(el.dataset.pair)].msg, 1600);
     if (memory.pairs === MEMORY_PAIRS.length) finishMemory();
   } else {
     // Flip both back after a moment.
