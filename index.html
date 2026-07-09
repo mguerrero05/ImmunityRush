@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Immunity Rush</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- =========================================================
+       GAME WRAPPER (keeps everything inside a phone-like frame)
+       ========================================================= -->
+    <div id="game">
+      <!-- Small floating message banner used all over the game -->
+      <div id="toast" class="toast"></div>
+
+      <!-- =====================================================
+         SCREEN 1: HOME
+         ===================================================== -->
+      <section id="screen-home" class="screen active">
+        <div class="hospital-bg">
+          <!-- Simple hospital building made from CSS -->
+          <div class="hospital-building">
+            <div class="hospital-cross">＋</div>
+            <div class="hospital-doors"></div>
+            <div class="hospital-windows">
+              <span></span><span></span><span></span> <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Replaceable SHN logo. Swap the text/img here later. -->
+        <div class="logo" id="logo">SHN</div>
+
+        <h1 class="title">Immunity Rush</h1>
+        <p class="subtitle">Navigate the maze. Complete challenges. Stay ahead of flu season.</p>
+
+        <!-- Rotating motivational slogan -->
+        <p class="slogan" id="home-slogan">Protect your plans this flu season.</p>
+
+        <!-- Character standing in front of the hospital -->
+        <div id="home-character" class="character-stage"></div>
+
+        <div class="menu">
+          <button class="btn btn-primary" onclick="startInitials()">Start Game</button>
+          <button
+            class="btn"
+            onclick="
+              showScreen('screen-leaderboard');
+              renderLeaderboard();
+            "
+          >
+            Leaderboard
+          </button>
+          <button class="btn" onclick="showScreen('screen-instructions')">Instructions</button>
+          <button class="btn" onclick="showScreen('screen-customize')">Customize Character</button>
+        </div>
+      </section>
+
+      <!-- =====================================================
+         SCREEN 2: CUSTOMIZE CHARACTER
+         ===================================================== -->
+      <section id="screen-customize" class="screen">
+        <h2 class="screen-title">Customize Character</h2>
+
+        <div class="customize-layout">
+          <!-- Live preview -->
+          <div id="preview-character" class="character-stage big"></div>
+
+          <!-- Controls -->
+          <div class="controls">
+            <label
+              >Character
+              <div class="pill-group" data-key="gender">
+                <button class="pill active" data-val="female">Female</button>
+                <button class="pill" data-val="male">Male</button>
+              </div>
+            </label>
+
+            <label
+              >Skin Tone
+              <div class="swatch-group" data-key="skin">
+                <button class="swatch" style="background: #f7d5b5" data-val="#f7d5b5"></button>
+                <button class="swatch" style="background: #e8b58f" data-val="#e8b58f"></button>
+                <button class="swatch" style="background: #c98a5e" data-val="#c98a5e"></button>
+                <button class="swatch" style="background: #8d5524" data-val="#8d5524"></button>
+                <button class="swatch" style="background: #5a3620" data-val="#5a3620"></button>
+              </div>
+            </label>
+
+            <label
+              >Hair Colour
+              <div class="swatch-group" data-key="hair">
+                <button class="swatch" style="background: #2b1b0e" data-val="#2b1b0e"></button>
+                <button class="swatch" style="background: #6b4423" data-val="#6b4423"></button>
+                <button class="swatch" style="background: #caa14f" data-val="#caa14f"></button>
+                <button class="swatch" style="background: #b03a2e" data-val="#b03a2e"></button>
+                <button class="swatch" style="background: #cfd8dc" data-val="#cfd8dc"></button>
+              </div>
+            </label>
+
+            <label
+              >Hair Style
+              <div class="pill-group" data-key="hairstyle">
+                <button class="pill active" data-val="short">Short</button>
+                <button class="pill" data-val="long">Long</button>
+                <button class="pill" data-val="bun">Bun</button>
+              </div>
+            </label>
+
+            <label
+              >Eye Colour
+              <div class="swatch-group" data-key="eyes">
+                <button class="swatch" style="background: #4a3728" data-val="#4a3728"></button>
+                <button class="swatch" style="background: #2e6b8f" data-val="#2e6b8f"></button>
+                <button class="swatch" style="background: #3a7d44" data-val="#3a7d44"></button>
+                <button class="swatch" style="background: #555" data-val="#555555"></button>
+              </div>
+            </label>
+
+            <label
+              >Scrub Colour (SHN inspired)
+              <div class="swatch-group" data-key="scrubs">
+                <button class="swatch" style="background: #1f6feb" data-val="#1f6feb"></button>
+                <button class="swatch" style="background: #0f4c81" data-val="#0f4c81"></button>
+                <button class="swatch" style="background: #2bb3b3" data-val="#2bb3b3"></button>
+                <button class="swatch" style="background: #5bc0be" data-val="#5bc0be"></button>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="menu row">
+          <button class="btn" onclick="showScreen('screen-home')">Back</button>
+          <button
+            class="btn btn-primary"
+            onclick="
+              saveCharacter();
+              showScreen('screen-home');
+            "
+          >
+            Save
+          </button>
+        </div>
+      </section>
+
+      <!-- =====================================================
+         SCREEN 3: PLAYER INITIALS
+         ===================================================== -->
+      <section id="screen-initials" class="screen">
+        <div class="logo small">SHN</div>
+        <h2 class="screen-title">Enter your initials to begin.</h2>
+        <input
+          id="initials-input"
+          class="initials-input"
+          maxlength="3"
+          placeholder="ABC"
+          oninput="this.value = this.value.toUpperCase()"
+        />
+        <p class="slogan" id="initials-slogan">Keep your plans. Not the flu.</p>
+        <div class="menu row">
+          <button class="btn" onclick="showScreen('screen-home')">Back</button>
+          <button class="btn btn-primary" onclick="beginGame()">Let's Go</button>
+        </div>
+      </section>
+
+      <!-- =====================================================
+         SCREEN 4: MAZE (main hub)
+         ===================================================== -->
+      <section id="screen-maze" class="screen">
+        <!-- Top HUD -->
+        <div class="hud">
+          <span id="hud-initials">---</span>
+          <span>Score: <b id="hud-score">0</b></span>
+          <span>❤ <b id="hud-health">3</b></span>
+          <span id="hud-shield" class="hud-shield">🛡</span>
+          <button class="btn tiny" onclick="confirmEndRun()">End Run</button>
+        </div>
+
+        <!-- Directional arrows to mini-games sit on the edges -->
+        <div id="direction-arrows"></div>
+
+        <!-- The camera zooms this viewport at game start -->
+        <div id="maze-viewport">
+          <div id="maze-world">
+            <!-- Walls, zones, collectibles, and player are injected by JS -->
+            <div id="player" class="character-stage maze-player"></div>
+          </div>
+        </div>
+
+        <!-- Mobile touch D-pad -->
+        <div id="dpad">
+          <button class="dbtn up" data-dir="up">▲</button>
+          <button class="dbtn left" data-dir="left">◀</button>
+          <button class="dbtn right" data-dir="right">▶</button>
+          <button class="dbtn down" data-dir="down">▼</button>
+        </div>
+      </section>
+
+      <!-- =====================================================
+         MINI-GAME CONTAINERS
+         ===================================================== -->
+      <section id="screen-sprint" class="screen minigame">
+        <div class="mg-hud">
+          <span>Hospital Sprint</span>
+          <span>Score: <b id="sprint-score">0</b></span>
+          <span>Time: <b id="sprint-time">30</b></span>
+          <button class="btn tiny" onclick="exitMiniGame()">Exit</button>
+        </div>
+        <div id="sprint-stage" class="mg-stage"></div>
+        <p class="mg-hint">Press SPACE / tap to jump</p>
+      </section>
+
+      <section id="screen-freeze" class="screen minigame">
+        <div class="mg-hud">
+          <span>Flu Freeze</span>
+          <span>Score: <b id="freeze-score">0</b></span>
+          <span>Lives: <b id="freeze-lives">3</b></span>
+          <button class="btn tiny" onclick="exitMiniGame()">Exit</button>
+        </div>
+        <div id="freeze-stage" class="mg-stage"></div>
+        <p class="mg-hint">Tap the good items. Avoid the flu!</p>
+      </section>
+
+      <section id="screen-darts" class="screen minigame">
+        <div class="mg-hud">
+          <span>Vaccine Darts</span>
+          <span>Score: <b id="darts-score">0</b></span>
+          <span>Time: <b id="darts-time">30</b></span>
+          <button class="btn tiny" onclick="exitMiniGame()">Exit</button>
+        </div>
+        <div id="darts-stage" class="mg-stage"></div>
+        <p class="mg-hint">Pop the myths. Leave the facts!</p>
+      </section>
+
+      <section id="screen-memory" class="screen minigame">
+        <div class="mg-hud">
+          <span>Memory Match</span>
+          <span>Moves: <b id="memory-moves">0</b></span>
+          <span>Pairs: <b id="memory-pairs">0</b>/8</span>
+          <button class="btn tiny" onclick="exitMiniGame()">Exit</button>
+        </div>
+        <div id="memory-stage" class="mg-stage memory-grid"></div>
+        <p class="mg-hint">Match each vaccination benefit with its outcome.</p>
+      </section>
+
+      <!-- =====================================================
+         SCREEN: INSTRUCTIONS
+         ===================================================== -->
+      <section id="screen-instructions" class="screen">
+        <h2 class="screen-title">How to Play</h2>
+        <div class="card">
+          <p>
+            Move through the hospital maze, collect boosts, and enter mini-games to build your
+            immunity score. Collect shields, hearts, speed boosts, and family tokens while avoiding
+            flu obstacles. Complete challenges, climb the leaderboard, and protect the moments that
+            matter.
+          </p>
+          <ul>
+            <li>Use arrow keys or WASD to move.</li>
+            <li>Enter mini-game zones to start challenges.</li>
+            <li>Collect positive items for points.</li>
+            <li>Avoid flu obstacles and cancelled-plan items.</li>
+          </ul>
+        </div>
+        <div class="menu">
+          <button class="btn btn-primary" onclick="showScreen('screen-home')">Back</button>
+        </div>
+      </section>
+
+      <!-- =====================================================
+         SCREEN: LEADERBOARD
+         ===================================================== -->
+      <section id="screen-leaderboard" class="screen">
+        <h2 class="screen-title">Leaderboard</h2>
+        <ol id="leaderboard-list" class="leaderboard"></ol>
+        <div class="menu">
+          <button class="btn btn-primary" onclick="showScreen('screen-home')">Back</button>
+        </div>
+      </section>
+
+      <!-- =====================================================
+         SCREEN: END / GAME OVER
+         ===================================================== -->
+      <section id="screen-end" class="screen">
+        <h2 class="screen-title">Run Complete</h2>
+        <p class="big-score">Score: <b id="end-score">0</b></p>
+        <p id="end-rank" class="rank"></p>
+        <p class="slogan" id="end-slogan">Can you beat your score?</p>
+
+        <div class="card small-print">
+          <p>
+            Influenza vaccination is free and available through Ontario's publicly funded flu
+            vaccine program.
+          </p>
+          <p>
+            Have questions about vaccines? Book an appointment with the VaxFacts+ Clinic for a
+            one-to-one, judgement-free phone conversation with a doctor. The goal is to give you
+            facts in a safe space so you can make an informed decision.
+          </p>
+          <a href="https://www.shn.ca/vaxfacts/" target="_blank" rel="noopener"
+            >www.shn.ca/vaxfacts</a
+          >
+        </div>
+
+        <div class="menu row">
+          <button class="btn btn-primary" onclick="beginGame()">Play Again</button>
+          <button class="btn" onclick="showScreen('screen-home')">Back to Home</button>
+        </div>
+      </section>
+
+      <!-- =====================================================
+         GENERIC POP-UP (mini-game entry, facts, etc.)
+         ===================================================== -->
+      <div id="popup" class="popup-overlay">
+        <div class="popup-box">
+          <h3 id="popup-title">Title</h3>
+          <p id="popup-text">Text</p>
+          <div class="menu row" id="popup-actions"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,892 @@
+/* =========================================================
+   IMMUNITY RUSH — style.css
+   Hospital-inspired theme (SHN vibe): blue, white, grey, teal.
+   Everything is plain CSS. Easy to tweak via the variables below.
+   ========================================================= */
+
+:root {
+  --shn-blue: #0f4c81; /* deep hospital blue */
+  --shn-blue-2: #1f6feb; /* brighter blue */
+  --shn-teal: #2bb3b3; /* soft teal accent */
+  --shn-aqua: #5bc0be; /* aqua accent */
+  --white: #ffffff;
+  --grey: #eef3f7; /* light grey background */
+  --grey-2: #d7e2ec;
+  --ink: #123; /* dark text */
+  --good: #2e9e5b;
+  --bad: #e0533d;
+  --shadow: 0 8px 24px rgba(15, 76, 129, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    Arial,
+    sans-serif;
+  background: linear-gradient(135deg, #cfe5f5, #eaf3fb);
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+
+/* Phone-like frame, centered. On small screens it fills the viewport. */
+#game {
+  position: relative;
+  width: min(430px, 100vw);
+  height: min(860px, 100vh);
+  margin: 0 auto;
+  background: var(--grey);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Screens ---------- */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px;
+  overflow-y: auto;
+}
+.screen.active {
+  display: flex;
+}
+
+.screen-title {
+  color: var(--shn-blue);
+  margin: 10px 0 14px;
+  text-align: center;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  border: none;
+  border-radius: 14px;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  background: var(--white);
+  color: var(--shn-blue);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition:
+    transform 0.08s ease,
+    background 0.2s;
+  width: 100%;
+  max-width: 300px;
+}
+.btn:active {
+  transform: scale(0.96);
+}
+.btn-primary {
+  background: var(--shn-blue-2);
+  color: #fff;
+}
+.btn.tiny {
+  width: auto;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 16px;
+}
+.menu.row {
+  flex-direction: row;
+  justify-content: center;
+}
+.menu.row .btn {
+  max-width: 160px;
+}
+
+/* ---------- Logo ---------- */
+.logo {
+  font-weight: 800;
+  letter-spacing: 3px;
+  font-size: 30px;
+  color: #fff;
+  background: var(--shn-blue);
+  padding: 8px 20px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  margin: 6px 0;
+}
+.logo.small {
+  font-size: 22px;
+  padding: 6px 14px;
+}
+
+/* ---------- Home screen ---------- */
+.title {
+  font-size: 40px;
+  color: var(--shn-blue);
+  text-shadow: 2px 2px 0 #fff;
+  margin-top: 6px;
+}
+.subtitle {
+  text-align: center;
+  color: #345;
+  margin: 6px 12px;
+}
+.slogan {
+  color: var(--shn-teal);
+  font-weight: 700;
+  font-style: italic;
+  text-align: center;
+  margin: 6px 0;
+  min-height: 22px;
+}
+
+/* Hospital background scene */
+.hospital-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 55%;
+  background: linear-gradient(#bfe0f5 0%, #e8f4fc 100%);
+  z-index: 0;
+  overflow: hidden;
+}
+.hospital-building {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 150px;
+  background: #f4f8fb;
+  border: 3px solid var(--grey-2);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+}
+.hospital-cross {
+  position: absolute;
+  top: -18px;
+  left: 22%;
+  transform: translateX(-50%);
+  background: var(--bad);
+  color: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 22px;
+}
+.hospital-doors {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 50px;
+  background: var(--shn-blue-2);
+  border-radius: 6px 6px 0 0;
+}
+.hospital-windows {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.hospital-windows span {
+  width: 26px;
+  height: 26px;
+  background: var(--shn-aqua);
+  border-radius: 4px;
+}
+
+/* Everything on home sits above the background */
+#screen-home > *:not(.hospital-bg) {
+  position: relative;
+  z-index: 1;
+}
+
+/* =========================================================
+   CHARACTER — built from CSS shapes. A friendly worker in
+   blue scrubs with an SHN badge. Colours are driven by CSS
+   variables set from JavaScript (--skin, --hair, --scrubs...).
+   ========================================================= */
+.character-stage {
+  --skin: #f7d5b5;
+  --hair: #2b1b0e;
+  --eyes: #4a3728;
+  --scrubs: #1f6feb;
+  --hairstyle: short;
+  position: relative;
+  width: 90px;
+  height: 150px;
+  margin: 10px auto;
+  filter: drop-shadow(0 10px 8px rgba(15, 76, 129, 0.25));
+}
+.character-stage.big {
+  width: 120px;
+  height: 200px;
+  transform: scale(1.1);
+}
+
+/* Head */
+.character-stage::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 46px;
+  height: 46px;
+  background: var(--skin);
+  border-radius: 50%;
+  z-index: 2;
+}
+/* Hair (as a cap over the head) */
+.character-stage::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 30px;
+  background: var(--hair);
+  border-radius: 26px 26px 10px 10px;
+  z-index: 3;
+}
+/* Eyes are drawn with two small dots via child spans */
+.char-eyes {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 4;
+}
+.char-eyes span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--eyes);
+}
+
+/* Body / scrubs */
+.char-body {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70px;
+  height: 86px;
+  background: var(--scrubs);
+  border-radius: 22px 22px 14px 14px;
+  z-index: 1;
+}
+/* V-neck */
+.char-body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 16px solid var(--skin);
+}
+/* SHN badge on the uniform */
+.char-badge {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: var(--shn-blue);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 4px;
+  z-index: 5;
+  letter-spacing: 1px;
+}
+/* Long hair option — extra strands down the sides */
+.character-stage[data-hairstyle="long"] .char-hair-extra {
+  content: "";
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 40px;
+  background: var(--hair);
+  border-radius: 0 0 20px 20px;
+  z-index: 1;
+  display: block;
+}
+.char-hair-extra {
+  display: none;
+}
+.character-stage[data-hairstyle="bun"] .char-bun {
+  display: block;
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 22px;
+  background: var(--hair);
+  border-radius: 50%;
+  z-index: 3;
+}
+.char-bun {
+  display: none;
+}
+
+/* ---------- Customize layout ---------- */
+.customize-layout {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+}
+.controls label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--shn-blue);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pill-group,
+.swatch-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pill {
+  border: 2px solid var(--grey-2);
+  background: #fff;
+  color: var(--shn-blue);
+  border-radius: 20px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.pill.active {
+  background: var(--shn-blue-2);
+  color: #fff;
+  border-color: var(--shn-blue-2);
+}
+.swatch {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px var(--grey-2);
+}
+.swatch.active {
+  box-shadow: 0 0 0 3px var(--shn-blue-2);
+}
+
+/* ---------- Initials ---------- */
+.initials-input {
+  font-size: 44px;
+  text-align: center;
+  letter-spacing: 10px;
+  width: 200px;
+  padding: 12px;
+  border: 3px solid var(--shn-blue-2);
+  border-radius: 14px;
+  margin: 20px 0;
+  text-transform: uppercase;
+  color: var(--shn-blue);
+  font-weight: 800;
+}
+
+/* =========================================================
+   MAZE
+   ========================================================= */
+.hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(15, 76, 129, 0.92);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.hud button {
+  margin-left: auto;
+}
+.hud-shield {
+  opacity: 0.25;
+  transition: opacity 0.2s;
+}
+.hud-shield.on {
+  opacity: 1;
+  filter: drop-shadow(0 0 4px #5bc0be);
+}
+
+/* --tilt is the angle of the "3D" overhead camera. Change it in one place. */
+#maze-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Soft top-to-bottom gradient reads as a bright hospital back wall
+     fading down to the floor, so the area beyond the maze looks intentional. */
+  background: linear-gradient(#aebfd2 0%, #c4d3e2 30%, #d3dfea 100%);
+  --tilt: 45deg;
+  /* Perspective gives the floor a real angled/3D feel (like ~60° overhead). */
+  perspective: 1100px;
+  perspective-origin: 50% 32%;
+}
+/* The maze world is bigger than the viewport; we scroll it under the camera.
+   It is tilted back so it reads like an angled top-down arcade map. */
+#maze-world {
+  position: absolute;
+  width: 900px;
+  height: 900px;
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tilt));
+  transition: none;
+  /* Hospital floor: light tiles with grid lines. When the world is tilted,
+     these lines converge into the distance and sell the 3D arcade look. */
+  background-color: #e4edf5;
+  background-image:
+    linear-gradient(rgba(120, 160, 200, 0.25) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(120, 160, 200, 0.25) 2px, transparent 2px);
+  background-size: 60px 60px;
+}
+/* Start-of-game zoom out animation (keeps the tilt the whole time). */
+@keyframes zoomOut {
+  0% {
+    transform: rotateX(var(--tilt)) scale(2.2);
+  }
+  100% {
+    transform: rotateX(var(--tilt)) scale(1);
+  }
+}
+#maze-world.zooming {
+  animation: zoomOut 1.2s ease-out;
+}
+
+.wall {
+  position: absolute;
+  background: linear-gradient(#7f97ad, #5f7a91);
+  border-radius: 4px;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+}
+.floor-tile {
+  position: absolute;
+  background: #eaf1f7;
+}
+
+/* Zones, collectibles and the player are counter-rotated by -tilt so they
+   "stand up" off the tilted floor and face the camera (billboard effect). */
+.zone {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  transform-origin: bottom center;
+  transform: rotateX(calc(-1 * var(--tilt)));
+}
+.zone .zone-icon {
+  font-size: 26px;
+}
+
+.collectible {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  transform-origin: bottom center;
+  animation: bob 1.4s ease-in-out infinite;
+}
+@keyframes bob {
+  0%,
+  100% {
+    transform: rotateX(calc(-1 * var(--tilt))) translateY(0);
+  }
+  50% {
+    transform: rotateX(calc(-1 * var(--tilt))) translateY(-8px);
+  }
+}
+
+.maze-player {
+  width: 46px;
+  height: 76px;
+  margin: 0;
+  position: absolute;
+  z-index: 10;
+  transition: none;
+  transform-origin: bottom center;
+  transform: rotateX(calc(-1 * var(--tilt)));
+}
+.maze-player .char-badge {
+  bottom: 22px;
+  font-size: 6px;
+}
+
+/* Directional arrows around the edge */
+#direction-arrows .dir {
+  position: absolute;
+  z-index: 15;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 3px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  white-space: nowrap;
+}
+
+/* Touch D-pad */
+#dpad {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  z-index: 25;
+  display: grid;
+  grid-template-columns: repeat(3, 46px);
+  grid-template-rows: repeat(3, 46px);
+  gap: 4px;
+}
+.dbtn {
+  background: rgba(15, 76, 129, 0.85);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+}
+.dbtn:active {
+  background: var(--shn-blue-2);
+}
+.dbtn.up {
+  grid-area: 1 / 2;
+}
+.dbtn.left {
+  grid-area: 2 / 1;
+}
+.dbtn.right {
+  grid-area: 2 / 3;
+}
+.dbtn.down {
+  grid-area: 3 / 2;
+}
+
+/* =========================================================
+   MINI-GAMES
+   ========================================================= */
+.minigame {
+  padding: 0;
+}
+.mg-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(15, 76, 129, 0.92);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.mg-hud button {
+  margin-left: auto;
+}
+.mg-stage {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  bottom: 34px;
+  overflow: hidden;
+  background: linear-gradient(#eaf4fb, #d5e8f5);
+}
+.mg-hint {
+  position: absolute;
+  bottom: 6px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--shn-blue);
+  font-weight: 600;
+}
+
+/* Sprint runner */
+.sprint-runner {
+  position: absolute;
+  left: 40px;
+  bottom: 60px;
+  z-index: 5;
+}
+.sprint-ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: repeating-linear-gradient(90deg, #b7c9d8 0 40px, #a9bdcd 40px 80px);
+  border-top: 4px solid #8ba3b6;
+}
+.sprint-obj {
+  position: absolute;
+  bottom: 60px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+}
+
+/* Flying items (freeze + darts) */
+.fly-item {
+  position: absolute;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  user-select: none;
+  max-width: 180px;
+  text-align: center;
+}
+.fly-good {
+  background: #d5f2e3;
+  color: var(--good);
+  border: 2px solid var(--good);
+}
+.fly-bad {
+  background: #fde3dd;
+  color: var(--bad);
+  border: 2px solid var(--bad);
+}
+.fly-emoji {
+  font-size: 30px;
+}
+
+/* Memory match */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 8px;
+  align-content: start;
+}
+.mem-card {
+  aspect-ratio: 3/4;
+  background: var(--shn-blue-2);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.3s;
+}
+.mem-card .mem-face {
+  display: none;
+}
+.mem-card.flipped {
+  background: #fff;
+  color: var(--shn-blue);
+}
+.mem-card.flipped .mem-face {
+  display: block;
+}
+.mem-card.flipped .mem-back {
+  display: none;
+}
+.mem-card.matched {
+  background: #d5f2e3;
+  color: var(--good);
+  cursor: default;
+}
+.mem-back {
+  font-size: 22px;
+}
+
+/* =========================================================
+   TOAST + POP-UPS
+   ========================================================= */
+.toast {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(15, 76, 129, 0.95);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  max-width: 90%;
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.popup-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  background: rgba(15, 76, 129, 0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.popup-overlay.show {
+  display: flex;
+}
+.popup-box {
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px;
+  text-align: center;
+  max-width: 320px;
+  box-shadow: var(--shadow);
+}
+.popup-box h3 {
+  color: var(--shn-blue);
+  margin-bottom: 10px;
+}
+.popup-box p {
+  color: #345;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+/* ---------- Cards & misc ---------- */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+  max-width: 340px;
+  margin: 6px 0;
+  line-height: 1.5;
+}
+.card ul {
+  margin: 10px 0 0 18px;
+}
+.card.small-print {
+  font-size: 13px;
+  color: #456;
+}
+.card.small-print a {
+  color: var(--shn-blue-2);
+  font-weight: 700;
+}
+
+.big-score {
+  font-size: 26px;
+  color: var(--shn-blue);
+  margin: 8px 0;
+}
+.rank {
+  font-weight: 700;
+  color: var(--shn-teal);
+}
+
+.leaderboard {
+  list-style: none;
+  counter-reset: rank;
+  width: 100%;
+  max-width: 320px;
+  margin: 6px 0;
+}
+.leaderboard li {
+  counter-increment: rank;
+  display: flex;
+  justify-content: space-between;
+  background: #fff;
+  margin-bottom: 6px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  font-weight: 600;
+}
+.leaderboard li::before {
+  content: counter(rank) ". ";
+  color: var(--shn-teal);
+}
+.leaderboard li.me {
+  background: #d9ecff;
+  border: 2px solid var(--shn-blue-2);
+}
+.leaderboard .empty {
+  justify-content: center;
+  color: #789;
+}
