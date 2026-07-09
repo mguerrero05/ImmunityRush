@@ -104,12 +104,60 @@ const COLLECTIBLES = [
   },
 ];
 
-// The four mini-game zones in the maze.
+// The four mini-game zones in the maze. `short` shows on the door tile in the maze;
+// `label` is the full destination name shown in the entry pop-up.
 const ZONES = [
-  { key: "sprint", label: "Hospital Sprint", icon: "🏃", color: "#1f6feb", x: 120, y: 120 },
-  { key: "freeze", label: "Flu Freeze", icon: "❄", color: "#2bb3b3", x: 690, y: 120 },
-  { key: "darts", label: "Vaccine Darts", icon: "🎯", color: "#e0533d", x: 120, y: 690 },
-  { key: "memory", label: "Memory Match", icon: "🃏", color: "#7d5ba6", x: 690, y: 690 },
+  {
+    key: "sprint",
+    short: "Sprint Corridor",
+    label: "Hospital Sprint Corridor",
+    icon: "🏃",
+    color: "#1f6feb",
+    x: 120,
+    y: 120,
+  },
+  {
+    key: "freeze",
+    short: "Freeze Station",
+    label: "Flu Freeze Station",
+    icon: "❄",
+    color: "#2bb3b3",
+    x: 690,
+    y: 120,
+  },
+  {
+    key: "darts",
+    short: "Darts Room",
+    label: "Vaccine Darts Room",
+    icon: "🎯",
+    color: "#e0533d",
+    x: 120,
+    y: 690,
+  },
+  {
+    key: "memory",
+    short: "Memory Clinic",
+    label: "Memory Match Clinic",
+    icon: "🃏",
+    color: "#7d5ba6",
+    x: 690,
+    y: 690,
+  },
+];
+
+// Decorative hospital rooms — visual only, they do NOT block movement (real
+// walls/locked doors come in Milestone E). Each has a floor tint and a sign.
+// The four "zone" rooms sit under the mini-game doors and share their theme.
+const ROOMS = [
+  { name: "Reception", x: 350, y: 360, w: 200, h: 170, tone: "#dbe7f3" },
+  { name: "Pharmacy", x: 350, y: 60, w: 200, h: 120, tone: "#e2efe6" },
+  { name: "Waiting Area", x: 60, y: 360, w: 160, h: 180, tone: "#f0ead9" },
+  { name: "Staff Lounge", x: 680, y: 360, w: 160, h: 180, tone: "#efe1ec" },
+  { name: "VaxFacts+ Clinic", x: 350, y: 720, w: 200, h: 120, tone: "#dcecef" },
+  { name: "Sprint Corridor", x: 60, y: 60, w: 210, h: 210, tone: "#dce7fb", zone: "sprint" },
+  { name: "Freeze Station", x: 630, y: 60, w: 210, h: 210, tone: "#d7f0f0", zone: "freeze" },
+  { name: "Darts Room", x: 60, y: 630, w: 210, h: 210, tone: "#fadfd9", zone: "darts" },
+  { name: "Memory Clinic", x: 630, y: 630, w: 210, h: 210, tone: "#e8e0f2", zone: "memory" },
 ];
 
 // --- Hospital Sprint items ---
@@ -550,7 +598,29 @@ let mazeFrame;
 function buildMaze() {
   const worldEl = document.getElementById("maze-world");
   // Clear everything except the player element.
-  worldEl.querySelectorAll(".wall, .zone, .collectible").forEach((n) => n.remove());
+  worldEl
+    .querySelectorAll(".wall, .zone, .collectible, .room, .room-sign")
+    .forEach((n) => n.remove());
+
+  // --- Hospital rooms (decorative floor areas + standing signs) ---
+  // Drawn first so they sit behind the walls, doors, and collectibles.
+  ROOMS.forEach((r) => {
+    const room = document.createElement("div");
+    room.className = "room" + (r.zone ? " room-game" : "");
+    room.style.left = r.x + "px";
+    room.style.top = r.y + "px";
+    room.style.width = r.w + "px";
+    room.style.height = r.h + "px";
+    room.style.background = r.tone;
+    worldEl.appendChild(room);
+    // Sign is a direct child of the world so it stands upright like the doors.
+    const sign = document.createElement("div");
+    sign.className = "room-sign";
+    sign.textContent = r.name;
+    sign.style.left = r.x + r.w / 2 + "px";
+    sign.style.top = r.y + 4 + "px";
+    worldEl.appendChild(sign);
+  });
 
   // --- Walls: outer border ---
   const T = 20; // wall thickness
@@ -585,7 +655,7 @@ function buildMaze() {
     d.style.top = z.y + "px";
     d.style.background = z.color;
     d.dataset.key = z.key;
-    d.innerHTML = `<div class="zone-icon">${z.icon}</div>${z.label}`;
+    d.innerHTML = `<div class="zone-icon">${z.icon}</div>${z.short}`;
     worldEl.appendChild(d);
   });
 
@@ -877,7 +947,7 @@ function buildDirectionArrows() {
     a.style.background = z.color;
     a.style.color = "#fff";
     a.dataset.key = z.key;
-    a.textContent = z.icon;
+    a.textContent = `${z.icon} ${z.short}`;
     box.appendChild(a);
   });
 }

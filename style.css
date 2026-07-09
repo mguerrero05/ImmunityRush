@@ -488,13 +488,37 @@ body {
   transform-style: preserve-3d;
   transform: rotateX(var(--tilt));
   transition: none;
-  /* Hospital floor: light tiles with grid lines. When the world is tilted,
-     these lines converge into the distance and sell the 3D arcade look. */
-  background-color: #e4edf5;
+  /* Hospital floor: clean tiled linoleum — a soft checkerboard plus grid lines.
+     When the world is tilted, these converge into the distance and sell the
+     3D arcade look. */
+  background-color: #eef4fa;
   background-image:
-    linear-gradient(rgba(120, 160, 200, 0.25) 2px, transparent 2px),
-    linear-gradient(90deg, rgba(120, 160, 200, 0.25) 2px, transparent 2px);
-  background-size: 60px 60px;
+    linear-gradient(
+      45deg,
+      rgba(180, 205, 228, 0.18) 25%,
+      transparent 25%,
+      transparent 75%,
+      rgba(180, 205, 228, 0.18) 75%
+    ),
+    linear-gradient(
+      45deg,
+      rgba(180, 205, 228, 0.18) 25%,
+      transparent 25%,
+      transparent 75%,
+      rgba(180, 205, 228, 0.18) 75%
+    ),
+    linear-gradient(rgba(120, 160, 200, 0.18) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(120, 160, 200, 0.18) 2px, transparent 2px);
+  background-size:
+    120px 120px,
+    120px 120px,
+    60px 60px,
+    60px 60px;
+  background-position:
+    0 0,
+    60px 60px,
+    0 0,
+    0 0;
 }
 /* Start-of-game zoom out animation (keeps the tilt the whole time). */
 @keyframes zoomOut {
@@ -542,6 +566,36 @@ body {
 }
 .zone .zone-icon {
   font-size: 26px;
+}
+
+/* --- Hospital rooms (decorative floor areas) --- */
+.room {
+  position: absolute;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
+  opacity: 0.92;
+}
+/* Mini-game destination rooms get a slightly stronger outline. */
+.room-game {
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 255, 255, 0.75),
+    0 0 10px rgba(0, 0, 0, 0.06);
+}
+/* Standing room sign — counter-rotates so it faces the camera (like the doors). */
+.room-sign {
+  position: absolute;
+  transform-origin: center bottom;
+  transform: translateX(-50%) rotateX(calc(-1 * var(--tilt)));
+  background: #ffffff;
+  color: #33475b;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  white-space: nowrap;
+  z-index: 6;
+  pointer-events: none;
 }
 
 .collectible {
