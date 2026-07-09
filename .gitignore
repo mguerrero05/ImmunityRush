@@ -1,8 +1,14 @@
+# Installed packages (can always be reinstalled with: npm install)
+node_modules/
+
 # macOS junk
 .DS_Store
 
 # Logs
 *.log
 
-# Dependencies (only if we add tooling later)
-node_modules/
+# Build output (only if we add a build step later)
+dist/
+
+# Local Claude Code settings (machine-specific)
+.claude/settings.local.json
