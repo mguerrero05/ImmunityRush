@@ -293,6 +293,98 @@ function toast(msg, ms = 1800) {
   toastTimer = setTimeout(() => t.classList.remove("show"), ms);
 }
 
+/* =========================================================
+   3b. GAME FEEL TOOLKIT (reused everywhere)
+   Floating text, sounds, particles, and screen shake.
+   ========================================================= */
+
+// Center of an element in screen (client) coordinates. Handy for spawning
+// effects on top of the player, a sliced item, a hit target, etc.
+function centerOf(el) {
+  const r = el.getBoundingClientRect();
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+}
+
+// C1 — a floating text popup (e.g. "+200") that drifts up and fades.
+// x/y are screen coordinates. `big` makes a larger, warmer popup.
+function floatText(text, x, y, color = "#ffd34d", big = false) {
+  const el = document.createElement("div");
+  el.className = "float-text" + (big ? " big" : "");
+  el.textContent = text;
+  el.style.left = x + "px";
+  el.style.top = y + "px";
+  el.style.color = color;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 950);
+}
+
+// C2 — tiny built-in sound effects using the browser's Web Audio API.
+// No sound files, nothing paid. A mute toggle is saved in localStorage.
+let audioCtx = null;
+let muted = localStorage.getItem("immunityMuted") === "1";
+const SOUND_PRESETS = {
+  collect: { type: "triangle", f1: 660, f2: 990, dur: 0.15 },
+  success: { type: "sine", f1: 523, f2: 784, dur: 0.25 },
+  error: { type: "sawtooth", f1: 220, f2: 120, dur: 0.25 },
+  hit: { type: "square", f1: 300, f2: 90, dur: 0.18 },
+  shield: { type: "sine", f1: 880, f2: 440, dur: 0.22 },
+};
+function playSound(type) {
+  if (muted) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const p = SOUND_PRESETS[type] || SOUND_PRESETS.collect;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = p.type;
+    osc.frequency.setValueAtTime(p.f1, now);
+    osc.frequency.exponentialRampToValueAtTime(p.f2, now + p.dur);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + p.dur);
+    osc.start(now);
+    osc.stop(now + p.dur);
+  } catch (e) {
+    /* audio not available — ignore silently */
+  }
+}
+function toggleMute() {
+  muted = !muted;
+  localStorage.setItem("immunityMuted", muted ? "1" : "0");
+  const btn = document.getElementById("mute-btn");
+  if (btn) btn.textContent = muted ? "🔇" : "🔊";
+}
+
+// C3 — a small particle burst at screen coords x/y.
+function burst(x, y, color = "#ffd34d", count = 8) {
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement("div");
+    p.className = "particle";
+    p.style.left = x + "px";
+    p.style.top = y + "px";
+    p.style.background = color;
+    const angle = (Math.PI * 2 * i) / count;
+    const dist = 20 + Math.random() * 30;
+    p.style.setProperty("--dx", Math.cos(angle) * dist + "px");
+    p.style.setProperty("--dy", Math.sin(angle) * dist + "px");
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 600);
+  }
+}
+
+// C3 — a quick screen shake. Shake the game frame (never the maze world,
+// which uses transform for the camera).
+function shake() {
+  const frame = document.getElementById("game");
+  if (!frame) return;
+  frame.classList.remove("shaking");
+  void frame.offsetWidth; // force reflow so the animation restarts
+  frame.classList.add("shaking");
+  setTimeout(() => frame.classList.remove("shaking"), 400);
+}
+
 // Build the CSS-shape character inside a given container element.
 function buildCharacter(el) {
   el.innerHTML = `
@@ -337,6 +429,9 @@ function init() {
   }, 3500);
   setupCustomizeControls();
   setupControls();
+  // Reflect saved mute preference on the sound button.
+  const muteBtn = document.getElementById("mute-btn");
+  if (muteBtn) muteBtn.textContent = muted ? "🔇" : "🔊";
 }
 
 // Home -> initials screen.
@@ -626,6 +721,13 @@ function collect(data) {
   updateHUD();
   // Show the labeled bonus and a short personal message.
   toast(`+${data.points} ${data.bonusLabel} — ${rand(data.messages)}`);
+  // Feedback: floating score, particle burst, and a sound at the player.
+  const c = centerOf(document.getElementById("player"));
+  const warm = data.effect === "bonus"; // Family / Wellness get a warmer, bigger popup
+  const color = warm ? "#ff9e6d" : "#ffd34d";
+  floatText(`+${data.points}`, c.x, c.y, color, warm);
+  burst(c.x, c.y, color);
+  playSound("collect");
 }
 
 // Detect when the player stands on a mini-game zone.
@@ -805,13 +907,20 @@ function sprintTick() {
     const hit = left < 86 && left > 10 && Math.abs(objBottom - (60 + sprint.y)) < 55;
 
     if (hit) {
+      const hc = centerOf(el);
       if (el.dataset.good === "1") {
         sprint.score += 10;
         addScore(10);
+        floatText("+10", hc.x, hc.y);
+        playSound("collect");
       } else {
         sprint.score -= 5;
-        state.health = Math.max(0, state.health - (state.shielded ? 0 : 1));
+        const blocked = state.shielded; // shield absorbs one hit
+        state.health = Math.max(0, state.health - (blocked ? 0 : 1));
         updateHUD();
+        playSound(blocked ? "shield" : "hit");
+        shake();
+        if (blocked) floatText("Shield blocked it!", hc.x, hc.y, "#6fd3ff");
         if (state.health <= 0) {
           el.remove();
           toast("Out of health!", 1500);
@@ -1064,10 +1173,14 @@ function flipCard(el) {
     memory.pairs++;
     document.getElementById("memory-pairs").textContent = memory.pairs;
     addScore(15);
+    playSound("success");
+    const mc = centerOf(el);
+    floatText("+15", mc.x, mc.y, "#57d38c");
     // Show the message tied to THIS pair (not a random slogan).
     toast(MEMORY_PAIRS[Number(el.dataset.pair)].msg, 1600);
     if (memory.pairs === MEMORY_PAIRS.length) finishMemory();
   } else {
+    playSound("error");
     // Flip both back after a moment.
     memory.lock = true;
     const a = memory.first,
