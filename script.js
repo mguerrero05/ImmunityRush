@@ -51,44 +51,56 @@ const FACTS = [
 ];
 
 // Collectibles that appear around the maze. Easy to edit!
+// Each collectible: a temporary emoji icon (replaced with custom art in Milestone G),
+// the score it awards, its effect, a short labeled bonus for the score popup, and a
+// short personal message. Points/messages follow the Phase 5 brief.
 const COLLECTIBLES = [
   {
     key: "shield",
     emoji: "🛡",
     name: "Vaccine Shield",
-    points: 30,
+    points: 100,
     effect: "shield",
-    messages: [
-      "Protection starts before exposure.",
-      "Your shield is strongest when you prepare early.",
-    ],
+    bonusLabel: "Shield Bonus",
+    messages: ["Protection starts before exposure."],
   },
   {
     key: "speed",
     emoji: "⚡",
     name: "Speed Boost",
-    points: 15,
+    points: 100,
     effect: "speed",
-    messages: ["Stay one step ahead this flu season.", "Quick choices can protect future plans."],
+    bonusLabel: "Speed Bonus",
+    messages: [
+      "Babies under 6 months are too young for their own flu shot — protection around them matters.",
+    ],
   },
   {
     key: "heart",
     emoji: "❤",
     name: "Heart",
-    points: 20,
+    points: 50,
     effect: "health",
-    messages: [
-      "Protect the people waiting for you at home.",
-      "Your health protects more than just you.",
-    ],
+    bonusLabel: "Health Bonus",
+    messages: ["Protect the people waiting for you at home."],
   },
   {
     key: "family",
     emoji: "👨‍👩‍👧",
     name: "Family Token",
-    points: 50,
+    points: 200,
     effect: "bonus",
-    messages: ["Stay healthy for the moments that matter.", "Don't miss what matters."],
+    bonusLabel: "Family Bonus",
+    messages: ["Protect the moments waiting for you after your shift."],
+  },
+  {
+    key: "wellness",
+    emoji: "🌟",
+    name: "Wellness Star",
+    points: 100,
+    effect: "bonus",
+    bonusLabel: "Wellness Bonus",
+    messages: ["Flu vaccination is especially important for older adults and pregnant people."],
   },
 ];
 
@@ -575,8 +587,10 @@ function collect(data) {
   } else if (data.effect === "health") {
     state.health = Math.min(5, state.health + 1);
   }
+  // "bonus" effect (Family Token, Wellness Star) is a pure score bonus — no state change.
   updateHUD();
-  toast(rand(data.messages));
+  // Show the labeled bonus and a short personal message.
+  toast(`+${data.points} ${data.bonusLabel} — ${rand(data.messages)}`);
 }
 
 // Detect when the player stands on a mini-game zone.
