@@ -61,16 +61,16 @@ are acceptable for v1.
 Home → Initials Entry → (Customize Character / Instructions) → Maze Hub →
 Mini-Games → Leaderboard → End Screen.
 
-| Screen | Purpose | Required elements |
-|---|---|---|
-| **Home** | Entry point | Title "Immunity Rush"; subtitle "Navigate the maze. Complete challenges. Stay ahead of flu season."; buttons: Start Game, Leaderboard, Instructions, Customize Character; hospital background + character. |
-| **Initials** | Leaderboard setup | Ask for 2–3 initials; save for local score tracking. |
-| **Customize Character** | Personalization | Gender, hair, skin tone, eyes, scrub colour; live preview if possible. |
-| **Instructions** | Explain gameplay | Move through maze, collect boosts, enter mini-games, avoid flu/cancelled-plan obstacles, climb leaderboard. |
-| **Maze Hub** | Main map | Angled top-down hospital maze: walls, rooms, collectibles, 4 mini-game zones, directional icons. |
-| **Mini-Games** | Short challenges | Hospital Sprint, Flu Freeze, Vaccine Darts, Memory Match. |
-| **Leaderboard** | Competition | Top 10 local scores via localStorage. |
-| **End Screen** | Wrap-up | Final score, ranking, Play Again, Home, short vaccine message, VaxFacts+ link. |
+| Screen                  | Purpose           | Required elements                                                                                                                                                                                          |
+| ----------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Home**                | Entry point       | Title "Immunity Rush"; subtitle "Navigate the maze. Complete challenges. Stay ahead of flu season."; buttons: Start Game, Leaderboard, Instructions, Customize Character; hospital background + character. |
+| **Initials**            | Leaderboard setup | Ask for 2–3 initials; save for local score tracking.                                                                                                                                                       |
+| **Customize Character** | Personalization   | Gender, hair, skin tone, eyes, scrub colour; live preview if possible.                                                                                                                                     |
+| **Instructions**        | Explain gameplay  | Move through maze, collect boosts, enter mini-games, avoid flu/cancelled-plan obstacles, climb leaderboard.                                                                                                |
+| **Maze Hub**            | Main map          | Angled top-down hospital maze: walls, rooms, collectibles, 4 mini-game zones, directional icons.                                                                                                           |
+| **Mini-Games**          | Short challenges  | Hospital Sprint, Flu Freeze, Vaccine Darts, Memory Match.                                                                                                                                                  |
+| **Leaderboard**         | Competition       | Top 10 local scores via localStorage.                                                                                                                                                                      |
+| **End Screen**          | Wrap-up           | Final score, ranking, Play Again, Home, short vaccine message, VaxFacts+ link.                                                                                                                             |
 
 **Start Game transition:** on click, character starts moving and the view "zooms
 out" from home into an angled top-down maze. Use CSS transforms/scaling/animation
@@ -86,12 +86,15 @@ pop-up with the mini-game name + a Start button.
 
 ## 7. Collectibles
 
-| Collectible | Effect | Message | Optional 2nd message |
-|---|---|---|---|
-| **Vaccine Shield** | Temporary protection + bonus points | "Protection starts before exposure." | "Your shield is strongest when you prepare early." |
-| **Speed Boost** | Faster movement 5s + bonus points | "Stay one step ahead this flu season." | "Quick choices can protect future plans." |
-| **Heart** | Health bonus + bonus points | "Protect the people waiting for you at home." | "Your health protects more than just you." |
-| **Family Token** | Large score bonus | "Stay healthy for the moments that matter." | "Don't miss what matters." |
+> Updated to the Phase 5 brief (implemented in B1). Points and messages below match `script.js`.
+
+| Collectible        | Points | Effect               | Message                                                                                        |
+| ------------------ | ------ | -------------------- | ---------------------------------------------------------------------------------------------- |
+| **Vaccine Shield** | +100   | Temporary protection | "Protection starts before exposure."                                                           |
+| **Speed Boost**    | +100   | Faster movement 5s   | "Babies under 6 months are too young for their own flu shot — protection around them matters." |
+| **Heart**          | +50    | Health restore       | "Protect the people waiting for you at home."                                                  |
+| **Family Token**   | +200   | Large score bonus    | "Protect the moments waiting for you after your shift."                                        |
+| **Wellness Star**  | +100   | Score bonus          | "Flu vaccination is especially important for older adults and pregnant people."                |
 
 ## 8. Mini-Game 1 — Hospital Sprint
 
@@ -128,6 +131,7 @@ pop-up with the mini-game name + a Start button.
 - **Start messages:** "Protect yourself with facts." / "Stay informed. Stay protected."
 
 **Myths to hit:**
+
 - The flu shot gives you the flu.
 - I'm healthy, so I don't need it.
 - I had the flu before, so I'm protected forever.
@@ -136,6 +140,7 @@ pop-up with the mini-game name + a Start button.
 - Flu vaccines do not matter for healthcare workers.
 
 **Facts to avoid:**
+
 - The flu vaccine is recommended every year.
 - Vaccination can reduce the risk of severe illness.
 - The flu shot cannot give you the flu.
@@ -144,6 +149,7 @@ pop-up with the mini-game name + a Start button.
 - Being healthy does not mean you cannot get the flu.
 
 **Friendly correction messages (when a fact is hit):**
+
 - That one was a fact — annual vaccination matters because flu viruses can change.
 - That was true — the flu shot cannot give you the flu.
 - That was a fact — vaccination can help reduce severe illness.
@@ -157,9 +163,17 @@ Flip cards and match vaccination benefits with positive outcomes. Complete all
 matches before time runs out (or with a move counter). Visual and fast, not a
 written quiz.
 
-Pairs (Card A → Card B): Vaccination → Family Protection / Staying Healthy /
-Vacation Plans / Fewer Missed Shifts / Wellness / Protecting Patients / Protecting
-Coworkers / Important Moments.
+Pairs updated to distinct benefit↔outcome connections (implemented in B2), each with
+its own message shown on a match:
+
+1. Annual Flu Shot ↔ Changing Flu Viruses — "Flu viruses can change, so protection is recommended every year."
+2. Flu Shot ↔ Cannot Give You Flu — "The flu shot cannot give you the flu."
+3. Healthcare Worker ↔ Patient Protection — "Healthcare workers can help protect patients by staying protected."
+4. Healthy Person ↔ Still At Risk — "Being healthy does not mean you cannot get the flu."
+5. Grandparents ↔ Higher-Risk Loved Ones — "Older adults can be hit harder by flu season."
+6. Baby Under 6 Months ↔ Too Young For Own Shot — "Babies under 6 months are too young for their own flu shot — protection around them matters."
+7. Calendar Plans ↔ Fewer Missed Moments — "Flu season can interrupt weekends, work, and family plans."
+8. VaxFacts+ ↔ Judgement-Free Questions — "Questions are normal. VaxFacts+ offers judgement-free vaccine conversations."
 
 **Messages:** "Connect the benefits." / "Every season counts." / "Be there." /
 "Small choices can protect big moments." / "The best moments happen together."
@@ -198,6 +212,7 @@ Coworkers / Important Moments.
 - Leaderboard reachable from the home screen.
 
 **End screen exact text:**
+
 - "Final Score: [score]"
 - "Can you beat your score?"
 - "Protect what matters and climb the leaderboard."
