@@ -303,7 +303,7 @@ let state = {
 
 // Character look. Defaults match the CSS defaults.
 let character = {
-  gender: "female",
+  gender: "male",
   skin: "#f7d5b5",
   hair: "#2b1b0e",
   hairstyle: "short",

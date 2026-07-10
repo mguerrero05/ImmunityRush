@@ -300,22 +300,23 @@ body {
   border-radius: 26px 26px 8px 8px;
   z-index: 1;
 }
-/* Long hair down — shown only for the female character. Sits behind the head
-   (so the face still shows) and drapes wider + past the shoulders. */
+/* Long hair — shown only for the female character. Sits BEHIND the whole body
+   (z-index -1) so it never covers the face/chest; it frames the sides of the head
+   and falls past the shoulders, reading as clear long hair. */
 .char-hair-long {
   display: none;
 }
 .character-stage[data-gender="female"] .char-hair-long {
   display: block;
   position: absolute;
-  bottom: 80px;
+  bottom: 42px;
   left: 50%;
   transform: translateX(-50%);
-  width: 60px;
-  height: 62px;
+  width: 78px;
+  height: 98px;
   background: var(--hair);
-  border-radius: 30px 30px 22px 22px;
-  z-index: 3;
+  border-radius: 39px 39px 34px 34px;
+  z-index: -1;
 }
 /* Eyebrows */
 .char-brows {
