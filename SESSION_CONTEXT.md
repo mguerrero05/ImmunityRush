@@ -9,17 +9,20 @@
 
 - **Code in repo:** the full game is now here (`index.html`, `style.css`, `script.js`),
   adopted from the archived Desktop prototype and being improved phase by phase.
-- **Roadmap:** `BUILD_PLAN.md` — Milestones A, B, C, D are DONE, plus most of the
-  inserted **"Character & Timers"** milestone: character redesign DONE; the **overall
-  5-minute run timer** is DONE (counts up in the maze HUD; ends the run at 5:00; runs
-  continuously, including during mini-games). **Design change (user):** finishing OR
-  dying in a mini-game no longer ends the run — you return to the maze with your score
-  and the run only ends at 5:00 or via "End Run". Still OPTIONAL/TO DO: per-mini-game
-  ~60s countdowns (Sprint & Darts are 30s; Freeze/Memory have none). After that: Milestone E.
-- **⚠️ Still needs visual review:** the new character art is code-complete but the user
-  hasn't eyeballed it yet — check proportions/face/SHN badge in the browser and tune.
-- **Known bug FIXED this session:** mini-game doors stopped triggering after dying in a
-  mini-game (zoneCooldown left stuck); now reset on each run start.
+- **Roadmap:** `BUILD_PLAN.md` — Milestones A, B, C, D DONE; "Character & Timers" DONE;
+  **Milestone E DONE** (maze difficulty). **Design:** 5-minute overall run timer ends the
+  run; finishing/dying in a mini-game returns you to the maze (run continues). Mini-games
+  all run ~60s countdowns. **Next: Milestone F** (rebuild mini-games into real
+  drag/swipe/lane games), then G (icons/art), H (UI/end screen), I (testing).
+- **Character:** redesigned as a friendly CSS healthcare worker. Male (default) = short
+  hair + stethoscope; Female = long bob + middle part + SHN badge; both blue scrubs,
+  white shoes, rosy cheeks, big cartoon eyes, walk animation. Customize = gender/skin/
+  hair-colour/eyes/scrubs (hair-style option removed; gender drives hair). User is OK
+  with it for now ("we can improve later").
+- **Maze (Milestone E):** serpentine layout (3 staggered walls force a winding path) +
+  dead-end shelves; patrolling flu germs (lose health+points, shield absorbs, respawn at
+  entrance at 0 HP — run continues); "visit all 4 clinics" mission (+500); locked vault
+  🔒 opened by a hidden keycard 🔑 (rewards: 2 Family Tokens + Wellness Star).
 - **Dev server:** `npm run dev` (live reload at http://localhost:5678/). node lives at
   `~/.local/node/bin` — add it to PATH in a plain shell: `export PATH="$HOME/.local/node/bin:$PATH"`.
 - **Key files:** `BUILD_PLAN.md` (roadmap), `GAME_SPEC.md` (design), `CLAUDE.md` (context).
@@ -57,3 +60,12 @@
   finishSprint; health resets each Sprint entry). User approved the flow. Still to do:
   optional per-mini-game ~60s countdowns, and the character visual review. Next:
   character review, then Milestone E (maze difficulty).
+- 2026-07-10 — Character review + Milestone E. Iterated the character to match user
+  references: male short hair + stethoscope, female long bob + middle part + more
+  forehead, blue scrubs, white shoes, rosy cheeks, bigger cartoon eyes; default = male;
+  removed the Hair Style customize option (gender drives hair). Standardized all four
+  mini-games to ~60s countdowns. Built **Milestone E**: serpentine maze + dead ends,
+  patrolling flu hazards (shield absorbs; respawn at 0 HP, run continues), "visit all 4
+  clinics" mission (+500), and a locked vault + hidden keycard. Maze layout was authored
+  without visual testing — user confirmed it's traversable and good. Next: Milestone F
+  (rebuild mini-games: drag darts, swipe freeze, lane-runner sprint).
