@@ -300,23 +300,53 @@ body {
   border-radius: 26px 26px 8px 8px;
   z-index: 1;
 }
-/* Long hair — shown only for the female character. Sits BEHIND the whole body
-   (z-index -1) so it never covers the face/chest; it frames the sides of the head
-   and falls past the shoulders, reading as clear long hair. */
+/* Female hairstyle: hair pulled up into a bun (see reference). The base cap
+   (.char-hair) stays over the forehead and a bun sits on top of the head.
+   (.char-hair-long is unused for now — kept hidden.) */
 .char-hair-long {
   display: none;
 }
-.character-stage[data-gender="female"] .char-hair-long {
+.character-stage[data-gender="female"] .char-bun {
   display: block;
   position: absolute;
-  bottom: 42px;
+  top: -13px;
   left: 50%;
   transform: translateX(-50%);
-  width: 78px;
-  height: 98px;
+  width: 28px;
+  height: 28px;
   background: var(--hair);
-  border-radius: 39px 39px 34px 34px;
-  z-index: -1;
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.14);
+}
+
+/* Stethoscope (female) — tubing around the neck + a chest piece. */
+.char-steth {
+  display: none;
+}
+.character-stage[data-gender="female"] .char-steth {
+  display: block;
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 26px;
+  border: 3px solid #2f5d6e;
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  z-index: 4;
+}
+.character-stage[data-gender="female"] .char-steth::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: -6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #2f5d6e;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.35);
 }
 /* Eyebrows */
 .char-brows {

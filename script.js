@@ -446,6 +446,7 @@ function buildCharacter(el) {
     <div class="char-body">
       <div class="char-sleeve left"></div>
       <div class="char-sleeve right"></div>
+      <div class="char-steth"></div>
       <div class="char-pocket"></div>
       <div class="char-badge">SHN</div>
     </div>
