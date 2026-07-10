@@ -309,13 +309,13 @@ body {
 .character-stage[data-gender="female"] .char-hair-long {
   display: block;
   position: absolute;
-  bottom: 40px;
+  bottom: 88px;
   left: 50%;
   transform: translateX(-50%);
-  width: 80px;
-  height: 100px;
+  width: 66px;
+  height: 56px;
   background: var(--hair);
-  border-radius: 40px 40px 30px 30px;
+  border-radius: 33px 33px 28px 28px;
   z-index: -1;
 }
 /* Raise the female hairline so more forehead shows (a softer, parted look). */
@@ -343,7 +343,7 @@ body {
 .char-steth {
   display: none;
 }
-.character-stage[data-gender="female"] .char-steth {
+.character-stage[data-gender="male"] .char-steth {
   display: block;
   position: absolute;
   top: 5px;
@@ -356,7 +356,7 @@ body {
   border-radius: 0 0 16px 16px;
   z-index: 4;
 }
-.character-stage[data-gender="female"] .char-steth::after {
+.character-stage[data-gender="male"] .char-steth::after {
   content: "";
   position: absolute;
   bottom: -5px;
@@ -413,6 +413,22 @@ body {
   border-radius: 50%;
   background: color-mix(in srgb, var(--skin) 80%, #b5794f);
   z-index: 3;
+}
+/* Rosy cheeks */
+.char-cheek {
+  position: absolute;
+  top: 30px;
+  width: 8px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(240, 130, 130, 0.5);
+  z-index: 2;
+}
+.char-cheek.left {
+  left: 5px;
+}
+.char-cheek.right {
+  right: 5px;
 }
 /* Friendly smile */
 .char-smile {
@@ -552,9 +568,9 @@ body {
   transform: translateX(-52%);
   width: 22px;
   height: 11px;
-  background: #2c2c30;
+  background: #f4f5f7; /* white sneakers */
   border-radius: 6px 11px 8px 6px;
-  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.1);
 }
 
 /* Long hair option — extra strands down the sides */

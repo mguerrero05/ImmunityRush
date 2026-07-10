@@ -460,6 +460,8 @@ function buildCharacter(el) {
       <div class="char-brows"><span></span><span></span></div>
       <div class="char-eyes"><span></span><span></span></div>
       <div class="char-nose"></div>
+      <span class="char-cheek left"></span>
+      <span class="char-cheek right"></span>
       <div class="char-smile"></div>
     </div>
   `;
