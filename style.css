@@ -891,6 +891,33 @@ body {
   filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.25));
 }
 
+/* Locked vault door — striped bar with a padlock. */
+.locked-door {
+  position: absolute;
+  width: 20px;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+  color: #fff;
+  background: repeating-linear-gradient(45deg, #e0a63a, #e0a63a 6px, #6f4f16 6px, #6f4f16 12px);
+  border-radius: 3px;
+  z-index: 9;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
+}
+/* Keycard collectible — stands upright against the tilted floor. */
+.keycard {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  font-size: 24px;
+  line-height: 30px;
+  text-align: center;
+  z-index: 8;
+  transform-origin: bottom center;
+  transform: rotateX(calc(-1 * var(--tilt)));
+  filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.25));
+}
+
 /* Mission / objective line under the HUD. */
 .mission {
   position: absolute;

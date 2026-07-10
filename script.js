@@ -656,6 +656,8 @@ let walls = [];
 let liveCollectibles = []; // {el, x, y, w, h, data}
 let hazards = []; // patrolling flu germs {el, x, y, w, h, min, max, vy}
 let hazardCooldown = 0; // frames of immunity after a hazard hit
+let keycard = null; // {el, x, y, w, h} — unlocks the vault
+let lockedDoor = null; // {rect, el} — blocks the vault until the keycard is found
 let missionVisited = {}; // which clinics have been visited this run
 let missionDone = false;
 let keys = {};
@@ -705,6 +707,11 @@ function buildMaze() {
     // Dead-end shelves that hide collectibles.
     { x: 290, y: 470, w: 100, h: T },
     { x: 490, y: 420, w: 100, h: T },
+    // Locked bonus vault (right side) — walls with a door gap on the left.
+    { x: 760, y: 230, w: 120, h: T }, // top
+    { x: 760, y: 390, w: 120, h: T }, // bottom
+    { x: 760, y: 230, w: T, h: 45 }, // left-upper
+    { x: 760, y: 365, w: T, h: 45 }, // left-lower
   ];
   walls.forEach((w) => {
     const d = document.createElement("div");
@@ -715,6 +722,27 @@ function buildMaze() {
     d.style.height = w.h + "px";
     worldEl.appendChild(d);
   });
+
+  // --- Locked vault door + keycard ---
+  // The door blocks the vault gap until the player finds the keycard.
+  const doorRect = { x: 760, y: 275, w: 20, h: 90 };
+  walls.push(doorRect); // acts as a wall while locked
+  const doorEl = document.createElement("div");
+  doorEl.className = "locked-door";
+  doorEl.textContent = "🔒";
+  doorEl.style.left = doorRect.x + "px";
+  doorEl.style.top = doorRect.y + "px";
+  doorEl.style.height = doorRect.h + "px";
+  worldEl.appendChild(doorEl);
+  lockedDoor = { rect: doorRect, el: doorEl };
+  // Keycard hidden in the maze.
+  const kc = document.createElement("div");
+  kc.className = "keycard";
+  kc.textContent = "🔑";
+  kc.style.left = "540px";
+  kc.style.top = "540px";
+  worldEl.appendChild(kc);
+  keycard = { el: kc, x: 540, y: 540, w: 30, h: 30 };
 
   // --- Mini-game zones ---
   ZONES.forEach((z) => {
@@ -746,6 +774,13 @@ function buildMaze() {
     const data = COLLECTIBLES[i % COLLECTIBLES.length];
     spawnCollectible(worldEl, s[0], s[1], data);
   });
+
+  // Vault rewards — only reachable once the door is unlocked.
+  const famReward = COLLECTIBLES.find((c) => c.key === "family");
+  const wellReward = COLLECTIBLES.find((c) => c.key === "wellness");
+  spawnCollectible(worldEl, 800, 285, famReward);
+  spawnCollectible(worldEl, 845, 340, famReward);
+  spawnCollectible(worldEl, 800, 350, wellReward);
 
   // Patrolling flu hazards.
   spawnHazards(worldEl);
@@ -833,6 +868,7 @@ function loopMaze() {
 
   checkCollectibles();
   checkZones();
+  checkKeycard();
   updateHazards();
   updateDirectionArrows(camX, camY);
 
@@ -1027,6 +1063,24 @@ function hitByHazard() {
     player.y = 430; // back to the entrance (the run keeps going)
     toast("The flu caught up — back to the entrance!", 1800);
   }
+}
+
+/* ---------- Keycard + locked vault ---------- */
+function checkKeycard() {
+  if (!keycard) return;
+  const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
+  if (!overlap(pBox, keycard)) return;
+  const c = centerOf(document.getElementById("player"));
+  keycard.el.remove();
+  keycard = null;
+  if (lockedDoor) {
+    walls = walls.filter((w) => w !== lockedDoor.rect); // door no longer blocks
+    lockedDoor.el.remove();
+    lockedDoor = null;
+  }
+  playSound("success");
+  floatText("Keycard!", c.x, c.y, "#ffd34d");
+  toast("Keycard found — the bonus vault is unlocked!", 2200);
 }
 
 /* ---------- Mission: visit all four clinics ---------- */
