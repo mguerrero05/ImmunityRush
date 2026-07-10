@@ -877,6 +877,37 @@ body {
   font-size: 26px;
 }
 
+/* Patrolling flu germ hazard — stands upright against the tilted floor. */
+.hazard {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  font-size: 26px;
+  line-height: 30px;
+  text-align: center;
+  z-index: 8;
+  transform-origin: bottom center;
+  transform: rotateX(calc(-1 * var(--tilt)));
+  filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.25));
+}
+
+/* Mission / objective line under the HUD. */
+.mission {
+  position: absolute;
+  top: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 16;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--shn-blue);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  white-space: nowrap;
+}
+
 /* --- Hospital rooms (decorative floor areas) --- */
 .room {
   position: absolute;

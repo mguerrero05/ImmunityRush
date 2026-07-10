@@ -149,11 +149,11 @@ const ZONES = [
 // walls/locked doors come in Milestone E). Each has a floor tint and a sign.
 // The four "zone" rooms sit under the mini-game doors and share their theme.
 const ROOMS = [
-  { name: "Reception", x: 350, y: 360, w: 200, h: 170, tone: "#dbe7f3" },
-  { name: "Pharmacy", x: 350, y: 60, w: 200, h: 120, tone: "#e2efe6" },
-  { name: "Waiting Area", x: 60, y: 360, w: 160, h: 180, tone: "#f0ead9" },
-  { name: "Staff Lounge", x: 680, y: 360, w: 160, h: 180, tone: "#efe1ec" },
-  { name: "VaxFacts+ Clinic", x: 350, y: 720, w: 200, h: 120, tone: "#dcecef" },
+  { name: "Reception", x: 300, y: 150, w: 140, h: 110, tone: "#dbe7f3" },
+  { name: "Pharmacy", x: 480, y: 150, w: 120, h: 110, tone: "#e2efe6" },
+  { name: "Waiting Area", x: 300, y: 640, w: 140, h: 120, tone: "#f0ead9" },
+  { name: "Staff Lounge", x: 480, y: 640, w: 120, h: 120, tone: "#efe1ec" },
+  { name: "VaxFacts+ Clinic", x: 660, y: 410, w: 150, h: 120, tone: "#dcecef" },
   { name: "Sprint Corridor", x: 60, y: 60, w: 210, h: 210, tone: "#dce7fb", zone: "sprint" },
   { name: "Freeze Station", x: 630, y: 60, w: 210, h: 210, tone: "#d7f0f0", zone: "freeze" },
   { name: "Darts Room", x: 60, y: 630, w: 210, h: 210, tone: "#fadfd9", zone: "darts" },
@@ -538,11 +538,14 @@ function beginGame() {
   currentMini = null;
   clearMiniTimers();
   state.runSeconds = 0;
+  missionVisited = {};
+  missionDone = false;
 
   showScreen("screen-maze");
   buildMaze();
   resetPowerups();
   updateHUD();
+  updateMission();
 
   // Camera zoom-out transition into the maze.
   const world = document.getElementById("maze-world");
@@ -651,6 +654,10 @@ let player = { x: 400, y: 400, w: 46, h: 76, speed: 4 };
 // Wall rectangles {x, y, w, h}. Outer border + a few dividers.
 let walls = [];
 let liveCollectibles = []; // {el, x, y, w, h, data}
+let hazards = []; // patrolling flu germs {el, x, y, w, h, min, max, vy}
+let hazardCooldown = 0; // frames of immunity after a hazard hit
+let missionVisited = {}; // which clinics have been visited this run
+let missionDone = false;
 let keys = {};
 let mazeRunning = false;
 let mazeFrame;
@@ -660,7 +667,7 @@ function buildMaze() {
   const worldEl = document.getElementById("maze-world");
   // Clear everything except the player element.
   worldEl
-    .querySelectorAll(".wall, .zone, .collectible, .room, .room-sign")
+    .querySelectorAll(".wall, .zone, .collectible, .room, .room-sign, .hazard, .locked-door")
     .forEach((n) => n.remove());
 
   // --- Hospital rooms (decorative floor areas + standing signs) ---
@@ -683,20 +690,21 @@ function buildMaze() {
     worldEl.appendChild(sign);
   });
 
-  // --- Walls: outer border ---
+  // --- Walls: outer border + serpentine lanes ---
   const T = 20; // wall thickness
   walls = [
     { x: 0, y: 0, w: WORLD_SIZE, h: T }, // top
     { x: 0, y: WORLD_SIZE - T, w: WORLD_SIZE, h: T }, // bottom
     { x: 0, y: 0, w: T, h: WORLD_SIZE }, // left
     { x: WORLD_SIZE - T, y: 0, w: T, h: WORLD_SIZE }, // right
-    // Inner dividers make simple hallways (edit freely).
-    { x: 250, y: 150, w: T, h: 250 },
-    { x: 250, y: 150, w: 200, h: T },
-    { x: 630, y: 250, w: T, h: 300 },
-    { x: 450, y: 500, w: 260, h: T },
-    { x: 250, y: 550, w: T, h: 250 },
-    { x: 250, y: 550, w: 220, h: T },
+    // Three staggered walls make a winding serpentine path: to get from the left
+    // clinics to the right ones you must weave bottom -> top -> bottom.
+    { x: 270, y: 0, w: T, h: 620 }, // A: hangs from the top (gap at the BOTTOM)
+    { x: 450, y: 280, w: T, h: 620 }, // B: rises from the bottom (gap at the TOP)
+    { x: 610, y: 0, w: T, h: 620 }, // C: hangs from the top (gap at the BOTTOM)
+    // Dead-end shelves that hide collectibles.
+    { x: 290, y: 470, w: 100, h: T },
+    { x: 490, y: 420, w: 100, h: T },
   ];
   walls.forEach((w) => {
     const d = document.createElement("div");
@@ -723,25 +731,28 @@ function buildMaze() {
   // --- Collectibles: scatter several of each type ---
   liveCollectibles = [];
   const spots = [
-    [400, 250],
-    [180, 400],
-    [700, 400],
-    [400, 620],
-    [150, 700],
-    [720, 700],
-    [500, 200],
-    [330, 480],
-    [560, 660],
-    [200, 200],
+    [110, 180],
+    [130, 760], // lane 1
+    [360, 340],
+    [360, 760], // lane 2
+    [540, 300],
+    [540, 760], // lane 3
+    [780, 180],
+    [760, 760],
+    [820, 430],
+    [690, 430], // lane 4
   ];
   spots.forEach((s, i) => {
     const data = COLLECTIBLES[i % COLLECTIBLES.length];
     spawnCollectible(worldEl, s[0], s[1], data);
   });
 
-  // Reset player to an OPEN start spot (clear of every wall).
-  player.x = 430;
-  player.y = 300;
+  // Patrolling flu hazards.
+  spawnHazards(worldEl);
+
+  // Reset player to the entrance (open lane-1 spot, clear of every wall).
+  player.x = 110;
+  player.y = 430;
   player.speed = 4;
   const playerEl = document.getElementById("player");
   buildCharacter(playerEl);
@@ -822,6 +833,7 @@ function loopMaze() {
 
   checkCollectibles();
   checkZones();
+  updateHazards();
   updateDirectionArrows(camX, camY);
 
   mazeFrame = requestAnimationFrame(loopMaze);
@@ -955,6 +967,92 @@ function resetPowerups() {
   }
 }
 
+/* ---------- Patrolling flu hazards ---------- */
+// Flu germs drift up and down the lanes. Touch one and you take a hit
+// (lose health + points) unless your shield is up, which absorbs it.
+function spawnHazards(worldEl) {
+  hazards = [
+    { x: 130, y: 200, w: 30, h: 30, min: 150, max: 780, vy: 1.6 },
+    { x: 360, y: 600, w: 30, h: 30, min: 150, max: 780, vy: -1.8 },
+    { x: 540, y: 300, w: 30, h: 30, min: 150, max: 600, vy: 1.5 },
+    { x: 760, y: 500, w: 30, h: 30, min: 150, max: 780, vy: -1.7 },
+  ];
+  hazardCooldown = 0;
+  hazards.forEach((h) => {
+    const d = document.createElement("div");
+    d.className = "hazard";
+    d.textContent = "🦠";
+    d.style.left = h.x + "px";
+    d.style.top = h.y + "px";
+    worldEl.appendChild(d);
+    h.el = d;
+  });
+}
+function updateHazards() {
+  if (hazardCooldown > 0) hazardCooldown--;
+  const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
+  hazards.forEach((h) => {
+    h.y += h.vy;
+    if (h.y <= h.min || h.y >= h.max) h.vy *= -1;
+    h.el.style.top = h.y + "px";
+    if (hazardCooldown === 0 && overlap(pBox, { x: h.x, y: h.y, w: h.w, h: h.h })) {
+      hitByHazard();
+    }
+  });
+}
+function hitByHazard() {
+  hazardCooldown = 45; // ~0.75s immunity so one germ doesn't drain you instantly
+  const c = centerOf(document.getElementById("player"));
+  if (state.shielded) {
+    endShield();
+    playSound("shield");
+    floatText("Shield blocked it!", c.x, c.y, "#6fd3ff");
+    return;
+  }
+  state.health = Math.max(0, state.health - 1);
+  state.score = Math.max(0, state.score - 30);
+  updateHUD();
+  playSound("hit");
+  shake();
+  floatText("-30", c.x, c.y, "#ff6b6b");
+  toast(
+    rand(["Flu slowed you down!", "Watch out for the flu!", "Stay protected out there."]),
+    1400,
+  );
+  player.x = Math.max(20, player.x - 40); // small knockback
+  if (state.health <= 0) {
+    state.health = 3;
+    updateHUD();
+    player.x = 110;
+    player.y = 430; // back to the entrance (the run keeps going)
+    toast("The flu caught up — back to the entrance!", 1800);
+  }
+}
+
+/* ---------- Mission: visit all four clinics ---------- */
+function updateMission() {
+  const count = Object.keys(missionVisited).length;
+  const el = document.getElementById("mission");
+  if (!el) return;
+  if (missionDone) {
+    el.textContent = "✅ Mission complete — all 4 clinics visited!";
+    return;
+  }
+  el.textContent = `Mission: visit all 4 clinics (${count}/4)`;
+}
+function markClinicVisited(key) {
+  if (missionDone) return;
+  missionVisited[key] = true;
+  if (Object.keys(missionVisited).length >= ZONES.length) {
+    missionDone = true;
+    state.score += 500;
+    updateHUD();
+    toast("Mission complete! +500 — all clinics visited.", 2400);
+    playSound("success");
+  }
+  updateMission();
+}
+
 // Detect when the player stands on a mini-game zone.
 let zoneCooldown = false;
 function checkZones() {
@@ -1054,6 +1152,7 @@ function exitMiniGame() {
 
 function startMiniGame(key) {
   currentMini = key;
+  markClinicVisited(key);
   if (key === "sprint") startSprint();
   else if (key === "freeze") startFreeze();
   else if (key === "darts") startDarts();
