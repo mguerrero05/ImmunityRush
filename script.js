@@ -298,6 +298,7 @@ let state = {
   health: 3,
   shielded: false,
   speedBoost: false,
+  runSeconds: 0, // overall run time; the run ends at RUN_LIMIT_SECONDS
 };
 
 // Character look. Defaults match the CSS defaults.
@@ -531,6 +532,7 @@ function beginGame() {
   zoneCooldown = false;
   currentMini = null;
   clearMiniTimers();
+  state.runSeconds = 0;
 
   showScreen("screen-maze");
   buildMaze();
@@ -544,6 +546,8 @@ function beginGame() {
   world.classList.add("zooming");
 
   toast(rand(SLOGANS), 2200);
+  updateRunTime();
+  startRunTimer();
   startMazeLoop();
 }
 
@@ -582,7 +586,35 @@ function addScore(n) {
 }
 
 // End the whole run and show the end screen.
+/* ---------- Overall run timer (5 minutes) ---------- */
+// The whole run lasts RUN_LIMIT_SECONDS. It counts up in the maze HUD and keeps
+// ticking during mini-games (it's the overall run clock). Finishing or dying in a
+// mini-game does NOT end the run — only this timer (or the End Run button) does.
+const RUN_LIMIT_SECONDS = 300;
+let runTimer = null;
+function updateRunTime() {
+  const mm = Math.floor(state.runSeconds / 60);
+  const ss = String(state.runSeconds % 60).padStart(2, "0");
+  const el = document.getElementById("hud-time");
+  if (el) el.textContent = `${mm}:${ss}`;
+}
+function startRunTimer() {
+  clearInterval(runTimer);
+  runTimer = setInterval(() => {
+    state.runSeconds++;
+    updateRunTime();
+    if (state.runSeconds >= RUN_LIMIT_SECONDS) {
+      toast("Time's up! Run complete.", 2400);
+      endGame();
+    }
+  }, 1000);
+}
+function stopRunTimer() {
+  clearInterval(runTimer);
+}
+
 function endGame() {
+  stopRunTimer();
   stopMazeLoop();
   clearMiniTimers();
   const rank = saveScore(state.initials, state.score);
@@ -1035,6 +1067,8 @@ function startSprint() {
   runnerEl.classList.add("walking"); // same character, running through the sprint
 
   sprint = { score: 0, time: 30, y: 0, vy: 0, jumping: false, objs: [] };
+  state.health = 3; // fresh health each Sprint so it stays replayable in a run
+  updateHUD();
   document.getElementById("sprint-score").textContent = 0;
   document.getElementById("sprint-time").textContent = 30;
 
@@ -1113,8 +1147,8 @@ function sprintTick() {
         if (blocked) floatText("Shield blocked it!", hc.x, hc.y, "#6fd3ff");
         if (state.health <= 0) {
           el.remove();
-          toast("Out of health!", 1500);
-          endGame();
+          toast("Out of health! Back to the maze.", 1800);
+          finishSprint(); // return to the maze — the run keeps going
           return false;
         }
       }
