@@ -300,24 +300,43 @@ body {
   border-radius: 26px 26px 8px 8px;
   z-index: 1;
 }
-/* Female hairstyle: hair pulled up into a bun (see reference). The base cap
-   (.char-hair) stays over the forehead and a bun sits on top of the head.
-   (.char-hair-long is unused for now — kept hidden.) */
+/* Female hairstyle: long hair down. It sits BEHIND the whole body (z-index -1) so
+   it never covers the face/chest — it frames the sides of the head and falls past
+   the shoulders. The front hairline is raised so more forehead shows. */
 .char-hair-long {
   display: none;
 }
-.character-stage[data-gender="female"] .char-bun {
+.character-stage[data-gender="female"] .char-hair-long {
   display: block;
   position: absolute;
-  top: -13px;
+  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
-  width: 28px;
-  height: 28px;
+  width: 80px;
+  height: 100px;
   background: var(--hair);
-  border-radius: 50%;
-  z-index: 2;
-  box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.14);
+  border-radius: 40px 40px 30px 30px;
+  z-index: -1;
+}
+/* Raise the female hairline so more forehead shows (a softer, parted look). */
+.character-stage[data-gender="female"] .char-hair {
+  top: -8px;
+  height: 16px;
+  border-radius: 25px 25px 16px 16px;
+}
+/* Middle part — a small skin wedge at the centre of the hairline so the hair
+   reads as parted down the middle. */
+.character-stage[data-gender="female"] .char-hair::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 10px solid var(--skin);
 }
 
 /* Stethoscope (female) — tubing around the neck + a chest piece. */
