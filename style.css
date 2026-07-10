@@ -370,7 +370,7 @@ body {
 /* Eyebrows */
 .char-brows {
   position: absolute;
-  top: 15px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
   width: 30px;
@@ -379,37 +379,60 @@ body {
   z-index: 3;
 }
 .char-brows span {
-  width: 9px;
+  width: 11px;
   height: 3px;
   border-radius: 3px;
-  background: var(--eyes);
+  background: var(--hair);
 }
 /* Eyes */
 .char-eyes {
   position: absolute;
-  top: 21px;
+  top: 17px;
   left: 50%;
   transform: translateX(-50%);
-  width: 28px;
+  width: 30px;
   display: flex;
   justify-content: space-between;
   z-index: 3;
 }
+/* Big round cartoon eyes: white eyeball + large pupil + glint. */
 .char-eyes span {
+  position: relative;
+  width: 13px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+.char-eyes span::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  transform: translate(-50%, -50%);
   width: 8px;
-  height: 9px;
+  height: 8px;
   border-radius: 50%;
   background: var(--eyes);
-  box-shadow: inset 2px -2px 0 rgba(255, 255, 255, 0.55);
+}
+.char-eyes span::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fff;
 }
 /* Nose */
 .char-nose {
   position: absolute;
-  top: 28px;
+  top: 32px;
   left: 50%;
   transform: translateX(-50%);
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--skin) 80%, #b5794f);
   z-index: 3;
@@ -417,7 +440,7 @@ body {
 /* Rosy cheeks */
 .char-cheek {
   position: absolute;
-  top: 30px;
+  top: 33px;
   width: 8px;
   height: 5px;
   border-radius: 50%;
@@ -433,11 +456,11 @@ body {
 /* Friendly smile */
 .char-smile {
   position: absolute;
-  top: 34px;
+  top: 37px;
   left: 50%;
   transform: translateX(-50%);
-  width: 16px;
-  height: 8px;
+  width: 14px;
+  height: 7px;
   border: 2px solid color-mix(in srgb, var(--skin) 55%, #7a3b2e);
   border-top: none;
   border-radius: 0 0 16px 16px;
