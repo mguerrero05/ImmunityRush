@@ -1071,11 +1071,11 @@ function startSprint() {
   buildCharacter(runnerEl);
   runnerEl.classList.add("walking"); // same character, running through the sprint
 
-  sprint = { score: 0, time: 30, y: 0, vy: 0, jumping: false, objs: [] };
+  sprint = { score: 0, time: 60, y: 0, vy: 0, jumping: false, objs: [] };
   state.health = 3; // fresh health each Sprint so it stays replayable in a run
   updateHUD();
   document.getElementById("sprint-score").textContent = 0;
-  document.getElementById("sprint-time").textContent = 30;
+  document.getElementById("sprint-time").textContent = 60;
 
   // Countdown timer.
   miniTimers.push(
@@ -1198,11 +1198,19 @@ function startFreeze() {
   showScreen("screen-freeze");
   const stage = document.getElementById("freeze-stage");
   stage.innerHTML = "";
-  freeze = { score: 0, lives: 3 };
+  freeze = { score: 0, lives: 3, time: 60 };
   document.getElementById("freeze-score").textContent = 0;
   document.getElementById("freeze-lives").textContent = 3;
+  document.getElementById("freeze-time").textContent = 60;
   toast(rand(FREEZE_GOOD_MSG), 1800);
   miniTimers.push(setInterval(spawnFreezeItem, 850));
+  miniTimers.push(
+    setInterval(() => {
+      freeze.time--;
+      document.getElementById("freeze-time").textContent = freeze.time;
+      if (freeze.time <= 0) finishFreeze();
+    }, 1000),
+  );
 }
 
 function spawnFreezeItem() {
@@ -1271,9 +1279,9 @@ function startDarts() {
   showScreen("screen-darts");
   const stage = document.getElementById("darts-stage");
   stage.innerHTML = "";
-  darts = { score: 0, time: 30 };
+  darts = { score: 0, time: 60 };
   document.getElementById("darts-score").textContent = 0;
-  document.getElementById("darts-time").textContent = 30;
+  document.getElementById("darts-time").textContent = 60;
   toast(rand(["Protect yourself with facts.", "Stay informed. Stay protected."]), 2000);
 
   miniTimers.push(
@@ -1365,9 +1373,17 @@ function startMemory() {
   // Shuffle.
   deck.sort(() => Math.random() - 0.5);
 
-  memory = { moves: 0, pairs: 0, first: null, lock: false };
+  memory = { moves: 0, pairs: 0, first: null, lock: false, time: 60 };
   document.getElementById("memory-moves").textContent = 0;
   document.getElementById("memory-pairs").textContent = 0;
+  document.getElementById("memory-time").textContent = 60;
+  miniTimers.push(
+    setInterval(() => {
+      memory.time--;
+      document.getElementById("memory-time").textContent = memory.time;
+      if (memory.time <= 0) finishMemory(true);
+    }, 1000),
+  );
 
   deck.forEach((card) => {
     const el = document.createElement("div");
@@ -1423,10 +1439,20 @@ function flipCard(el) {
   }
 }
 
-function finishMemory() {
-  const bonus = Math.max(20, 120 - memory.moves * 5);
-  addScore(bonus);
-  showPopup("All matched!", `Bonus +${bonus}!\n\n` + rand(MEMORY_MESSAGES), [
+function finishMemory(timeUp = false) {
+  clearMiniTimers(); // stop the countdown
+  let title, body;
+  if (timeUp && memory.pairs < MEMORY_PAIRS.length) {
+    title = "Time's up!";
+    body =
+      `You matched ${memory.pairs} of ${MEMORY_PAIRS.length} pairs.\n\n` + rand(MEMORY_MESSAGES);
+  } else {
+    const bonus = Math.max(20, 120 - memory.moves * 5);
+    addScore(bonus);
+    title = "All matched!";
+    body = `Bonus +${bonus}!\n\n` + rand(MEMORY_MESSAGES);
+  }
+  showPopup(title, body, [
     {
       text: "Back to maze",
       primary: true,
