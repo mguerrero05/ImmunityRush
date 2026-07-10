@@ -449,6 +449,7 @@ function buildCharacter(el) {
       <div class="char-pocket"></div>
       <div class="char-badge">SHN</div>
     </div>
+    <div class="char-hair-long"></div>
     <div class="char-head">
       <span class="char-ear left"></span>
       <span class="char-ear right"></span>
@@ -471,6 +472,7 @@ function applyCharacter(el) {
   el.style.setProperty("--eyes", character.eyes);
   el.style.setProperty("--scrubs", character.scrubs);
   el.dataset.hairstyle = character.hairstyle;
+  el.dataset.gender = character.gender; // female = long hair (see CSS)
 }
 
 // Rotate slogans on the home screen.
