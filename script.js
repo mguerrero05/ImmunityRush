@@ -525,6 +525,12 @@ function beginGame() {
   state.health = 3;
   state.shielded = false;
   state.speedBoost = false;
+  // Clear mini-game state so zone doors work again on a fresh run. Without this,
+  // dying in a mini-game (which ends the run) left zoneCooldown stuck "on", so
+  // walking into a mini-game door did nothing after Play Again.
+  zoneCooldown = false;
+  currentMini = null;
+  clearMiniTimers();
 
   showScreen("screen-maze");
   buildMaze();
