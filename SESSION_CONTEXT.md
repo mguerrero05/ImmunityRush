@@ -9,13 +9,17 @@
 
 - **Code in repo:** the full game is now here (`index.html`, `style.css`, `script.js`),
   adopted from the archived Desktop prototype and being improved phase by phase.
-- **Roadmap:** `BUILD_PLAN.md` — Milestones A, B, C, D are DONE. A new milestone
-  **"Character & Timers"** was inserted (user request): the **character redesign is
-  DONE** (friendly healthcare worker in blue scrubs + walk cycle); the **timers are
-  still TO DO** (maze count-up timer; ~60s countdown in each mini-game). After that:
-  Milestone E (maze difficulty).
-- **⚠️ Needs visual review:** the new character art is code-complete but the user
+- **Roadmap:** `BUILD_PLAN.md` — Milestones A, B, C, D are DONE, plus most of the
+  inserted **"Character & Timers"** milestone: character redesign DONE; the **overall
+  5-minute run timer** is DONE (counts up in the maze HUD; ends the run at 5:00; runs
+  continuously, including during mini-games). **Design change (user):** finishing OR
+  dying in a mini-game no longer ends the run — you return to the maze with your score
+  and the run only ends at 5:00 or via "End Run". Still OPTIONAL/TO DO: per-mini-game
+  ~60s countdowns (Sprint & Darts are 30s; Freeze/Memory have none). After that: Milestone E.
+- **⚠️ Still needs visual review:** the new character art is code-complete but the user
   hasn't eyeballed it yet — check proportions/face/SHN badge in the browser and tune.
+- **Known bug FIXED this session:** mini-game doors stopped triggering after dying in a
+  mini-game (zoneCooldown left stuck); now reset on each run start.
 - **Dev server:** `npm run dev` (live reload at http://localhost:5678/). node lives at
   `~/.local/node/bin` — add it to PATH in a plain shell: `export PATH="$HOME/.local/node/bin:$PATH"`.
 - **Key files:** `BUILD_PLAN.md` (roadmap), `GAME_SPEC.md` (design), `CLAUDE.md` (context).
@@ -45,3 +49,11 @@
   maze player + sprint runner (used a user-provided reference PNG for style). STILL TO DO:
   the timers (maze count-up + ~60s mini-game countdowns), and a visual review of the new
   character. Next: finish timers, then Milestone E.
+- 2026-07-10 — Fixed a bug: mini-game doors stopped working after dying in a mini-game
+  (zoneCooldown left stuck "on"; now reset on run start). Then, per user design calls,
+  added an **overall 5-minute run timer** (counts up in the maze HUD; ends the run at
+  5:00; runs continuously through mini-games) and made **mini-games NOT end the run** —
+  finishing/dying returns you to the maze with score kept (Sprint death now routes to
+  finishSprint; health resets each Sprint entry). User approved the flow. Still to do:
+  optional per-mini-game ~60s countdowns, and the character visual review. Next:
+  character review, then Milestone E (maze difficulty).
