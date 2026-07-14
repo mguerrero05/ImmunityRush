@@ -9,20 +9,25 @@
 
 - **Code in repo:** the full game is now here (`index.html`, `style.css`, `script.js`),
   adopted from the archived Desktop prototype and being improved phase by phase.
-- **Roadmap:** `BUILD_PLAN.md` — Milestones A, B, C, D DONE; "Character & Timers" DONE;
-  **Milestone E DONE** (maze difficulty). **Design:** 5-minute overall run timer ends the
-  run; finishing/dying in a mini-game returns you to the maze (run continues). Mini-games
-  all run ~60s countdowns. **Next: Milestone F** (rebuild mini-games into real
-  drag/swipe/lane games), then G (icons/art), H (UI/end screen), I (testing).
+- **Roadmap:** `BUILD_PLAN.md` — Milestones A–E DONE; "Character & Timers" DONE;
+  **Milestone F DONE** — all 4 mini-games rebuilt to the `MILESTONE_F.md` spec (PDF,
+  shared 2026-07-13): **Vaccine Darts** = drag-to-aim; **Flu Freeze** = swipe-to-slice;
+  **Hospital Sprint** = jump/slide runner; **Memory Match** = 16-card matching. Exact
+  educational wording; NO answer-revealing colour coding (myths/facts, positive/negative,
+  matched cards all use neutral styling). Each has an opening instructions screen + PDF
+  end screen. **Design:** 5-minute run timer; mini-games return to the maze (don't end the
+  run). **Next: Milestone G** (custom icons to replace emoji, hospital-detailed maze
+  polish, sound/music, mobile/accessibility) — see the "Final Requirements" in the PDF.
+- **Maze:** now a **5-lane serpentine** (world 1050) with nook stubs, 5 patrolling flu
+  hazards, ~14 boosters, "visit all 4 clinics" mission, locked vault + keycard. Clinics at
+  the 4 outer corners. Fully traversable (traced). "Not now"/exit no longer teleports.
 - **Character:** redesigned as a friendly CSS healthcare worker. Male (default) = short
   hair + stethoscope; Female = long bob + middle part + SHN badge; both blue scrubs,
   white shoes, rosy cheeks, big cartoon eyes, walk animation. Customize = gender/skin/
   hair-colour/eyes/scrubs (hair-style option removed; gender drives hair). User is OK
   with it for now ("we can improve later").
-- **Maze (Milestone E):** serpentine layout (3 staggered walls force a winding path) +
-  dead-end shelves; patrolling flu germs (lose health+points, shield absorbs, respawn at
-  entrance at 0 HP — run continues); "visit all 4 clinics" mission (+500); locked vault
-  🔒 opened by a hidden keycard 🔑 (rewards: 2 Family Tokens + Wellness Star).
+- **Mini-game reference:** `MILESTONE_F.md` holds the exact PDF content for all 4
+  mini-games (statements, items, pairs, scores, messages) + the global no-colour-tell rule.
 - **Dev server:** `npm run dev` (live reload at http://localhost:5678/). node lives at
   `~/.local/node/bin` — add it to PATH in a plain shell: `export PATH="$HOME/.local/node/bin:$PATH"`.
 - **Key files:** `BUILD_PLAN.md` (roadmap), `GAME_SPEC.md` (design), `CLAUDE.md` (context).
@@ -69,3 +74,11 @@
   clinics" mission (+500), and a locked vault + hidden keycard. Maze layout was authored
   without visual testing — user confirmed it's traversable and good. Next: Milestone F
   (rebuild mini-games: drag darts, swipe freeze, lane-runner sprint).
+- 2026-07-13 — **Milestone F complete.** Saved the mini-game PDF spec to `MILESTONE_F.md`,
+  then rebuilt all four to exact wording with no colour tell: Vaccine Darts (drag-to-aim,
+  projectile, combo), Flu Freeze (swipe-to-slice, trail, 3 lives), Hospital Sprint
+  (jump/slide runner, scrolling corridor, progress bar), Memory Match (16 cards/8 pairs,
+  +100/match +300 complete). Also fixed a maze block (lane-3 shelf), fixed the
+  "Not now"/exit teleport-into-wall bug, and enlarged the maze to a 5-lane serpentine
+  (1050) with more turns, 5 hazards, ~14 boosters. User approved each. Next: Milestone G
+  (custom icons replacing emoji, hospital maze detail, sound/music, mobile/accessibility).

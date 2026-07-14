@@ -103,12 +103,12 @@ above. Newest entry goes at the bottom.
 
 The full game is now in the repo (`index.html`, `style.css`, `script.js`), adopted from
 the archived prototype and being improved phase by phase per **`BUILD_PLAN.md`**.
-Milestones A–E are DONE, plus the character redesign and timers. The maze is now a real
-challenge (serpentine routes, dead ends, patrolling flu hazards, a clinic mission, and a
-locked vault + keycard). **Next: Milestone F** — rebuild the mini-games into real
-interactive games (drag-aim Darts, swipe-slice Freeze, lane-runner Sprint, illustrated
-Memory). Then G (icons/art), H (UI/end screen), I (testing). Read `BUILD_PLAN.md` and
-`SESSION_CONTEXT.md` first. Run with `npm run dev` (live reload).
+Milestones A–F are DONE. All 4 mini-games are rebuilt to the `MILESTONE_F.md` spec (drag
+Darts, swipe Freeze, runner Sprint, matching Memory) with exact educational wording and no
+answer-revealing colours. The maze is a 5-lane serpentine with hazards, a mission, and a
+locked vault. **Next: Milestone G** — replace emoji with custom icons, add hospital detail
+to the maze, sound/music, and mobile/accessibility (see the PDF "Final Requirements").
+Read `BUILD_PLAN.md`, `MILESTONE_F.md`, and `SESSION_CONTEXT.md` first. Run `npm run dev`.
 
 ## Session Notes
 
