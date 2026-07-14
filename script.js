@@ -312,50 +312,63 @@ const DARTS_FACTS = [
 // --- Memory Match pairs ---
 // Each pair connects two related cards (a <-> b) and has its own message shown on a match.
 // (Card icons/illustrations come later in Milestone F4 — this is the text/data.)
+// Milestone F: exact wording. a<->b are the two cards; msg = educational match feedback.
 const MEMORY_PAIRS = [
   {
-    a: "Annual Flu Shot",
-    b: "Changing Flu Viruses",
-    msg: "Flu viruses can change, so protection is recommended every year.",
+    a: "Annual Flu Vaccination",
+    b: "Updated Seasonal Protection",
+    msg: "Correct. Flu viruses can change, so vaccination is recommended each season.",
   },
-  { a: "Flu Shot", b: "Cannot Give You Flu", msg: "The flu shot cannot give you the flu." },
   {
-    a: "Healthcare Worker",
+    a: "Vaccinated Healthcare Worker",
     b: "Patient Protection",
-    msg: "Healthcare workers can help protect patients by staying protected.",
+    msg: "Correct. Vaccination can help reduce the risk of spreading influenza to vulnerable patients.",
   },
   {
-    a: "Healthy Person",
-    b: "Still At Risk",
-    msg: "Being healthy does not mean you cannot get the flu.",
+    a: "Reduced Flu Risk",
+    b: "Fewer Missed Shifts",
+    msg: "Correct. Preventing flu illness can reduce absences from work.",
   },
   {
-    a: "Grandparents",
-    b: "Higher-Risk Loved Ones",
-    msg: "Older adults can be hit harder by flu season.",
+    a: "Vaccination Before Exposure",
+    b: "Immune Preparation",
+    msg: "Correct. Vaccination prepares the immune system to recognize the virus before exposure.",
   },
   {
-    a: "Baby Under 6 Months",
-    b: "Too Young For Own Shot",
-    msg: "Babies under 6 months are too young for their own flu shot — protection around them matters.",
+    a: "Lower Risk of Severe Illness",
+    b: "Flu Vaccination",
+    msg: "Correct. Vaccination can reduce the risk of serious influenza complications.",
   },
   {
-    a: "Calendar Plans",
-    b: "Fewer Missed Moments",
-    msg: "Flu season can interrupt weekends, work, and family plans.",
+    a: "Staying Home When Sick",
+    b: "Reduced Workplace Spread",
+    msg: "Correct. Staying home while symptomatic helps protect patients and coworkers.",
   },
   {
-    a: "VaxFacts+",
-    b: "Judgement-Free Questions",
-    msg: "Questions are normal. VaxFacts+ offers judgement-free vaccine conversations.",
+    a: "Protecting Yourself",
+    b: "Protecting Family Members",
+    msg: "Correct. Reducing your own risk can also reduce exposure for people at home.",
+  },
+  {
+    a: "Reliable Vaccine Information",
+    b: "Informed Decision-Making",
+    msg: "Correct. Trusted sources and healthcare professionals can help answer vaccine questions.",
   },
 ];
+// Shown sparingly during play.
 const MEMORY_MESSAGES = [
-  "Connect the benefits.",
-  "Every season counts.",
-  "Be there.",
-  "Small choices can protect big moments.",
-  "The best moments happen together.",
+  "Read carefully.",
+  "Connect the action to its outcome.",
+  "Every season requires updated protection.",
+  "Protect yourself and the people around you.",
+];
+// Shown briefly after an incorrect match.
+const MEMORY_WRONG = [
+  "Not a match. Read both cards and try again.",
+  "These two ideas are not directly connected.",
+  "Try another pair.",
+  "Look for the action that creates this benefit.",
+  "Think about how influenza is prevented or spread.",
 ];
 
 /* =========================================================
@@ -1980,25 +1993,57 @@ function finishDarts() {
 }
 
 /* ---------- 6d. MEMORY MATCH ---------- */
+// Rebuilt per Milestone F: 16 cards / 8 pairs, shuffled and de-adjacent, neutral
+// cards (no colour tell), educational feedback on a match, short message on a miss.
 let memory = {};
 function startMemory() {
   showScreen("screen-memory");
+  showPopup(
+    "Memory Match",
+    "Flip two cards at a time and connect each flu prevention action with its correct benefit or outcome.\n\n" +
+      "• Flip two cards at a time.\n• Match each action or fact with its related benefit.\n" +
+      "• Correct matches stay visible; incorrect matches flip back.\n• Complete every pair to finish.",
+    [
+      {
+        text: "Start Memory Match",
+        primary: true,
+        action: () => {
+          hidePopup();
+          beginMemoryRound();
+        },
+      },
+    ],
+  );
+}
+
+function beginMemoryRound() {
   const stage = document.getElementById("memory-stage");
   stage.innerHTML = "";
   toast(rand(MEMORY_MESSAGES), 1800);
 
-  // Build a deck: each pair becomes two cards that share a pairId.
-  let deck = [];
+  // Deck: each pair -> two cards sharing a pairId.
+  const deck = [];
   MEMORY_PAIRS.forEach((pair, i) => {
     deck.push({ pairId: i, text: pair.a });
     deck.push({ pairId: i, text: pair.b });
   });
-  // Shuffle.
-  deck.sort(() => Math.random() - 0.5);
+  // Fisher–Yates shuffle.
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  // Nudge apart any pair whose two cards ended up side by side.
+  for (let i = 1; i < deck.length; i++) {
+    if (deck[i].pairId === deck[i - 1].pairId) {
+      const swap = (i + 2) % deck.length;
+      [deck[i], deck[swap]] = [deck[swap], deck[i]];
+    }
+  }
 
-  memory = { moves: 0, pairs: 0, first: null, lock: false, time: 60 };
+  memory = { moves: 0, pairs: 0, score: 0, first: null, lock: false, time: 60 };
   document.getElementById("memory-moves").textContent = 0;
   document.getElementById("memory-pairs").textContent = 0;
+  document.getElementById("memory-score").textContent = 0;
   document.getElementById("memory-time").textContent = 60;
   miniTimers.push(
     setInterval(() => {
@@ -2011,7 +2056,7 @@ function startMemory() {
   deck.forEach((card) => {
     const el = document.createElement("div");
     el.className = "mem-card";
-    el.innerHTML = `<span class="mem-back">💉</span><span class="mem-face">${card.text}</span>`;
+    el.innerHTML = `<span class="mem-back">＋</span><span class="mem-face">${card.text}</span>`;
     el.dataset.pair = card.pairId;
     el.addEventListener("click", () => flipCard(el));
     stage.appendChild(el);
@@ -2029,27 +2074,29 @@ function flipCard(el) {
     return;
   }
 
-  // Second card flipped.
   memory.moves++;
   document.getElementById("memory-moves").textContent = memory.moves;
 
   if (memory.first.dataset.pair === el.dataset.pair) {
-    // Match!
-    memory.first.classList.add("matched");
-    el.classList.add("matched");
+    // Match — keep both face-up, educational feedback, +100.
+    const first = memory.first;
     memory.first = null;
+    first.classList.add("matched");
+    el.classList.add("matched");
     memory.pairs++;
+    memory.score += 100;
     document.getElementById("memory-pairs").textContent = memory.pairs;
-    addScore(15);
+    document.getElementById("memory-score").textContent = memory.score;
+    addScore(100);
     playSound("success");
     const mc = centerOf(el);
-    floatText("+15", mc.x, mc.y, "#57d38c");
-    // Show the message tied to THIS pair (not a random slogan).
-    toast(MEMORY_PAIRS[Number(el.dataset.pair)].msg, 1600);
+    floatText("+100", mc.x, mc.y, "#57d38c");
+    toast(MEMORY_PAIRS[Number(el.dataset.pair)].msg, 2200);
     if (memory.pairs === MEMORY_PAIRS.length) finishMemory();
   } else {
+    // Miss — short message, then flip both back (no point loss).
     playSound("error");
-    // Flip both back after a moment.
+    toast(rand(MEMORY_WRONG), 1600);
     memory.lock = true;
     const a = memory.first,
       b = el;
@@ -2058,33 +2105,49 @@ function flipCard(el) {
       a.classList.remove("flipped");
       b.classList.remove("flipped");
       memory.lock = false;
-    }, 750);
+    }, 850);
   }
 }
 
 function finishMemory(timeUp = false) {
   clearMiniTimers(); // stop the countdown
-  let title, body;
   if (timeUp && memory.pairs < MEMORY_PAIRS.length) {
-    title = "Time's up!";
-    body =
-      `You matched ${memory.pairs} of ${MEMORY_PAIRS.length} pairs.\n\n` + rand(MEMORY_MESSAGES);
-  } else {
-    const bonus = Math.max(20, 120 - memory.moves * 5);
-    addScore(bonus);
-    title = "All matched!";
-    body = `Bonus +${bonus}!\n\n` + rand(MEMORY_MESSAGES);
+    showPopup(
+      "Time's up!",
+      `You matched ${memory.pairs} of ${MEMORY_PAIRS.length} pairs.\n\nMemory Match Score: ${memory.score}`,
+      [
+        {
+          text: "Return to Maze",
+          primary: true,
+          action: () => {
+            hidePopup();
+            exitMiniGame();
+          },
+        },
+      ],
+    );
+    return;
   }
-  showPopup(title, body, [
-    {
-      text: "Back to maze",
-      primary: true,
-      action: () => {
-        hidePopup();
-        exitMiniGame();
+  // All pairs matched — +300 completion bonus.
+  memory.score += 300;
+  addScore(300);
+  document.getElementById("memory-score").textContent = memory.score;
+  showPopup(
+    "Memory Match Complete",
+    "You successfully connected flu prevention actions with their health benefits.\n\n" +
+      "Annual flu vaccination can help reduce severe illness and protect patients, coworkers, family members, and the healthcare workforce.\n\n" +
+      `Memory Match Score: ${memory.score}`,
+    [
+      {
+        text: "Return to Maze",
+        primary: true,
+        action: () => {
+          hidePopup();
+          exitMiniGame();
+        },
       },
-    },
-  ]);
+    ],
+  );
 }
 
 /* =========================================================

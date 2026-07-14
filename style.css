@@ -1342,6 +1342,15 @@ body {
 .mem-card.flipped {
   background: #fff;
   color: var(--shn-blue);
+  animation: memFlip 0.28s ease;
+}
+@keyframes memFlip {
+  0% {
+    transform: scaleX(0.1) rotateY(90deg);
+  }
+  100% {
+    transform: scaleX(1) rotateY(0);
+  }
 }
 .mem-card.flipped .mem-face {
   display: block;
@@ -1349,10 +1358,26 @@ body {
 .mem-card.flipped .mem-back {
   display: none;
 }
+/* Matched = a neutral card with a soft glow (NOT green — no colour tell). */
 .mem-card.matched {
-  background: #d5f2e3;
-  color: var(--good);
+  background: #fff;
+  color: var(--shn-blue);
   cursor: default;
+  box-shadow:
+    0 0 0 3px rgba(43, 179, 179, 0.7),
+    0 0 12px rgba(43, 179, 179, 0.5);
+  animation: memMatch 0.5s ease;
+}
+@keyframes memMatch {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 .mem-back {
   font-size: 22px;
