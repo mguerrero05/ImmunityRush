@@ -160,15 +160,35 @@ const ROOMS = [
   { name: "Memory Clinic", x: 850, y: 840, w: 190, h: 190, tone: "#e8e0f2", zone: "memory" },
 ];
 
-// --- Hospital Sprint items ---
-const SPRINT_GOOD = ["💉", "❤", "👨‍👩‍👧", "🌟", "🔋"]; // boosters, hearts, family, wellness, energy
-const SPRINT_BAD = ["🦠", "🛏", "🚫", "⚠", "🌧"]; // flu, sick-day, cancelled, disruption, low-energy
-const SPRINT_MESSAGES = [
-  "Keep moving. Keep your plans.",
-  "Protect what matters.",
-  "Stay healthy for the moments that count.",
-  "Your health protects more than just you.",
-  "One choice can make a difference.",
+// --- Hospital Sprint items (Milestone F: lane runner, exact wording) ---
+const SPRINT_COLLECT = [
+  {
+    text: "Vaccine Booster",
+    score: 100,
+    msg: "Flu vaccination is free through Ontario's publicly funded flu vaccine program.",
+  },
+  { text: "Heart", score: 50, msg: "Protect the people waiting for you at home." },
+  {
+    text: "Family Token",
+    score: 200,
+    msg: "Protect the moments waiting for you after your shift.",
+  },
+  { text: "Wellness Boost", score: 100, msg: "Stay protected for the people who need extra care." },
+  {
+    text: "Energy Icon",
+    score: 75,
+    msg: "Long shifts are hard enough without flu slowing you down.",
+  },
+];
+// `overhead` obstacles must be slid under; the rest are jumped over.
+const SPRINT_OBSTACLES = [
+  {
+    text: "Sick-Day Barrier",
+    msg: "Sick days can interrupt more than just your shift.",
+    overhead: false,
+  },
+  { text: "Cancelled Plans", msg: "Don't let flu season cancel what matters.", overhead: false },
+  { text: "Low-Energy Cloud", msg: "Low energy can take you out of the game.", overhead: true },
 ];
 
 // --- Flu Freeze items (Milestone F: swipe-to-slice, exact wording) ---
@@ -1273,23 +1293,62 @@ function startMiniGame(key) {
 }
 
 /* ---------- 6a. HOSPITAL SPRINT ---------- */
+// Rebuilt per Milestone F: a runner. Jump over ground obstacles, slide under
+// overhead ones, collect boosts. Speed rises; a progress bar tracks the finish.
+let sprintActive = false;
+let sprintFrame = null;
 let sprint = {};
+
 function startSprint() {
   showScreen("screen-sprint");
+  showPopup(
+    "Hospital Sprint",
+    "Your shift is moving fast. Jump over flu obstacles, collect boosts, and keep your plans on track before time runs out.\n\n" +
+      "• Tap / click / Space to jump.\n• Press Down (or swipe down) to slide under high barriers.\n• Collect boosts and avoid flu obstacles.\n• Reach the finish before time runs out.",
+    [
+      {
+        text: "Start Sprint",
+        primary: true,
+        action: () => {
+          hidePopup();
+          beginSprintRound();
+        },
+      },
+    ],
+  );
+}
+
+function beginSprintRound() {
   const stage = document.getElementById("sprint-stage");
-  stage.innerHTML = `<div class="sprint-ground"></div>
-                     <div class="sprint-runner character-stage"></div>`;
+  stage.innerHTML =
+    '<div class="sprint-bg"></div><div class="sprint-ground"></div>' +
+    '<div class="sprint-progress"><div class="sprint-progress-fill" id="sprint-fill"></div></div>' +
+    '<div class="sprint-runner character-stage"></div>';
   const runnerEl = stage.querySelector(".sprint-runner");
   buildCharacter(runnerEl);
-  runnerEl.classList.add("walking"); // same character, running through the sprint
-
-  sprint = { score: 0, time: 60, y: 0, vy: 0, jumping: false, objs: [] };
-  state.health = 3; // fresh health each Sprint so it stays replayable in a run
-  updateHUD();
+  runnerEl.classList.add("walking");
+  runnerEl.style.transform = "scale(0.45)"; // shrink the full-size character to runner size
+  sprint = {
+    score: 0,
+    time: 60,
+    speed: 5,
+    dist: 0,
+    target: 22000,
+    jumpOffset: 0,
+    vjump: 0,
+    jumping: false,
+    sliding: false,
+    slideT: 0,
+    hitT: 0,
+    objs: [],
+    spawnGap: 120,
+    py: null,
+    gesture: null,
+  };
   document.getElementById("sprint-score").textContent = 0;
   document.getElementById("sprint-time").textContent = 60;
+  toast("Run! Keep your plans. Not the flu.", 1800);
 
-  // Countdown timer.
   miniTimers.push(
     setInterval(() => {
       sprint.time--;
@@ -1298,110 +1357,188 @@ function startSprint() {
     }, 1000),
   );
 
-  // Spawn obstacles/items.
-  miniTimers.push(setInterval(spawnSprintObj, 1100));
-
-  // Physics + movement loop.
-  miniTimers.push(setInterval(sprintTick, 30));
-  toast(rand(SPRINT_MESSAGES), 2000);
-}
-
-function spawnSprintObj() {
-  const stage = document.getElementById("sprint-stage");
-  const good = Math.random() > 0.5;
-  const el = document.createElement("div");
-  el.className = "sprint-obj";
-  el.textContent = good ? rand(SPRINT_GOOD) : rand(SPRINT_BAD);
-  el.dataset.good = good ? "1" : "0";
-  el.style.left = stage.clientWidth + "px";
-  // Good items sometimes float higher so you jump to grab them.
-  el.style.bottom = good && Math.random() > 0.5 ? "120px" : "60px";
-  stage.appendChild(el);
-  sprint.objs.push(el);
-}
-
-function sprintTick() {
-  const stage = document.getElementById("sprint-stage");
-  const runner = stage.querySelector(".sprint-runner");
-
-  // Jump physics.
-  if (sprint.jumping) {
-    sprint.vy -= 1.4; // gravity
-    sprint.y += sprint.vy;
-    if (sprint.y <= 0) {
-      sprint.y = 0;
-      sprint.jumping = false;
+  // Touch/mouse: a tap jumps, a downward swipe slides.
+  stage.onpointerdown = (e) => {
+    sprint.py = e.clientY;
+    sprint.gesture = null;
+  };
+  stage.onpointermove = (e) => {
+    if (sprint.py != null && !sprint.gesture && e.clientY - sprint.py > 40) {
+      sprint.gesture = "slide";
+      sprintSlide();
     }
-    runner.style.transform = `translateY(${-sprint.y}px)`;
-  }
+  };
+  stage.onpointerup = () => {
+    if (sprint.gesture !== "slide") sprintJump();
+    sprint.py = null;
+    sprint.gesture = null;
+  };
 
-  const runnerBox = { x: 40, y: 60 + sprint.y, w: 46, h: 76 };
-
-  sprint.objs = sprint.objs.filter((el) => {
-    let left = parseFloat(el.style.left) - 5;
-    el.style.left = left + "px";
-
-    // Rough collision using screen coordinates.
-    const objBottom = parseFloat(el.style.bottom);
-    const objBox = { x: left, y: objBottom, w: 34, h: 34 };
-    const rBox = { x: runnerBox.x, y: runnerBox.y, w: runnerBox.w, h: runnerBox.h };
-    const hit = left < 86 && left > 10 && Math.abs(objBottom - (60 + sprint.y)) < 55;
-
-    if (hit) {
-      const hc = centerOf(el);
-      if (el.dataset.good === "1") {
-        sprint.score += 10;
-        addScore(10);
-        floatText("+10", hc.x, hc.y);
-        playSound("collect");
-      } else {
-        sprint.score -= 5;
-        const blocked = state.shielded; // shield absorbs one hit
-        state.health = Math.max(0, state.health - (blocked ? 0 : 1));
-        updateHUD();
-        playSound(blocked ? "shield" : "hit");
-        shake();
-        if (blocked) floatText("Shield blocked it!", hc.x, hc.y, "#6fd3ff");
-        if (state.health <= 0) {
-          el.remove();
-          toast("Out of health! Back to the maze.", 1800);
-          finishSprint(); // return to the maze — the run keeps going
-          return false;
-        }
-      }
-      document.getElementById("sprint-score").textContent = Math.max(0, sprint.score);
-      el.remove();
-      return false;
-    }
-    if (left < -40) {
-      el.remove();
-      return false;
-    }
-    return true;
-  });
+  sprintActive = true;
+  cancelAnimationFrame(sprintFrame);
+  sprintLoop();
 }
 
 function sprintJump() {
-  if (currentMini !== "sprint") return;
-  if (!sprint.jumping) {
-    sprint.jumping = true;
-    sprint.vy = 16;
+  if (!sprintActive || sprint.jumping || sprint.sliding) return;
+  sprint.jumping = true;
+  sprint.vjump = 15;
+  playSound("collect");
+}
+function sprintSlide() {
+  if (!sprintActive || sprint.sliding || sprint.jumping) return;
+  sprint.sliding = true;
+  sprint.slideT = 32;
+}
+
+function spawnSprintObj(stage, groundY) {
+  const el = document.createElement("div");
+  let box;
+  if (Math.random() < 0.5) {
+    const data = rand(SPRINT_COLLECT);
+    el.className = "sprint-obj sprint-collect";
+    el.textContent = data.text;
+    stage.appendChild(el);
+    box = {
+      el,
+      x: stage.clientWidth,
+      y: groundY - 78,
+      w: el.offsetWidth,
+      h: el.offsetHeight,
+      kind: "collect",
+      data,
+    };
+  } else {
+    const data = rand(SPRINT_OBSTACLES);
+    el.className = "sprint-obj sprint-obstacle" + (data.overhead ? " overhead" : "");
+    el.textContent = data.text;
+    stage.appendChild(el);
+    const w = el.offsetWidth,
+      h = el.offsetHeight;
+    box = {
+      el,
+      x: stage.clientWidth,
+      y: data.overhead ? groundY - 85 : groundY - h,
+      w,
+      h,
+      kind: "obstacle",
+      data,
+    };
   }
+  el.style.left = box.x + "px";
+  el.style.top = box.y + "px";
+  sprint.objs.push(box);
+}
+
+function sprintLoop() {
+  const screen = document.getElementById("screen-sprint");
+  if (!sprintActive || !screen.classList.contains("active")) {
+    sprintActive = false;
+    return;
+  }
+  const stage = document.getElementById("sprint-stage");
+  const groundY = stage.clientHeight - 50; // top surface of the ground strip
+
+  if (sprint.jumping) {
+    sprint.jumpOffset += sprint.vjump;
+    sprint.vjump -= 0.9; // gravity
+    if (sprint.jumpOffset <= 0) {
+      sprint.jumpOffset = 0;
+      sprint.vjump = 0;
+      sprint.jumping = false;
+    }
+  }
+  if (sprint.sliding && --sprint.slideT <= 0) sprint.sliding = false;
+  if (sprint.hitT > 0) sprint.hitT--;
+
+  sprint.speed = 5 + sprint.dist / 2200; // speeds up
+  sprint.dist += sprint.speed;
+  const fill = document.getElementById("sprint-fill");
+  if (fill) fill.style.width = Math.min(100, (sprint.dist / sprint.target) * 100) + "%";
+  if (sprint.dist >= sprint.target) {
+    finishSprint();
+    return;
+  }
+
+  sprint.spawnGap -= sprint.speed;
+  if (sprint.spawnGap <= 0) {
+    spawnSprintObj(stage, groundY);
+    sprint.spawnGap = 150 + Math.random() * 120;
+  }
+
+  const ph = sprint.sliding ? 34 : 68;
+  const pBox = { x: 55, y: groundY - ph - sprint.jumpOffset, w: 40, h: ph };
+
+  sprint.objs = sprint.objs.filter((o) => {
+    o.x -= sprint.speed;
+    o.el.style.left = o.x + "px";
+    if (o.x < -o.w - 20) {
+      o.el.remove();
+      return false;
+    }
+    if (!o.done && overlap(pBox, { x: o.x, y: o.y, w: o.w, h: o.h })) {
+      o.done = true;
+      sprintHit(o);
+      if (o.kind === "collect") {
+        o.el.remove();
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const runner = stage.querySelector(".sprint-runner");
+  if (runner) {
+    runner.style.transform = `translateY(${-sprint.jumpOffset}px) scale(0.45) scaleY(${
+      sprint.sliding ? 0.55 : 1
+    })`;
+  }
+
+  sprintFrame = requestAnimationFrame(sprintLoop);
+}
+
+function sprintHit(o) {
+  const r = document.getElementById("sprint-stage").getBoundingClientRect();
+  const cx = r.left + o.x + o.w / 2,
+    cy = r.top + o.y + o.h / 2;
+  if (o.kind === "collect") {
+    sprint.score += o.data.score;
+    addScore(o.data.score);
+    floatText(`+${o.data.score}`, cx, cy, "#ffd34d");
+    burst(cx, cy, "#ffd34d");
+    playSound("success");
+    toast(o.data.msg, 1500);
+  } else {
+    if (sprint.hitT > 0) return; // brief grace so one stumble isn't punished twice
+    sprint.hitT = 45;
+    sprint.score = Math.max(0, sprint.score - 50);
+    state.score = Math.max(0, state.score - 50);
+    playSound("hit");
+    shake();
+    floatText("-50", cx, cy, "#ff6b6b");
+    toast(o.data.msg, 1800);
+  }
+  document.getElementById("sprint-score").textContent = sprint.score;
 }
 
 function finishSprint() {
+  sprintActive = false;
+  cancelAnimationFrame(sprintFrame);
   clearMiniTimers();
-  addScore(Math.max(0, sprint.score));
-  showPopup("Nice sprint!", rand(SPRINT_MESSAGES) + "\n\n" + rand(FACTS), [
-    {
-      text: "Back to maze",
-      primary: true,
-      action: () => {
-        hidePopup();
-        exitMiniGame();
+  showPopup(
+    "Sprint complete! You stayed ahead of flu season.",
+    `Hospital Sprint Score: ${sprint.score}\n\nKeep your plans. Not the flu.`,
+    [
+      {
+        text: "Return to Maze",
+        primary: true,
+        action: () => {
+          hidePopup();
+          exitMiniGame();
+        },
       },
-    },
-  ]);
+    ],
+  );
 }
 
 /* ---------- 6b. FLU FREEZE ---------- */
@@ -2042,7 +2179,10 @@ function setupControls() {
   document.addEventListener("keydown", (e) => {
     const k = e.key.toLowerCase();
     if (["arrowup", "w"].includes(k)) keys.up = true;
-    if (["arrowdown", "s"].includes(k)) keys.down = true;
+    if (["arrowdown", "s"].includes(k)) {
+      keys.down = true;
+      sprintSlide(); // slide in Hospital Sprint (no-op elsewhere)
+    }
     if (["arrowleft", "a"].includes(k)) keys.left = true;
     if (["arrowright", "d"].includes(k)) keys.right = true;
     if (k === " " || k === "spacebar") {
@@ -2077,7 +2217,7 @@ function setupControls() {
   });
 
   // Tap anywhere in the sprint stage to jump.
-  document.getElementById("sprint-stage").addEventListener("click", sprintJump);
+  // (Sprint jump/slide are handled by the stage's pointer handlers in beginSprintRound.)
 }
 
 /* =========================================================
