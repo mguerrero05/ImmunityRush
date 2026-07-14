@@ -1589,7 +1589,7 @@ function beginFreezeRound() {
   document.getElementById("freeze-time").textContent = 60;
   toast("Swipe the good items. Avoid flu disruptions.", 1800);
 
-  miniTimers.push(setInterval(spawnFreezeItem, 900));
+  miniTimers.push(setInterval(spawnFreezeItem, 1200));
   miniTimers.push(
     setInterval(() => {
       freeze.time--;
@@ -1622,8 +1622,8 @@ function spawnFreezeItem() {
     el,
     x: 50 + Math.random() * (stage.clientWidth - 100),
     y: stage.clientHeight + 20,
-    vx: (Math.random() - 0.5) * 4,
-    vy: -(11 + Math.random() * 3 + elapsed / 20), // launch up; faster over time
+    vx: (Math.random() - 0.5) * 2.6,
+    vy: -(9.5 + Math.random() * 2 + elapsed / 35), // launch up; eases up over time
     w: el.offsetWidth,
     h: el.offsetHeight,
     positive,
@@ -1642,7 +1642,7 @@ function freezeLoop() {
   }
   const H = document.getElementById("freeze-stage").clientHeight;
   freeze.items = freeze.items.filter((it) => {
-    it.vy += 0.22; // gravity
+    it.vy += 0.13; // gravity (lower = slower, floatier arc that's easy to read/slice)
     it.x += it.vx;
     it.y += it.vy;
     it.el.style.left = it.x + "px";
