@@ -33,6 +33,7 @@ const SLOGANS = [
   "Protect your plans this flu season.",
   "Keep doing what you love.",
   "Protect the trip you've been waiting for.",
+  "A flu shot takes 5 minutes; recovering from lingering flu symptoms may be a month.",
   "Keep your plans. Not the flu.",
 ];
 
