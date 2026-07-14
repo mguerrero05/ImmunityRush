@@ -1346,7 +1346,7 @@ function beginSprintRound() {
     time: 60,
     speed: 5,
     dist: 0,
-    target: 22000,
+    target: 14000,
     jumpOffset: 0,
     vjump: 0,
     jumping: false,
@@ -1354,7 +1354,7 @@ function beginSprintRound() {
     slideT: 0,
     hitT: 0,
     objs: [],
-    spawnGap: 120,
+    spawnGap: 180,
     py: null,
     gesture: null,
   };
@@ -1464,7 +1464,7 @@ function sprintLoop() {
   if (sprint.sliding && --sprint.slideT <= 0) sprint.sliding = false;
   if (sprint.hitT > 0) sprint.hitT--;
 
-  sprint.speed = 5 + sprint.dist / 2200; // speeds up
+  sprint.speed = Math.min(6, 3 + sprint.dist / 4500); // slower + gentle ramp, capped so it stays readable
   sprint.dist += sprint.speed;
   const fill = document.getElementById("sprint-fill");
   if (fill) fill.style.width = Math.min(100, (sprint.dist / sprint.target) * 100) + "%";
@@ -1476,7 +1476,7 @@ function sprintLoop() {
   sprint.spawnGap -= sprint.speed;
   if (sprint.spawnGap <= 0) {
     spawnSprintObj(stage, groundY);
-    sprint.spawnGap = 150 + Math.random() * 120;
+    sprint.spawnGap = 230 + Math.random() * 170;
   }
 
   const ph = sprint.sliding ? 34 : 68;
@@ -1801,7 +1801,7 @@ function beginDartsRound() {
       if (darts.time <= 0) finishDarts();
     }, 1000),
   );
-  miniTimers.push(setInterval(spawnDartBoard, 1400));
+  miniTimers.push(setInterval(spawnDartBoard, 2000));
   spawnDartBoard();
   spawnDartBoard();
 
@@ -1878,7 +1878,7 @@ function spawnDartBoard() {
   el.style.width = w + "px";
   const fromLeft = Math.random() < 0.5;
   const elapsed = 60 - darts.time;
-  const spd = (1.3 + elapsed / 30) * (fromLeft ? 1 : -1); // faster over time
+  const spd = (0.75 + elapsed / 80) * (fromLeft ? 1 : -1); // slow enough to read; eases up over time
   const board = {
     el,
     x: fromLeft ? -w : stage.clientWidth,
