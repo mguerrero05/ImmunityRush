@@ -1606,6 +1606,37 @@ body {
 .big-msg-card.tone-warn .big-msg-title {
   color: #d9542b;
 }
+/* Answer-result tones — used ONLY after the player hits a target (never before).
+   Green = correct, red = incorrect, with strong contrast on a light tinted box. */
+.big-msg-card.tone-correct {
+  border-top-color: #1f9d55;
+  background: #f1fbf5;
+}
+.big-msg-card.tone-correct .big-msg-title {
+  color: #147a40;
+}
+.big-msg-card.tone-wrong {
+  border-top-color: #d9302c;
+  background: #fdf3f2;
+}
+.big-msg-card.tone-wrong .big-msg-title {
+  color: #c0231f;
+}
+.big-msg-card.tone-wrong .big-msg-text,
+.big-msg-card.tone-correct .big-msg-text {
+  color: #1f2a36;
+}
+
+/* Vaccine Darts instruction screen: colour ONLY these words (post-nothing —
+   this is the pre-game instructions, not the moving targets). */
+.myth-word {
+  color: #d9302c;
+  font-weight: 800;
+}
+.fact-word {
+  color: #1f9d55;
+  font-weight: 800;
+}
 @media (max-width: 380px) {
   .big-msg-icon {
     font-size: 42px;

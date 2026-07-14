@@ -117,3 +117,13 @@
   changes by driving the real code headlessly (21 checks pass, no errors). Next: finish the
   Milestone G icon pass (maze collectibles/hazards/keycard emoji), clinic completed states,
   sound, mobile.
+- 2026-07-14 (session 10 — Vaccine Darts feedback colours): Added green/red result
+  feedback to Vaccine Darts (after a hit only, never on the moving targets): a correct hit
+  (a myth) shows a GREEN result overlay ("Correct! +pts"), an incorrect hit (a fact) shows a
+  RED overlay ("Not quite −50") + the correction. Done via two new overlay tones
+  (`tone-correct`/`tone-wrong`) on `bigMessage`. Also coloured the pre-game instruction text
+  so MYTHS = red and FACTS = green (`.myth-word`/`.fact-word`), rest of the sentence
+  unchanged — the instruction popup now renders as HTML. The moving dart boards stay neutral
+  grey (no colour tell before selection); the only post-hit class on a board is a shake, not
+  a colour. Verified headlessly (7 checks pass, no errors). Next unchanged: Milestone G icon
+  pass, clinic completed states, sound, mobile.

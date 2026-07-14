@@ -2014,9 +2014,7 @@ function startDarts() {
   // Opening / instructions screen before the round begins.
   showPopup(
     "Vaccine Darts",
-    "Flu vaccine myths and facts are moving across the screen. Hit the myths without striking the facts.\n\n" +
-      "• Hit statements that are myths.\n• Avoid statements that are true.\n" +
-      "• Drag from the thrower and release to shoot.\n• Read carefully before you shoot.",
+    "Flu vaccine myths and facts are moving across the screen. Hit the myths without striking the facts.",
     [
       {
         text: "Start Vaccine Darts",
@@ -2028,6 +2026,16 @@ function startDarts() {
       },
     ],
   );
+  // Re-render the instruction text with MYTHS in red and FACTS in green. The moving
+  // targets themselves stay neutral — this only colours the pre-game instructions.
+  document.getElementById("popup-text").innerHTML =
+    'Flu vaccine <b class="myth-word">MYTHS</b> and <b class="fact-word">FACTS</b> are moving ' +
+    'across the screen. Hit the <b class="myth-word">MYTHS</b> without striking the ' +
+    '<b class="fact-word">FACTS</b>.<br><br>' +
+    '• Hit statements that are <b class="myth-word">MYTHS</b>.<br>' +
+    '• Avoid statements that are <b class="fact-word">FACTS</b> (true).<br>' +
+    "• Drag from the thrower and release to shoot.<br>" +
+    "• Read carefully before you shoot.";
 }
 
 function beginDartsRound() {
@@ -2213,10 +2221,12 @@ function dartHitBoard(board) {
     floatText(`+${pts}`, cx, cy, "#ffd34d");
     burst(cx, cy, "#ffd34d");
     playSound("success");
+    // Correct (a myth) → GREEN result feedback (only shown after the hit).
     bigMessage(board.feedback, {
-      title: `+${pts}${darts.combo >= 2 ? `  ·  Combo x${darts.combo}` : ""}`,
-      tone: "good",
-      duration: 1600,
+      icon: "✅",
+      title: `Correct!  +${pts}${darts.combo >= 2 ? `  ·  Combo x${darts.combo}` : ""}`,
+      tone: "correct",
+      duration: 1800,
     });
     board.el.remove();
     darts.boards = darts.boards.filter((b) => b !== board);
@@ -2228,7 +2238,8 @@ function dartHitBoard(board) {
     floatText("-50", cx, cy, "#ff6b6b");
     playSound("error");
     shake();
-    bigMessage(board.feedback, { icon: "⚠️", title: "-50", tone: "warn", duration: 1800 });
+    // Incorrect (a fact) → RED result feedback (only shown after the hit).
+    bigMessage(board.feedback, { icon: "❌", title: "Not quite  −50", tone: "wrong", duration: 2000 });
     board.el.classList.add("dart-board-hit");
     setTimeout(() => board.el.classList.remove("dart-board-hit"), 300);
   }
