@@ -754,9 +754,10 @@ function buildMaze() {
     { x: 270, y: 0, w: T, h: 620 }, // A: hangs from the top (gap at the BOTTOM)
     { x: 450, y: 280, w: T, h: 620 }, // B: rises from the bottom (gap at the TOP)
     { x: 610, y: 0, w: T, h: 620 }, // C: hangs from the top (gap at the BOTTOM)
-    // Dead-end shelves that hide collectibles.
-    { x: 290, y: 470, w: 100, h: T },
-    { x: 490, y: 420, w: 100, h: T },
+    // Dead-end shelves (short stubs). They MUST leave a walkable corridor past them —
+    // the player is 46px wide, so keep the remaining gap ~75px+.
+    { x: 290, y: 470, w: 70, h: T }, // lane 2: leaves gap x360–450 (~90px)
+    { x: 545, y: 420, w: 65, h: T }, // lane 3: leaves gap x470–545 (~75px)
     // Locked bonus vault (right side) — walls with a door gap on the left.
     { x: 760, y: 230, w: 120, h: T }, // top
     { x: 760, y: 390, w: 120, h: T }, // bottom
