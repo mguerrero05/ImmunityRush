@@ -214,29 +214,62 @@ const FREEZE_BAD_MSG = {
 };
 
 // --- Vaccine Darts statements ---
+// Vaccine Darts statements (exact wording from the Milestone F spec).
+// Myth boards and fact boards look identical — the player must read them.
 const DARTS_MYTHS = [
-  "The flu shot gives you the flu.",
-  "I'm healthy, so I don't need it.",
-  "I had the flu before, so I'm protected forever.",
-  "The flu is just a bad cold.",
-  "I got vaccinated once, so I'm protected every year.",
-  "Flu vaccines do not matter for healthcare workers.",
+  {
+    text: "The flu shot gives you the flu.",
+    feedback: "Myth cleared! The flu vaccine cannot cause influenza.",
+  },
+  {
+    text: "I'm healthy, so I don't need the flu vaccine.",
+    feedback: "Myth cleared! Healthy people can still catch and spread influenza.",
+  },
+  {
+    text: "I had the flu before, so I'm protected forever.",
+    feedback:
+      "Myth cleared! A previous infection does not guarantee protection against this season's strains.",
+  },
+  {
+    text: "The flu is just a bad cold.",
+    feedback: "Myth cleared! Influenza can cause serious complications and hospitalization.",
+  },
+  {
+    text: "One flu vaccine protects me every year.",
+    feedback: "Myth cleared! Flu viruses change, so vaccination is recommended each season.",
+  },
+  {
+    text: "Flu vaccination is not important for healthcare workers.",
+    feedback:
+      "Myth cleared! Vaccinated healthcare workers help protect patients, coworkers, and families.",
+  },
 ];
 const DARTS_FACTS = [
-  "The flu vaccine is recommended every year.",
-  "Vaccination can reduce the risk of severe illness.",
-  "The flu shot cannot give you the flu.",
-  "Getting vaccinated helps protect people around you.",
-  "Questions about vaccines are normal.",
-  "Being healthy does not mean you cannot get the flu.",
-];
-const DARTS_FACT_CORRECTIONS = [
-  "That one was a fact — annual vaccination matters because flu viruses can change.",
-  "That was true — the flu shot cannot give you the flu.",
-  "That was a fact — vaccination can help reduce severe illness.",
-  "That was true — getting vaccinated can help protect others around you.",
-  "That was a fact — being healthy does not mean you cannot get the flu.",
-  "That was true — asking questions is okay, and VaxFacts+ is there to help.",
+  {
+    text: "The flu vaccine is recommended every year.",
+    feedback: "That was a fact. Flu viruses can change from season to season.",
+  },
+  {
+    text: "Vaccination can reduce the risk of severe flu illness.",
+    feedback: "That was a fact. Vaccination can lower the risk of serious complications.",
+  },
+  {
+    text: "The flu vaccine cannot give you influenza.",
+    feedback: "That was a fact. Flu vaccines do not cause influenza infection.",
+  },
+  {
+    text: "Vaccination can help protect people around you.",
+    feedback: "That was a fact. Reducing your risk can also reduce exposure to others.",
+  },
+  {
+    text: "It is normal to have questions about vaccines.",
+    feedback:
+      "That was a fact. Reliable sources and healthcare professionals can help answer questions.",
+  },
+  {
+    text: "Healthy people can still get the flu.",
+    feedback: "That was a fact. Anyone can become infected and spread influenza.",
+  },
 ];
 
 // --- Memory Match pairs ---
@@ -1428,14 +1461,49 @@ function finishFreeze() {
 
 /* ---------- 6c. VACCINE DARTS ---------- */
 let darts = {};
+// Rebuilt per Milestone F: drag from the thrower to aim, release to throw a dart.
+// Myth and fact boards are styled identically (no colour tell) — read before you shoot.
+let dartsActive = false;
+let dartsFrame = null;
+
 function startDarts() {
   showScreen("screen-darts");
+  // Opening / instructions screen before the round begins.
+  showPopup(
+    "Vaccine Darts",
+    "Flu vaccine myths and facts are moving across the screen. Hit the myths without striking the facts.\n\n" +
+      "• Hit statements that are myths.\n• Avoid statements that are true.\n" +
+      "• Drag from the thrower and release to shoot.\n• Read carefully before you shoot.",
+    [
+      {
+        text: "Start Vaccine Darts",
+        primary: true,
+        action: () => {
+          hidePopup();
+          beginDartsRound();
+        },
+      },
+    ],
+  );
+}
+
+function beginDartsRound() {
   const stage = document.getElementById("darts-stage");
-  stage.innerHTML = "";
-  darts = { score: 0, time: 60 };
+  stage.innerHTML =
+    '<div id="dart-aim"></div><div id="dart-thrower"></div>' +
+    '<p class="mg-hint">Drag from the thrower • release to throw • hit the myths</p>';
+  darts = { score: 0, time: 60, combo: 0, boards: [], shots: [], aiming: false };
   document.getElementById("darts-score").textContent = 0;
   document.getElementById("darts-time").textContent = 60;
-  toast(rand(["Protect yourself with facts.", "Stay informed. Stay protected."]), 2000);
+  toast(
+    rand([
+      "Aim for the myths.",
+      "Read before you shoot.",
+      "Clear the misinformation.",
+      "Protect the facts.",
+    ]),
+    2000,
+  );
 
   miniTimers.push(
     setInterval(() => {
@@ -1444,69 +1512,195 @@ function startDarts() {
       if (darts.time <= 0) finishDarts();
     }, 1000),
   );
-  miniTimers.push(setInterval(spawnDartTarget, 1300));
+  miniTimers.push(setInterval(spawnDartBoard, 1400));
+  spawnDartBoard();
+  spawnDartBoard();
+
+  // Aiming works with mouse and touch via pointer events (assignment avoids duplicates).
+  stage.onpointerdown = dartsPointerDown;
+  stage.onpointermove = dartsPointerMove;
+  stage.onpointerup = dartsPointerUp;
+  stage.onpointerleave = dartsPointerUp;
+
+  dartsActive = true;
+  cancelAnimationFrame(dartsFrame);
+  dartsLoop();
 }
 
-function spawnDartTarget() {
+function dartThrowerPos(stage) {
+  return { x: stage.clientWidth / 2, y: stage.clientHeight - 34 };
+}
+function dartsLocalXY(e, stage) {
+  const r = stage.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+function dartsPointerDown(e) {
+  darts.aiming = true;
+  dartsPointerMove(e);
+}
+function dartsPointerMove(e) {
+  if (!darts.aiming) return;
   const stage = document.getElementById("darts-stage");
-  const isMyth = Math.random() > 0.45;
+  const t = dartThrowerPos(stage);
+  const p = dartsLocalXY(e, stage);
+  const dist = Math.min(Math.hypot(p.x - t.x, p.y - t.y), 260);
+  const angle = Math.atan2(p.y - t.y, p.x - t.x);
+  const aim = document.getElementById("dart-aim");
+  aim.style.left = t.x + "px";
+  aim.style.top = t.y + "px";
+  aim.style.width = dist + "px";
+  aim.style.transform = `rotate(${angle}rad)`;
+  aim.style.opacity = "1";
+}
+function dartsPointerUp(e) {
+  if (!darts.aiming) return;
+  darts.aiming = false;
+  const stage = document.getElementById("darts-stage");
+  document.getElementById("dart-aim").style.opacity = "0";
+  const t = dartThrowerPos(stage);
+  const p = dartsLocalXY(e, stage);
+  const dx = p.x - t.x,
+    dy = p.y - t.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist < 12) return; // ignore tiny taps
+  const speed = 7 + Math.min(dist, 260) / 16;
+  throwDart(t.x, t.y, (dx / dist) * speed, (dy / dist) * speed);
+  playSound("hit");
+}
+
+function throwDart(x, y, vx, vy) {
   const el = document.createElement("div");
-  el.className = "fly-item " + (isMyth ? "fly-bad" : "fly-good");
-  let text,
-    correction = "";
-  if (isMyth) {
-    text = rand(DARTS_MYTHS);
-  } else {
-    const i = Math.floor(Math.random() * DARTS_FACTS.length);
-    text = DARTS_FACTS[i];
-    correction = DARTS_FACT_CORRECTIONS[i];
-  }
-  el.textContent = text;
+  el.className = "dart";
+  el.style.left = x + "px";
+  el.style.top = y + "px";
+  document.getElementById("darts-stage").appendChild(el);
+  darts.shots.push({ el, x, y, vx, vy });
+}
 
-  const top = 20 + Math.random() * (stage.clientHeight - 120);
-  el.style.top = top + "px";
-  const fromLeft = Math.random() > 0.5;
-  el.style.left = fromLeft ? "-200px" : stage.clientWidth + "px";
+function spawnDartBoard() {
+  if (!dartsActive) return;
+  const stage = document.getElementById("darts-stage");
+  const isMyth = Math.random() < 0.55;
+  const data = isMyth ? rand(DARTS_MYTHS) : rand(DARTS_FACTS);
+  const el = document.createElement("div");
+  el.className = "dart-board"; // identical style for myths and facts
+  el.textContent = data.text;
+  const w = 150;
+  el.style.width = w + "px";
+  const fromLeft = Math.random() < 0.5;
+  const elapsed = 60 - darts.time;
+  const spd = (1.3 + elapsed / 30) * (fromLeft ? 1 : -1); // faster over time
+  const board = {
+    el,
+    x: fromLeft ? -w : stage.clientWidth,
+    y: 24 + Math.random() * (stage.clientHeight * 0.45),
+    w,
+    h: 62,
+    vx: spd,
+    vy: (Math.random() - 0.5) * 1.2,
+    isMyth,
+    feedback: data.feedback,
+  };
+  el.style.left = board.x + "px";
+  el.style.top = board.y + "px";
   stage.appendChild(el);
+  darts.boards.push(board);
+}
 
-  const dir = fromLeft ? 3 : -3;
-  const timer = setInterval(() => {
-    const left = parseFloat(el.style.left) + dir;
-    el.style.left = left + "px";
-    if (left < -220 || left > stage.clientWidth + 40) {
-      clearInterval(timer);
-      el.remove();
+function dartsLoop() {
+  const screen = document.getElementById("screen-darts");
+  if (!dartsActive || !screen.classList.contains("active")) {
+    dartsActive = false;
+    return;
+  }
+  const stage = document.getElementById("darts-stage");
+  const W = stage.clientWidth,
+    H = stage.clientHeight;
+  // Move target boards (drift + bounce; remove off-screen).
+  darts.boards = darts.boards.filter((b) => {
+    b.x += b.vx;
+    b.y += b.vy;
+    if (b.y < 18 || b.y > H * 0.6) b.vy *= -1;
+    b.el.style.left = b.x + "px";
+    b.el.style.top = b.y + "px";
+    if (b.x < -b.w - 60 || b.x > W + 60) {
+      b.el.remove();
+      return false;
     }
-  }, 30);
-  miniTimers.push(timer);
-
-  el.addEventListener("click", () => {
-    if (isMyth) {
-      darts.score += 10;
-      addScore(10);
-      toast(`Myth cleared! ${rand(DARTS_FACTS)}`, 1600);
-    } else {
-      darts.score = Math.max(0, darts.score - 5);
-      toast(correction, 2200);
-    }
-    document.getElementById("darts-score").textContent = darts.score;
-    clearInterval(timer);
-    el.remove();
+    return true;
   });
+  // Move darts (gravity) + collision with boards.
+  darts.shots = darts.shots.filter((s) => {
+    s.vy += 0.25;
+    s.x += s.vx;
+    s.y += s.vy;
+    s.el.style.left = s.x + "px";
+    s.el.style.top = s.y + "px";
+    const sBox = { x: s.x - 6, y: s.y - 6, w: 12, h: 12 };
+    for (const b of darts.boards) {
+      if (overlap(sBox, { x: b.x, y: b.y, w: b.w, h: b.h })) {
+        dartHitBoard(b);
+        s.el.remove();
+        return false;
+      }
+    }
+    if (s.y > H + 40 || s.x < -40 || s.x > W + 40) {
+      s.el.remove();
+      return false;
+    }
+    return true;
+  });
+  dartsFrame = requestAnimationFrame(dartsLoop);
+}
+
+function dartHitBoard(board) {
+  const r = document.getElementById("darts-stage").getBoundingClientRect();
+  const cx = r.left + board.x + board.w / 2;
+  const cy = r.top + board.y + board.h / 2;
+  if (board.isMyth) {
+    darts.combo++;
+    const pts = 100 + (darts.combo - 1) * 25; // combo bonus for consecutive myths
+    darts.score += pts;
+    addScore(pts);
+    floatText(`+${pts}`, cx, cy, "#ffd34d");
+    burst(cx, cy, "#ffd34d");
+    playSound("success");
+    toast(board.feedback + (darts.combo >= 2 ? `  (Combo x${darts.combo})` : ""), 1700);
+    board.el.remove();
+    darts.boards = darts.boards.filter((b) => b !== board);
+  } else {
+    darts.combo = 0;
+    darts.score = Math.max(0, darts.score - 50);
+    state.score = Math.max(0, state.score - 50);
+    updateHUD();
+    floatText("-50", cx, cy, "#ff6b6b");
+    playSound("error");
+    shake();
+    toast(board.feedback, 2200);
+    board.el.classList.add("dart-board-hit");
+    setTimeout(() => board.el.classList.remove("dart-board-hit"), 300);
+  }
+  document.getElementById("darts-score").textContent = darts.score;
 }
 
 function finishDarts() {
+  dartsActive = false;
+  cancelAnimationFrame(dartsFrame);
   clearMiniTimers();
-  showPopup("Vaccine Darts complete!", `You scored ${darts.score}.\n\n` + rand(FACTS), [
-    {
-      text: "Back to maze",
-      primary: true,
-      action: () => {
-        hidePopup();
-        exitMiniGame();
+  showPopup(
+    "Vaccine Darts complete! You cleared the myths and protected the facts.",
+    `Vaccine Darts Score: ${darts.score}\n\nAccurate information is one more layer of protection.`,
+    [
+      {
+        text: "Return to Maze",
+        primary: true,
+        action: () => {
+          hidePopup();
+          exitMiniGame();
+        },
       },
-    },
-  ]);
+    ],
+  );
 }
 
 /* ---------- 6d. MEMORY MATCH ---------- */
