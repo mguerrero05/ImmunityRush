@@ -1111,21 +1111,33 @@ body {
   border-top: 4px solid #8ba3b6;
   z-index: 2;
 }
-/* Obstacles + collectibles — neutral chips (no colour tell); read them. */
+/* Obstacles + collectibles — neutral chips with a custom icon over the label. */
 .sprint-obj {
   position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   background: #eef2f6;
   color: #1c2b3a;
   border: 2px solid #b9cadb;
   border-radius: 10px;
-  padding: 6px 8px;
-  font-size: 11px;
+  padding: 5px 8px;
+  font-size: 10px;
   font-weight: 600;
   text-align: center;
-  max-width: 120px;
+  width: 96px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   pointer-events: none;
   z-index: 4;
+}
+.spr-ico {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+.spr-label {
+  line-height: 1.2;
 }
 /* Scrolling hospital corridor behind the runner. */
 .sprint-bg {

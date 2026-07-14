@@ -164,18 +164,26 @@ const ROOMS = [
 const SPRINT_COLLECT = [
   {
     text: "Vaccine Booster",
+    icon: "syringe",
     score: 100,
     msg: "Flu vaccination is free through Ontario's publicly funded flu vaccine program.",
   },
-  { text: "Heart", score: 50, msg: "Protect the people waiting for you at home." },
+  { text: "Heart", icon: "heart", score: 50, msg: "Protect the people waiting for you at home." },
   {
     text: "Family Token",
+    icon: "family",
     score: 200,
     msg: "Protect the moments waiting for you after your shift.",
   },
-  { text: "Wellness Boost", score: 100, msg: "Stay protected for the people who need extra care." },
+  {
+    text: "Wellness Boost",
+    icon: "star",
+    score: 100,
+    msg: "Stay protected for the people who need extra care.",
+  },
   {
     text: "Energy Icon",
+    icon: "energy",
     score: 75,
     msg: "Long shifts are hard enough without flu slowing you down.",
   },
@@ -184,12 +192,42 @@ const SPRINT_COLLECT = [
 const SPRINT_OBSTACLES = [
   {
     text: "Sick-Day Barrier",
+    icon: "barrier",
     msg: "Sick days can interrupt more than just your shift.",
     overhead: false,
   },
-  { text: "Cancelled Plans", msg: "Don't let flu season cancel what matters.", overhead: false },
-  { text: "Low-Energy Cloud", msg: "Low energy can take you out of the game.", overhead: true },
+  {
+    text: "Cancelled Plans",
+    icon: "calendar",
+    msg: "Don't let flu season cancel what matters.",
+    overhead: false,
+  },
+  {
+    text: "Low-Energy Cloud",
+    icon: "cloud",
+    msg: "Low energy can take you out of the game.",
+    overhead: true,
+  },
 ];
+// Custom inline-SVG icons (self-contained, no image files) for the Sprint items.
+// Natural object colours — not a good/bad colour code.
+const SPRINT_ICONS = {
+  syringe:
+    '<svg viewBox="0 0 24 24" class="spr-ico"><g transform="rotate(-45 12 12)"><rect x="6.5" y="6.5" width="10" height="6" rx="2" fill="#cfe0fb" stroke="#1f6feb" stroke-width="1.6"/><line x1="16.5" y1="9.5" x2="21" y2="9.5" stroke="#1f6feb" stroke-width="1.6" stroke-linecap="round"/><line x1="3" y1="9.5" x2="6.5" y2="9.5" stroke="#1f6feb" stroke-width="1.6" stroke-linecap="round"/><line x1="10" y1="6.5" x2="10" y2="12.5" stroke="#1f6feb" stroke-width="1.2"/><line x1="13" y1="6.5" x2="13" y2="12.5" stroke="#1f6feb" stroke-width="1.2"/></g></svg>',
+  heart:
+    '<svg viewBox="0 0 24 24" class="spr-ico"><path d="M12 21s-7-4.6-9.3-9C1 8.5 2.6 5 6 5c2 0 3.2 1.2 4 2.3C10.8 6.2 12 5 14 5c3.4 0 5 3.5 3.3 7-2.3 4.4-9.3 9-9.3 9z" fill="#ff6b81"/></svg>',
+  family:
+    '<svg viewBox="0 0 24 24" class="spr-ico"><g fill="#3b7dd8"><circle cx="8" cy="7" r="3"/><path d="M3 20c0-3 2.2-5 5-5s5 2 5 5z"/><circle cx="16.5" cy="8.5" r="2.4"/><path d="M12.6 20c0-2.4 1.8-4.2 3.9-4.2s3.9 1.8 3.9 4.2z"/></g></svg>',
+  star: '<svg viewBox="0 0 24 24" class="spr-ico"><path d="M12 2l2.9 6 6.6.6-5 4.3 1.5 6.5L12 16.9 5.9 19.4 7.4 12.9l-5-4.3 6.6-.6z" fill="#ffc94d"/></svg>',
+  energy:
+    '<svg viewBox="0 0 24 24" class="spr-ico"><path d="M13 2L4 14h6l-1 8 9-12h-6z" fill="#f2a93b"/></svg>',
+  barrier:
+    '<svg viewBox="0 0 24 24" class="spr-ico"><rect x="2" y="9" width="20" height="6" rx="1.5" fill="#e0863a"/><g stroke="#fff" stroke-width="2"><line x1="6" y1="9" x2="3" y2="15"/><line x1="12" y1="9" x2="9" y2="15"/><line x1="18" y1="9" x2="15" y2="15"/></g><line x1="5" y1="9" x2="5" y2="22" stroke="#8a5a2a" stroke-width="2"/><line x1="19" y1="9" x2="19" y2="22" stroke="#8a5a2a" stroke-width="2"/></svg>',
+  calendar:
+    '<svg viewBox="0 0 24 24" class="spr-ico"><rect x="3" y="4" width="18" height="17" rx="2" fill="#e9edf2" stroke="#8899aa" stroke-width="1.6"/><rect x="3" y="4" width="18" height="4.5" fill="#8899aa"/><g stroke="#d24b3a" stroke-width="2.4" stroke-linecap="round"><line x1="8" y1="12" x2="16" y2="19"/><line x1="16" y1="12" x2="8" y2="19"/></g></svg>',
+  cloud:
+    '<svg viewBox="0 0 24 24" class="spr-ico"><path d="M7 18h10a4 4 0 0 0 .5-8 5 5 0 0 0-9.6-1A3.5 3.5 0 0 0 7 18z" fill="#9aa7b4"/></svg>',
+};
 
 // --- Flu Freeze items (Milestone F: swipe-to-slice, exact wording) ---
 // Positive items to slice. "Gold" items just award more points — they are NOT
@@ -1410,7 +1448,7 @@ function spawnSprintObj(stage, groundY) {
   if (Math.random() < 0.5) {
     const data = rand(SPRINT_COLLECT);
     el.className = "sprint-obj sprint-collect";
-    el.textContent = data.text;
+    el.innerHTML = SPRINT_ICONS[data.icon] + `<span class="spr-label">${data.text}</span>`;
     stage.appendChild(el);
     box = {
       el,
@@ -1424,14 +1462,14 @@ function spawnSprintObj(stage, groundY) {
   } else {
     const data = rand(SPRINT_OBSTACLES);
     el.className = "sprint-obj sprint-obstacle" + (data.overhead ? " overhead" : "");
-    el.textContent = data.text;
+    el.innerHTML = SPRINT_ICONS[data.icon] + `<span class="spr-label">${data.text}</span>`;
     stage.appendChild(el);
     const w = el.offsetWidth,
       h = el.offsetHeight;
     box = {
       el,
       x: stage.clientWidth,
-      y: data.overhead ? groundY - 85 : groundY - h,
+      y: data.overhead ? groundY - 92 : groundY - h,
       w,
       h,
       kind: "obstacle",
