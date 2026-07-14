@@ -1161,11 +1161,16 @@ function markClinicVisited(key) {
 // Detect when the player stands on a mini-game zone.
 let zoneCooldown = false;
 function checkZones() {
-  if (zoneCooldown) return;
   const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
+  const onAnyZone = ZONES.some((z) => overlap(pBox, { x: z.x, y: z.y, w: 90, h: 90 }));
+  // While cooled down (just declined a zone or just finished a mini-game), wait until
+  // the player physically walks off the zone before it can trigger again. No teleport.
+  if (zoneCooldown) {
+    if (!onAnyZone) zoneCooldown = false;
+    return;
+  }
   for (const z of ZONES) {
-    const zBox = { x: z.x, y: z.y, w: 90, h: 90 };
-    if (overlap(pBox, zBox)) {
+    if (overlap(pBox, { x: z.x, y: z.y, w: 90, h: 90 })) {
       openZonePopup(z);
       return;
     }
@@ -1195,12 +1200,8 @@ function openZonePopup(zone) {
   ]);
 }
 function resumeMazeAfterZone() {
-  // Nudge the player off the zone so it doesn't retrigger instantly.
-  player.y += 100;
+  // No teleport — the player simply walks off the zone and checkZones re-arms it.
   startMazeLoop();
-  setTimeout(() => {
-    zoneCooldown = false;
-  }, 400);
 }
 
 // Direction arrows: show where each mini-game is relative to the player.
@@ -1251,7 +1252,7 @@ function exitMiniGame() {
   clearMiniTimers();
   currentMini = null;
   showScreen("screen-maze");
-  zoneCooldown = false;
+  zoneCooldown = true; // keep armed-off until the player walks off the zone
   resumeMazeAfterZone();
 }
 
