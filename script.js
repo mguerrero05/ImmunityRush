@@ -779,6 +779,7 @@ let hazards = []; // patrolling flu germs {el, x, y, w, h, min, max, vy}
 let hazardCooldown = 0; // frames of immunity after a hazard hit
 let keycard = null; // {el, x, y, w, h} — unlocks the vault
 let lockedDoor = null; // {rect, el} — blocks the vault until the keycard is found
+let vaultHintShown = false; // one-time "find the keycard" hint near the locked door
 let missionVisited = {}; // which clinics have been visited this run
 let missionDone = false;
 let keys = {};
@@ -830,12 +831,12 @@ function buildMaze() {
     { x: 230, y: 520, w: 90, h: T }, // lane 2 (left): gap x320–420 (~100px)
     { x: 530, y: 520, w: 100, h: T }, // lane 3 (right): gap x440–530 (~90px)
     { x: 650, y: 520, w: 90, h: T }, // lane 4 (left): gap x740–840 (~100px)
-    // Locked bonus vault (lane 5, against the right border). Door gap on the left;
-    // leaves a corridor x860–940 down lane 5 so Freeze/Memory stay reachable.
-    { x: 940, y: 560, w: 110, h: T }, // top
-    { x: 940, y: 720, w: 110, h: T }, // bottom
-    { x: 940, y: 560, w: T, h: 45 }, // left-upper
-    { x: 940, y: 695, w: T, h: 45 }, // left-lower
+    // Locked bonus vault (lane 5, against the right border). Big door gap on the left
+    // so the player can walk in easily; corridor x860–940 stays clear down lane 5.
+    { x: 940, y: 540, w: 110, h: T }, // top
+    { x: 940, y: 740, w: 110, h: T }, // bottom
+    { x: 940, y: 540, w: T, h: 35 }, // left-upper (540–575)
+    { x: 940, y: 725, w: T, h: 35 }, // left-lower (725–760)
   ];
   walls.forEach((w) => {
     const d = document.createElement("div");
@@ -849,7 +850,7 @@ function buildMaze() {
 
   // --- Locked vault door + keycard ---
   // The door blocks the vault gap until the player finds the keycard.
-  const doorRect = { x: 940, y: 605, w: 20, h: 90 };
+  const doorRect = { x: 940, y: 575, w: 20, h: 150 }; // wide gap — easy to walk through
   walls.push(doorRect); // acts as a wall while locked
   const doorEl = document.createElement("div");
   doorEl.className = "locked-door";
@@ -867,6 +868,7 @@ function buildMaze() {
   kc.style.top = "800px";
   worldEl.appendChild(kc);
   keycard = { el: kc, x: 480, y: 800, w: 30, h: 30 };
+  vaultHintShown = false;
 
   // --- Mini-game zones ---
   ZONES.forEach((z) => {
@@ -906,9 +908,9 @@ function buildMaze() {
   // Vault rewards — only reachable once the door is unlocked.
   const famReward = COLLECTIBLES.find((c) => c.key === "family");
   const wellReward = COLLECTIBLES.find((c) => c.key === "wellness");
-  spawnCollectible(worldEl, 985, 610, famReward);
-  spawnCollectible(worldEl, 1015, 660, famReward);
-  spawnCollectible(worldEl, 985, 700, wellReward);
+  spawnCollectible(worldEl, 975, 590, famReward);
+  spawnCollectible(worldEl, 1000, 640, famReward);
+  spawnCollectible(worldEl, 975, 690, wellReward);
 
   // Patrolling flu hazards.
   spawnHazards(worldEl);
@@ -1198,6 +1200,14 @@ function hitByHazard() {
 function checkKeycard() {
   if (!keycard) return;
   const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
+  // If you reach the still-locked vault, tell you what to do (once).
+  if (lockedDoor && !vaultHintShown) {
+    const d = lockedDoor.rect;
+    if (overlap(pBox, { x: d.x - 70, y: d.y - 40, w: d.w + 130, h: d.h + 80 })) {
+      vaultHintShown = true;
+      toast("Locked vault — find the 🔑 keycard in the maze to open it.", 2400);
+    }
+  }
   if (!overlap(pBox, keycard)) return;
   const c = centerOf(document.getElementById("player"));
   keycard.el.remove();
