@@ -171,47 +171,64 @@ const SPRINT_MESSAGES = [
   "One choice can make a difference.",
 ];
 
-// --- Flu Freeze items ---
-const FREEZE_GOOD = [
-  "Vaccine Shield",
-  "Family Dinner",
-  "Vacation Day",
-  "Wellness Icon",
-  "Energy Boost",
-  "Happy Kids",
-  "Holiday Gathering",
-  "Healthy Weekend",
-  "Work Shift Completed",
-  "Birthday Party",
+// --- Flu Freeze items (Milestone F: swipe-to-slice, exact wording) ---
+// Positive items to slice. "Gold" items just award more points — they are NOT
+// visually distinguished, so the player must read each item.
+const FREEZE_POSITIVE = [
+  { text: "Flu Vaccine", score: 150 },
+  { text: "Patient Protection", score: 150 },
+  { text: "Protected Shift", score: 100 },
+  { text: "Family Protection", score: 125 },
+  { text: "Annual Vaccination", score: 125 },
+  { text: "Lower Risk of Severe Illness", score: 150 },
+  { text: "High-Risk Patient Protected", score: 300 },
+  { text: "Outbreak Prevented", score: 300 },
+  { text: "Vaccinated Before Flu Season", score: 250 },
 ];
-const FREEZE_BAD = [
-  "Flu Virus",
-  "Sick Day",
-  "Cancelled Plans",
-  "Missed Shift",
-  "Missed Family Dinner",
-  "Low Energy",
-  "Weekend Cancelled",
-  "Missed Vacation",
+// Negative items — slicing one costs a life and shows its correction.
+const FREEZE_NEGATIVE = [
+  {
+    text: "Going to Work With Flu Symptoms",
+    feedback:
+      "Stay home when you are sick. Working while symptomatic can expose patients and coworkers.",
+  },
+  {
+    text: "Skipping This Year's Vaccine",
+    feedback: "Flu viruses change over time, so vaccination is recommended every flu season.",
+  },
+  {
+    text: "Treating Flu With Antibiotics",
+    feedback:
+      "Antibiotics treat bacterial infections. They do not treat influenza, which is caused by a virus.",
+  },
+  {
+    text: "Visiting Vulnerable Patients While Sick",
+    feedback:
+      "Influenza can cause serious complications in older adults and people with underlying conditions.",
+  },
+  {
+    text: "Ignoring Early Symptoms",
+    feedback:
+      "Flu symptoms can begin suddenly. Recognizing them early helps reduce further exposure.",
+  },
+  {
+    text: "Sharing Personal Equipment",
+    feedback: "Shared equipment can carry germs. Clean and disinfect it between users.",
+  },
+  {
+    text: "Assuming Mild Symptoms Are Not Contagious",
+    feedback: "A person may spread influenza before symptoms become severe or obvious.",
+  },
+  {
+    text: "Attending a Family Event While Sick",
+    feedback: "Staying home while sick helps prevent spreading influenza to family and friends.",
+  },
 ];
-const FREEZE_GOOD_MSG = [
-  "Protect your plans.",
-  "Stay healthy for this moment.",
-  "Don't miss what matters.",
-  "Keep your weekend.",
-  "Be there for the people who count.",
+const FREEZE_LIFE_LOST = [
+  "Life lost — read each item carefully before selecting.",
+  "Life lost — these choices could increase influenza exposure.",
+  "Life lost — review the correction before continuing.",
 ];
-// A specific consequence message for each negative item (shown only after a mistake).
-const FREEZE_BAD_MSG = {
-  "Flu Virus": "Flu can spread fast — protection helps stop the chain.",
-  "Sick Day": "If you get the flu, staying home and avoiding spread is recommended.",
-  "Cancelled Plans": "Flu can take you out for days, including plans you cannot easily reschedule.",
-  "Missed Shift": "Flu can mean missed shifts and leaving your team short-staffed.",
-  "Missed Family Dinner": "Flu can mean staying home and missing the people you planned to see.",
-  "Low Energy": "Flu can drain your energy long after the worst is over.",
-  "Weekend Cancelled": "Flu doesn't check your calendar — it can cancel your weekend.",
-  "Missed Vacation": "Flu can interrupt trips, weekends, and time with family.",
-};
 
 // --- Vaccine Darts statements ---
 // Vaccine Darts statements (exact wording from the Milestone F spec).
@@ -1379,17 +1396,41 @@ function finishSprint() {
 }
 
 /* ---------- 6b. FLU FREEZE ---------- */
+// Rebuilt per Milestone F: swipe/drag across items to slice them. Positive and
+// negative items look identical (no colour tell) — read before you slice.
+let freezeActive = false;
+let freezeFrame = null;
 let freeze = {};
+
 function startFreeze() {
   showScreen("screen-freeze");
+  showPopup(
+    "Flu Freeze",
+    "Positive moments are flying by. Slice the things worth protecting and avoid flu disruptions before they take away your lives.\n\n" +
+      "• Swipe across positive items.\n• Avoid flu-related items.\n• You have 3 lives.\n• Read each item before you slice.",
+    [
+      {
+        text: "Start Flu Freeze",
+        primary: true,
+        action: () => {
+          hidePopup();
+          beginFreezeRound();
+        },
+      },
+    ],
+  );
+}
+
+function beginFreezeRound() {
   const stage = document.getElementById("freeze-stage");
   stage.innerHTML = "";
-  freeze = { score: 0, lives: 3, time: 60 };
+  freeze = { score: 0, lives: 3, time: 60, combo: 0, items: [], slicing: false, lx: 0, ly: 0 };
   document.getElementById("freeze-score").textContent = 0;
   document.getElementById("freeze-lives").textContent = 3;
   document.getElementById("freeze-time").textContent = 60;
-  toast(rand(FREEZE_GOOD_MSG), 1800);
-  miniTimers.push(setInterval(spawnFreezeItem, 850));
+  toast("Swipe the good items. Avoid flu disruptions.", 1800);
+
+  miniTimers.push(setInterval(spawnFreezeItem, 900));
   miniTimers.push(
     setInterval(() => {
       freeze.time--;
@@ -1397,66 +1438,155 @@ function startFreeze() {
       if (freeze.time <= 0) finishFreeze();
     }, 1000),
   );
+
+  stage.onpointerdown = freezePointerDown;
+  stage.onpointermove = freezePointerMove;
+  stage.onpointerup = freezePointerUp;
+  stage.onpointerleave = freezePointerUp;
+
+  freezeActive = true;
+  cancelAnimationFrame(freezeFrame);
+  freezeLoop();
 }
 
 function spawnFreezeItem() {
+  if (!freezeActive) return;
   const stage = document.getElementById("freeze-stage");
-  const good = Math.random() > 0.42;
-  const label = good ? rand(FREEZE_GOOD) : rand(FREEZE_BAD);
+  const positive = Math.random() < 0.55;
+  const data = positive ? rand(FREEZE_POSITIVE) : rand(FREEZE_NEGATIVE);
   const el = document.createElement("div");
-  el.className = "fly-item " + (good ? "fly-good" : "fly-bad");
-  el.textContent = label;
-  const startX = Math.random() * (stage.clientWidth - 120);
-  el.style.left = startX + "px";
-  el.style.top = stage.clientHeight + "px";
-
+  el.className = "freeze-item"; // identical style for positive and negative
+  el.textContent = data.text;
   stage.appendChild(el);
+  const elapsed = 60 - freeze.time;
+  const item = {
+    el,
+    x: 50 + Math.random() * (stage.clientWidth - 100),
+    y: stage.clientHeight + 20,
+    vx: (Math.random() - 0.5) * 4,
+    vy: -(11 + Math.random() * 3 + elapsed / 20), // launch up; faster over time
+    w: el.offsetWidth,
+    h: el.offsetHeight,
+    positive,
+    data,
+  };
+  el.style.left = item.x + "px";
+  el.style.top = item.y + "px";
+  freeze.items.push(item);
+}
 
-  // Fly upward in an arc, then fall.
-  let vy = -(9 + Math.random() * 4);
-  const timer = setInterval(() => {
-    vy += 0.25;
-    const top = parseFloat(el.style.top) + vy;
-    el.style.top = top + "px";
-    if (top > stage.clientHeight + 60) {
-      clearInterval(timer);
-      el.remove();
+function freezeLoop() {
+  const screen = document.getElementById("screen-freeze");
+  if (!freezeActive || !screen.classList.contains("active")) {
+    freezeActive = false;
+    return;
+  }
+  const H = document.getElementById("freeze-stage").clientHeight;
+  freeze.items = freeze.items.filter((it) => {
+    it.vy += 0.22; // gravity
+    it.x += it.vx;
+    it.y += it.vy;
+    it.el.style.left = it.x + "px";
+    it.el.style.top = it.y + "px";
+    if (it.y > H + 90) {
+      it.el.remove();
+      if (it.positive) freeze.combo = 0; // missed a good item — combo resets
+      return false;
     }
-  }, 30);
-  miniTimers.push(timer);
-
-  el.addEventListener("click", () => {
-    if (good) {
-      freeze.score += 10;
-      addScore(10);
-      toast(rand(FREEZE_GOOD_MSG), 1200);
-    } else {
-      freeze.lives--;
-      document.getElementById("freeze-lives").textContent = freeze.lives;
-      // Show the specific consequence for the item that was sliced.
-      toast(FREEZE_BAD_MSG[label] || "Flu can interrupt the moments that matter.", 1600);
-      if (freeze.lives <= 0) {
-        finishFreeze();
-      }
-    }
-    document.getElementById("freeze-score").textContent = freeze.score;
-    clearInterval(timer);
-    el.remove();
+    return true;
   });
+  freezeFrame = requestAnimationFrame(freezeLoop);
+}
+
+function freezeLocalXY(e, stage) {
+  const r = stage.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+function freezePointerDown(e) {
+  freeze.slicing = true;
+  const p = freezeLocalXY(e, document.getElementById("freeze-stage"));
+  freeze.lx = p.x;
+  freeze.ly = p.y;
+  freezeSliceAt(p.x, p.y);
+}
+function freezePointerMove(e) {
+  if (!freeze.slicing) return;
+  const p = freezeLocalXY(e, document.getElementById("freeze-stage"));
+  freezeSliceAt(p.x, p.y);
+  freezeSliceAt((p.x + freeze.lx) / 2, (p.y + freeze.ly) / 2); // catch fast swipes
+  spawnSliceTrail(p.x, p.y);
+  freeze.lx = p.x;
+  freeze.ly = p.y;
+}
+function freezePointerUp() {
+  freeze.slicing = false;
+}
+function spawnSliceTrail(x, y) {
+  const d = document.createElement("div");
+  d.className = "slice-trail";
+  d.style.left = x + "px";
+  d.style.top = y + "px";
+  document.getElementById("freeze-stage").appendChild(d);
+  setTimeout(() => d.remove(), 350);
+}
+function freezeSliceAt(x, y) {
+  for (const it of freeze.items) {
+    // Item is centred on x,y via CSS translate(-50%, -50%).
+    if (x > it.x - it.w / 2 && x < it.x + it.w / 2 && y > it.y - it.h / 2 && y < it.y + it.h / 2) {
+      sliceFreezeItem(it);
+      return;
+    }
+  }
+}
+function sliceFreezeItem(item) {
+  freeze.items = freeze.items.filter((i) => i !== item);
+  const r = document.getElementById("freeze-stage").getBoundingClientRect();
+  const cx = r.left + item.x,
+    cy = r.top + item.y;
+  item.el.classList.add("sliced");
+  setTimeout(() => item.el.remove(), 250);
+  if (item.positive) {
+    freeze.combo++;
+    freeze.score += item.data.score;
+    addScore(item.data.score);
+    floatText(`+${item.data.score}`, cx, cy, "#ffd34d");
+    burst(cx, cy, "#2bb3b3");
+    playSound("success");
+    if (freeze.combo >= 3) toast(`Combo x${freeze.combo}!`, 900);
+  } else {
+    freeze.combo = 0;
+    freeze.lives--;
+    document.getElementById("freeze-lives").textContent = freeze.lives;
+    floatText("−1 life", cx, cy, "#ff6b6b");
+    playSound("error");
+    shake();
+    toast(rand(FREEZE_LIFE_LOST) + "  " + item.data.feedback, 2600);
+    if (freeze.lives <= 0) {
+      finishFreeze();
+      return;
+    }
+  }
+  document.getElementById("freeze-score").textContent = freeze.score;
 }
 
 function finishFreeze() {
+  freezeActive = false;
+  cancelAnimationFrame(freezeFrame);
   clearMiniTimers();
-  showPopup("Flu Freeze complete!", `You scored ${freeze.score}.\n\n` + rand(FACTS), [
-    {
-      text: "Back to maze",
-      primary: true,
-      action: () => {
-        hidePopup();
-        exitMiniGame();
+  showPopup(
+    "Flu Freeze complete! You protected the moments that matter.",
+    `Flu Freeze Score: ${freeze.score}\n\nStay healthy for the moments that matter.`,
+    [
+      {
+        text: "Return to Maze",
+        primary: true,
+        action: () => {
+          hidePopup();
+          exitMiniGame();
+        },
       },
-    },
-  ]);
+    ],
+  );
 }
 
 /* ---------- 6c. VACCINE DARTS ---------- */
