@@ -791,8 +791,8 @@ body {
    It is tilted back so it reads like an angled top-down arcade map. */
 #maze-world {
   position: absolute;
-  width: 900px;
-  height: 900px;
+  width: 1050px;
+  height: 1050px;
   transform-origin: center center;
   transform-style: preserve-3d;
   transform: rotateX(var(--tilt));

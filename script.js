@@ -113,7 +113,7 @@ const ZONES = [
     label: "Hospital Sprint Corridor",
     icon: "🏃",
     color: "#1f6feb",
-    x: 120,
+    x: 100,
     y: 120,
   },
   {
@@ -122,7 +122,7 @@ const ZONES = [
     label: "Flu Freeze Station",
     icon: "❄",
     color: "#2bb3b3",
-    x: 690,
+    x: 900,
     y: 120,
   },
   {
@@ -131,8 +131,8 @@ const ZONES = [
     label: "Vaccine Darts Room",
     icon: "🎯",
     color: "#e0533d",
-    x: 120,
-    y: 690,
+    x: 100,
+    y: 900,
   },
   {
     key: "memory",
@@ -140,8 +140,8 @@ const ZONES = [
     label: "Memory Match Clinic",
     icon: "🃏",
     color: "#7d5ba6",
-    x: 690,
-    y: 690,
+    x: 900,
+    y: 900,
   },
 ];
 
@@ -149,15 +149,15 @@ const ZONES = [
 // walls/locked doors come in Milestone E). Each has a floor tint and a sign.
 // The four "zone" rooms sit under the mini-game doors and share their theme.
 const ROOMS = [
-  { name: "Reception", x: 300, y: 150, w: 140, h: 110, tone: "#dbe7f3" },
-  { name: "Pharmacy", x: 480, y: 150, w: 120, h: 110, tone: "#e2efe6" },
-  { name: "Waiting Area", x: 300, y: 640, w: 140, h: 120, tone: "#f0ead9" },
-  { name: "Staff Lounge", x: 480, y: 640, w: 120, h: 120, tone: "#efe1ec" },
-  { name: "VaxFacts+ Clinic", x: 660, y: 410, w: 150, h: 120, tone: "#dcecef" },
-  { name: "Sprint Corridor", x: 60, y: 60, w: 210, h: 210, tone: "#dce7fb", zone: "sprint" },
-  { name: "Freeze Station", x: 630, y: 60, w: 210, h: 210, tone: "#d7f0f0", zone: "freeze" },
-  { name: "Darts Room", x: 60, y: 630, w: 210, h: 210, tone: "#fadfd9", zone: "darts" },
-  { name: "Memory Clinic", x: 630, y: 630, w: 210, h: 210, tone: "#e8e0f2", zone: "memory" },
+  { name: "Pharmacy", x: 240, y: 80, w: 160, h: 110, tone: "#e2efe6" },
+  { name: "Reception", x: 450, y: 400, w: 170, h: 120, tone: "#dbe7f3" },
+  { name: "Waiting Area", x: 660, y: 80, w: 160, h: 110, tone: "#f0ead9" },
+  { name: "Staff Lounge", x: 240, y: 860, w: 160, h: 120, tone: "#efe1ec" },
+  { name: "VaxFacts+ Clinic", x: 660, y: 860, w: 160, h: 120, tone: "#dcecef" },
+  { name: "Sprint Corridor", x: 30, y: 60, w: 190, h: 210, tone: "#dce7fb", zone: "sprint" },
+  { name: "Freeze Station", x: 850, y: 60, w: 190, h: 210, tone: "#d7f0f0", zone: "freeze" },
+  { name: "Darts Room", x: 30, y: 840, w: 190, h: 190, tone: "#fadfd9", zone: "darts" },
+  { name: "Memory Clinic", x: 850, y: 840, w: 190, h: 190, tone: "#e8e0f2", zone: "memory" },
 ];
 
 // --- Hospital Sprint items ---
@@ -694,7 +694,7 @@ function endGame() {
    5. MAZE
    ========================================================= */
 
-const WORLD_SIZE = 900;
+const WORLD_SIZE = 1050;
 const VIEW_W = 430,
   VIEW_H = 860;
 
@@ -749,20 +749,22 @@ function buildMaze() {
     { x: 0, y: WORLD_SIZE - T, w: WORLD_SIZE, h: T }, // bottom
     { x: 0, y: 0, w: T, h: WORLD_SIZE }, // left
     { x: WORLD_SIZE - T, y: 0, w: T, h: WORLD_SIZE }, // right
-    // Three staggered walls make a winding serpentine path: to get from the left
-    // clinics to the right ones you must weave bottom -> top -> bottom.
-    { x: 270, y: 0, w: T, h: 620 }, // A: hangs from the top (gap at the BOTTOM)
-    { x: 450, y: 280, w: T, h: 620 }, // B: rises from the bottom (gap at the TOP)
-    { x: 610, y: 0, w: T, h: 620 }, // C: hangs from the top (gap at the BOTTOM)
-    // Dead-end shelves (short stubs). They MUST leave a walkable corridor past them —
-    // the player is 46px wide, so keep the remaining gap ~75px+.
-    { x: 290, y: 470, w: 70, h: T }, // lane 2: leaves gap x360–450 (~90px)
-    { x: 545, y: 420, w: 65, h: T }, // lane 3: leaves gap x470–545 (~75px)
-    // Locked bonus vault (right side) — walls with a door gap on the left.
-    { x: 760, y: 230, w: 120, h: T }, // top
-    { x: 760, y: 390, w: 120, h: T }, // bottom
-    { x: 760, y: 230, w: T, h: 45 }, // left-upper
-    { x: 760, y: 365, w: T, h: 45 }, // left-lower
+    // Serpentine: FOUR staggered walls make FIVE lanes. Alternating top/bottom gaps
+    // force a long weave (down -> up -> down -> up) from the left clinics to the right.
+    { x: 210, y: 0, w: T, h: 780 }, // W1 hangs from top (gap at the BOTTOM)
+    { x: 420, y: 270, w: T, h: 780 }, // W2 rises from bottom (gap at the TOP)
+    { x: 630, y: 0, w: T, h: 780 }, // W3 hangs from top (gap at the BOTTOM)
+    { x: 840, y: 270, w: T, h: 780 }, // W4 rises from bottom (gap at the TOP)
+    // Nook stubs — each leaves a ~90px+ corridor past it (adds turns, hides items).
+    { x: 230, y: 520, w: 90, h: T }, // lane 2 (left): gap x320–420 (~100px)
+    { x: 530, y: 520, w: 100, h: T }, // lane 3 (right): gap x440–530 (~90px)
+    { x: 650, y: 520, w: 90, h: T }, // lane 4 (left): gap x740–840 (~100px)
+    // Locked bonus vault (lane 5, against the right border). Door gap on the left;
+    // leaves a corridor x860–940 down lane 5 so Freeze/Memory stay reachable.
+    { x: 940, y: 560, w: 110, h: T }, // top
+    { x: 940, y: 720, w: 110, h: T }, // bottom
+    { x: 940, y: 560, w: T, h: 45 }, // left-upper
+    { x: 940, y: 695, w: T, h: 45 }, // left-lower
   ];
   walls.forEach((w) => {
     const d = document.createElement("div");
@@ -776,7 +778,7 @@ function buildMaze() {
 
   // --- Locked vault door + keycard ---
   // The door blocks the vault gap until the player finds the keycard.
-  const doorRect = { x: 760, y: 275, w: 20, h: 90 };
+  const doorRect = { x: 940, y: 605, w: 20, h: 90 };
   walls.push(doorRect); // acts as a wall while locked
   const doorEl = document.createElement("div");
   doorEl.className = "locked-door";
@@ -790,10 +792,10 @@ function buildMaze() {
   const kc = document.createElement("div");
   kc.className = "keycard";
   kc.textContent = "🔑";
-  kc.style.left = "540px";
-  kc.style.top = "540px";
+  kc.style.left = "480px";
+  kc.style.top = "800px";
   worldEl.appendChild(kc);
-  keycard = { el: kc, x: 540, y: 540, w: 30, h: 30 };
+  keycard = { el: kc, x: 480, y: 800, w: 30, h: 30 };
 
   // --- Mini-game zones ---
   ZONES.forEach((z) => {
@@ -810,16 +812,20 @@ function buildMaze() {
   // --- Collectibles: scatter several of each type ---
   liveCollectibles = [];
   const spots = [
-    [110, 180],
-    [130, 760], // lane 1
-    [360, 340],
-    [360, 760], // lane 2
-    [540, 300],
-    [540, 760], // lane 3
-    [780, 180],
-    [760, 760],
-    [820, 430],
-    [690, 430], // lane 4
+    [100, 260],
+    [100, 780], // lane 1
+    [370, 260],
+    [280, 780],
+    [370, 640], // lane 2
+    [480, 260],
+    [500, 780],
+    [500, 640], // lane 3
+    [790, 260],
+    [700, 780],
+    [790, 640], // lane 4
+    [900, 400],
+    [900, 620],
+    [960, 800], // lane 5
   ];
   spots.forEach((s, i) => {
     const data = COLLECTIBLES[i % COLLECTIBLES.length];
@@ -829,16 +835,16 @@ function buildMaze() {
   // Vault rewards — only reachable once the door is unlocked.
   const famReward = COLLECTIBLES.find((c) => c.key === "family");
   const wellReward = COLLECTIBLES.find((c) => c.key === "wellness");
-  spawnCollectible(worldEl, 800, 285, famReward);
-  spawnCollectible(worldEl, 845, 340, famReward);
-  spawnCollectible(worldEl, 800, 350, wellReward);
+  spawnCollectible(worldEl, 985, 610, famReward);
+  spawnCollectible(worldEl, 1015, 660, famReward);
+  spawnCollectible(worldEl, 985, 700, wellReward);
 
   // Patrolling flu hazards.
   spawnHazards(worldEl);
 
   // Reset player to the entrance (open lane-1 spot, clear of every wall).
-  player.x = 110;
-  player.y = 430;
+  player.x = 100;
+  player.y = 520;
   player.speed = 4;
   const playerEl = document.getElementById("player");
   buildCharacter(playerEl);
@@ -1059,10 +1065,11 @@ function resetPowerups() {
 // (lose health + points) unless your shield is up, which absorbs it.
 function spawnHazards(worldEl) {
   hazards = [
-    { x: 130, y: 200, w: 30, h: 30, min: 150, max: 780, vy: 1.6 },
-    { x: 360, y: 600, w: 30, h: 30, min: 150, max: 780, vy: -1.8 },
-    { x: 540, y: 300, w: 30, h: 30, min: 150, max: 600, vy: 1.5 },
-    { x: 760, y: 500, w: 30, h: 30, min: 150, max: 780, vy: -1.7 },
+    { x: 100, y: 300, w: 30, h: 30, min: 200, max: 950, vy: 2.0 }, // lane 1
+    { x: 340, y: 600, w: 30, h: 30, min: 250, max: 950, vy: -2.2 }, // lane 2
+    { x: 500, y: 350, w: 30, h: 30, min: 200, max: 950, vy: 1.8 }, // lane 3
+    { x: 760, y: 700, w: 30, h: 30, min: 250, max: 950, vy: -2.0 }, // lane 4
+    { x: 900, y: 400, w: 30, h: 30, min: 200, max: 520, vy: 2.4 }, // lane 5 (upper)
   ];
   hazardCooldown = 0;
   hazards.forEach((h) => {
