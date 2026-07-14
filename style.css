@@ -1396,6 +1396,8 @@ body {
   aspect-ratio: 3/4;
   background: var(--shn-blue-2);
   border-radius: 10px;
+  position: relative;
+  overflow: hidden;
   display: grid;
   place-items: center;
   text-align: center;
@@ -1453,6 +1455,32 @@ body {
 .mem-back {
   font-size: 22px;
 }
+/* Picture card: show ONLY the image, fully visible (contained), centered.
+   Never crop, stretch, or distort — object-fit: contain keeps the whole PNG. */
+.mem-face-img {
+  position: absolute;
+  inset: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mem-img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+/* Fact card: centered, wrapping, readable text that never overflows the card. */
+.mem-face-fact {
+  font-size: 10px;
+  line-height: 1.28;
+  padding: 3px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
 
 /* =========================================================
    TOAST + POP-UPS
@@ -1480,6 +1508,114 @@ body {
 .toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- Big centered message overlay ---------- */
+/* Fills the phone frame, dims + blurs the game behind, shows one large card.
+   Sits below the modal pop-up (z 70) but above everything else. */
+.big-msg {
+  position: absolute;
+  inset: 0;
+  z-index: 65;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(12, 42, 74, 0.5);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  cursor: pointer;
+}
+.big-msg.show {
+  display: flex;
+  animation: bigMsgFade 0.18s ease;
+}
+@keyframes bigMsgFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.big-msg-card {
+  width: min(88%, 340px);
+  background: #fff;
+  border-radius: 20px;
+  padding: 26px 22px 20px;
+  text-align: center;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  border-top: 8px solid var(--shn-blue);
+  animation: bigMsgPop 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+}
+@keyframes bigMsgPop {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.big-msg-icon {
+  font-size: 52px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.big-msg-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--shn-blue);
+  margin-bottom: 8px;
+}
+.big-msg-text {
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #24313f;
+  overflow-wrap: break-word;
+}
+.big-msg-btn {
+  margin-top: 16px;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 26px;
+  font-size: 16px;
+  font-weight: 700;
+  background: var(--shn-blue);
+  color: #fff;
+  cursor: pointer;
+}
+/* Tone accents — colour is decorative only, never the sole game signal. */
+.big-msg-card.tone-good {
+  border-top-color: #2bb3b3;
+}
+.big-msg-card.tone-good .big-msg-title {
+  color: #1f8a8a;
+}
+.big-msg-card.tone-bonus {
+  border-top-color: #ff9e6d;
+}
+.big-msg-card.tone-bonus .big-msg-title {
+  color: #e5713c;
+}
+.big-msg-card.tone-warn {
+  border-top-color: #ff8a5c;
+}
+.big-msg-card.tone-warn .big-msg-title {
+  color: #d9542b;
+}
+@media (max-width: 380px) {
+  .big-msg-icon {
+    font-size: 42px;
+  }
+  .big-msg-title {
+    font-size: 21px;
+  }
+  .big-msg-text {
+    font-size: 15px;
+  }
 }
 
 .popup-overlay {

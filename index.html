@@ -17,6 +17,17 @@
       <!-- Small floating message banner used all over the game -->
       <div id="toast" class="toast"></div>
 
+      <!-- Large, hard-to-miss centered message overlay (boosters, corrections,
+           facts, obstacle hits). Dims/blurs the game and pauses it while open. -->
+      <div id="big-msg" class="big-msg" role="alertdialog" aria-live="assertive">
+        <div class="big-msg-card tone-info">
+          <div id="big-msg-icon" class="big-msg-icon"></div>
+          <div id="big-msg-title" class="big-msg-title"></div>
+          <div id="big-msg-text" class="big-msg-text"></div>
+          <button id="big-msg-btn" type="button" class="big-msg-btn">Continue</button>
+        </div>
+      </div>
+
       <!-- Sound on/off. Visible on every screen. -->
       <button id="mute-btn" class="mute-btn" onclick="toggleMute()" title="Sound on/off">🔊</button>
 
@@ -239,7 +250,7 @@
       <section id="screen-memory" class="screen minigame">
         <div class="mg-hud">
           <span>Score: <b id="memory-score">0</b></span>
-          <span>Pairs: <b id="memory-pairs">0</b>/8</span>
+          <span>Pairs: <b id="memory-pairs">0</b>/6</span>
           <span>Moves: <b id="memory-moves">0</b></span>
           <span>Time: <b id="memory-time">60</b></span>
           <button class="btn tiny" onclick="exitMiniGame()">Exit</button>

@@ -96,3 +96,24 @@
   a **GitHub Pages** deploy so the supervisor can play it (making the repo public). Next:
   finish the icon pass (maze collectibles/hazards/keycard emoji), then clinic completed
   states, sound, mobile.
+- 2026-07-14 (session 9 — Memory Match art + freeze fixes + full-screen messages):
+  **1) Memory Match final art.** Copied the 6 supplied PNGs into `assets/memory-match/`
+  (01–06) and rebuilt Memory Match to **6 pairs / 12 cards** — each pair is one picture
+  card (image only, contained/centred, never cropped) + one fact card (wrapping text),
+  with an educational explanation after each correct match. (Note: `03-sick-bed-calendar.png`
+  has a faint "dreamstime" watermark baked into the supplied file — left as-is per request.)
+  **2) Fixed the maze freeze (root cause).** The virus knockback (`hitByHazard`) shoved the
+  player left with no wall check, pushing them INSIDE a serpentine wall; `moverPlayer` then
+  blocked every direction, trapping them permanently ("redo the game"). Fix: `moverPlayer`
+  now only blocks moves that ENTER a wall you're not already in (so you can always escape),
+  plus a new `unstickPlayer()` safety net repositions to the nearest clear spot, and the
+  knockback is now wall-safe. **3) Full-screen message overlay.** New `bigMessage()` shows
+  important messages (boosters, corrections, facts, obstacle hits, Memory matches) as a
+  large centred card that dims/blurs the game and PAUSES it (so you can't be hit while
+  reading) then ALWAYS releases — used in the maze, Hospital Sprint, Vaccine Darts, and
+  Memory Match. **4) Hospital Sprint fairness.** Jump raised (15→18, peak ~189px) so a good
+  jump fully clears; duck lowered (34→22px) and held longer; obstacle hitboxes inset to
+  match the visible art (no unfair edge touches; one penalty per obstacle). Verified all
+  changes by driving the real code headlessly (21 checks pass, no errors). Next: finish the
+  Milestone G icon pass (maze collectibles/hazards/keycard emoji), clinic completed states,
+  sound, mobile.

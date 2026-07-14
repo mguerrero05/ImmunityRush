@@ -349,49 +349,46 @@ const DARTS_FACTS = [
 ];
 
 // --- Memory Match pairs ---
-// Each pair connects two related cards (a <-> b) and has its own message shown on a match.
-// (Card icons/illustrations come later in Milestone F4 — this is the text/data.)
-// Milestone F: exact wording. a<->b are the two cards; msg = educational match feedback.
+// Exactly 6 pairs / 12 cards. Each pair = one PICTURE card (img) + one FACT card (fact)
+// that share a pairId. `msg` = the educational explanation shown after a correct match.
+// The picture card shows ONLY the image; the fact/explanation text never goes on it.
+// Images live in assets/memory-match/ (local PNGs — no remote URLs).
 const MEMORY_PAIRS = [
   {
-    a: "Annual Flu Vaccination",
-    b: "Updated Seasonal Protection",
-    msg: "Correct. Flu viruses can change, so vaccination is recommended each season.",
+    img: "assets/memory-match/01-calendar-vaccine.png",
+    alt: "Calendar of checkmarks beside a vaccine syringe and vial",
+    fact: "Get your flu vaccine every year.",
+    msg: "Correct! Flu viruses can change, so vaccination is recommended each season.",
   },
   {
-    a: "Vaccinated Healthcare Worker",
-    b: "Patient Protection",
-    msg: "Correct. Vaccination can help reduce the risk of spreading influenza to vulnerable patients.",
+    img: "assets/memory-match/02-pregnancy-shield.png",
+    alt: "Pregnant person protected by a shield",
+    fact: "Pregnancy raises the risk of serious flu—get protected.",
+    msg: "Correct! Flu can be more severe during pregnancy, and vaccination helps protect both you and your baby.",
   },
   {
-    a: "Reduced Flu Risk",
-    b: "Fewer Missed Shifts",
-    msg: "Correct. Preventing flu illness can reduce absences from work.",
+    img: "assets/memory-match/03-sick-bed-calendar.png",
+    alt: "Person resting in bed beside a calendar",
+    fact: "Flu can cause days of illness and lingering symptoms for weeks.",
+    msg: "Correct! Influenza can keep you sick for several days, while fatigue and other symptoms may last longer.",
   },
   {
-    a: "Vaccination Before Exposure",
-    b: "Immune Preparation",
-    msg: "Correct. Vaccination prepares the immune system to recognize the virus before exposure.",
+    img: "assets/memory-match/04-family-protection.png",
+    alt: "Two hands sheltering a family of three",
+    fact: "Babies under 6 months can’t get the flu shot—your vaccination helps protect them.",
+    msg: "Correct! Babies under 6 months are too young for flu vaccination, so protection from vaccinated parents, family members, and caregivers matters.",
   },
   {
-    a: "Lower Risk of Severe Illness",
-    b: "Flu Vaccination",
-    msg: "Correct. Vaccination can reduce the risk of serious influenza complications.",
+    img: "assets/memory-match/05-older-adults-shield.png",
+    alt: "Older couple holding a protective shield",
+    fact: "Flu can be more severe in older adults—vaccination lowers the risk.",
+    msg: "Correct! Older adults face a higher risk of serious flu complications, so vaccination matters for them and for the people around them.",
   },
   {
-    a: "Staying Home When Sick",
-    b: "Reduced Workplace Spread",
-    msg: "Correct. Staying home while symptomatic helps protect patients and coworkers.",
-  },
-  {
-    a: "Protecting Yourself",
-    b: "Protecting Family Members",
-    msg: "Correct. Reducing your own risk can also reduce exposure for people at home.",
-  },
-  {
-    a: "Reliable Vaccine Information",
-    b: "Informed Decision-Making",
-    msg: "Correct. Trusted sources and healthcare professionals can help answer vaccine questions.",
+    img: "assets/memory-match/06-early-vaccination-shield.png",
+    alt: "Vaccine syringe beside a protective shield with a cross",
+    fact: "Get vaccinated early so your body is protected before exposure.",
+    msg: "Correct! The flu vaccine needs time to help your immune system recognize and respond to the virus, so get vaccinated before exposure.",
   },
 ];
 // Shown sparingly during play.
@@ -462,6 +459,73 @@ function toast(msg, ms = 1800) {
   t.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove("show"), ms);
+}
+
+/* =========================================================
+   BIG CENTERED MESSAGE OVERLAY
+   A large, hard-to-miss message in the middle of the screen. It dims/blurs the
+   game behind it and sets `overlayPaused` so the real-time loops (maze, sprint,
+   darts) freeze — the player can't be hit while reading — then ALWAYS releases,
+   so the game can never stay frozen after the message closes.
+   ========================================================= */
+let overlayPaused = false;
+let bigMsgTimer = null;
+let bigMsgSafety = null;
+function closeBigMessage() {
+  clearTimeout(bigMsgTimer);
+  clearTimeout(bigMsgSafety);
+  const ov = document.getElementById("big-msg");
+  if (ov) {
+    ov.classList.remove("show");
+    ov.onclick = null;
+  }
+  const btn = document.getElementById("big-msg-btn");
+  if (btn) btn.onclick = null;
+  overlayPaused = false; // release the pause — this is what un-freezes gameplay
+}
+// bigMessage(text, { icon, title, tone, duration, button })
+//  - tone: "good" | "bonus" | "warn" | "info" (colour accent only, not a game tell)
+//  - button:true shows a Continue button and waits for it (with a safety timeout);
+//    otherwise it auto-closes after `duration` ms.
+function bigMessage(text, opts = {}) {
+  const { icon = "", title = "", tone = "info", duration = 1600, button = false } = opts;
+  const ov = document.getElementById("big-msg");
+  if (!ov) {
+    // Overlay markup missing — fall back to a toast so a message is never lost.
+    toast(title ? `${title} — ${text}` : text, duration);
+    return closeBigMessage;
+  }
+  const card = ov.querySelector(".big-msg-card");
+  const ic = document.getElementById("big-msg-icon");
+  const ti = document.getElementById("big-msg-title");
+  const tx = document.getElementById("big-msg-text");
+  ic.textContent = icon;
+  ic.style.display = icon ? "" : "none";
+  ti.textContent = title;
+  ti.style.display = title ? "" : "none";
+  tx.textContent = text;
+  card.className = "big-msg-card tone-" + tone;
+  const btn = document.getElementById("big-msg-btn");
+  btn.style.display = button ? "" : "none";
+
+  ov.classList.add("show");
+  overlayPaused = true;
+  clearTimeout(bigMsgTimer);
+  clearTimeout(bigMsgSafety);
+
+  btn.onclick = closeBigMessage;
+  // Tap the dimmed backdrop (or anywhere, for auto-close messages) to dismiss early.
+  ov.onclick = (e) => {
+    if (!button || e.target === ov) closeBigMessage();
+  };
+  if (button) {
+    // Even with a button, a hard safety timeout guarantees we never stay paused.
+    bigMsgSafety = setTimeout(closeBigMessage, Math.max(duration, 8000));
+  } else {
+    bigMsgTimer = setTimeout(closeBigMessage, duration);
+    bigMsgSafety = setTimeout(closeBigMessage, duration + 4000); // belt-and-suspenders
+  }
+  return closeBigMessage;
 }
 
 /* =========================================================
@@ -944,18 +1008,59 @@ function overlap(a, b) {
 // Try to move the player, blocked by walls.
 // We move the X and Y axes SEPARATELY so the player slides smoothly
 // along a wall instead of getting stuck when moving diagonally.
+//
+// Key rule: a move is blocked ONLY if it would enter a wall the player is not
+// ALREADY overlapping. So pressing into a wall stops that direction only, but if
+// the player ever ends up inside a wall (e.g. a knockback), they can always move
+// back out — they can never become permanently trapped.
 function moverPlayer(dx, dy) {
+  const cur = { x: player.x, y: player.y, w: player.w, h: player.h };
   // --- Horizontal ---
   if (dx !== 0) {
     const nx = Math.max(0, Math.min(WORLD_SIZE - player.w, player.x + dx));
     const box = { x: nx, y: player.y, w: player.w, h: player.h };
-    if (!walls.some((w) => overlap(box, w))) player.x = nx;
+    if (!walls.some((w) => overlap(box, w) && !overlap(cur, w))) player.x = nx;
   }
   // --- Vertical ---
   if (dy !== 0) {
+    cur.x = player.x; // x may have changed above
     const ny = Math.max(0, Math.min(WORLD_SIZE - player.h, player.y + dy));
     const box = { x: player.x, y: ny, w: player.w, h: player.h };
-    if (!walls.some((w) => overlap(box, w))) player.y = ny;
+    if (!walls.some((w) => overlap(box, w) && !overlap(cur, w))) player.y = ny;
+  }
+}
+
+// Is the player's box overlapping any wall at the given position?
+function playerInWall(x = player.x, y = player.y) {
+  const box = { x, y, w: player.w, h: player.h };
+  return walls.some((w) => overlap(box, w));
+}
+
+// Safety net: if the player is ever overlapping wall geometry (a knockback or a
+// respawn landing badly), search outward in a ring for the nearest wall-free spot
+// and move them there. Guarantees the player is never embedded/stuck in a wall.
+function unstickPlayer() {
+  if (!playerInWall()) return;
+  const dirs = [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+    [1, 1],
+    [-1, 1],
+    [1, -1],
+    [-1, -1],
+  ];
+  for (let r = 4; r <= 260; r += 4) {
+    for (const [ox, oy] of dirs) {
+      const nx = Math.max(0, Math.min(WORLD_SIZE - player.w, player.x + ox * r));
+      const ny = Math.max(0, Math.min(WORLD_SIZE - player.h, player.y + oy * r));
+      if (!playerInWall(nx, ny)) {
+        player.x = nx;
+        player.y = ny;
+        return;
+      }
+    }
   }
 }
 
@@ -970,6 +1075,13 @@ function stopMazeLoop() {
 }
 function loopMaze() {
   if (!mazeRunning) return;
+  // While a full-screen message is open, freeze the simulation but keep the loop
+  // alive so it resumes cleanly the instant the message closes. This also means the
+  // player can't be hit by a hazard while reading a message.
+  if (overlayPaused) {
+    mazeFrame = requestAnimationFrame(loopMaze);
+    return;
+  }
   const spd = player.speed * (state.speedBoost ? 2 : 1);
   let dx = 0,
     dy = 0;
@@ -978,6 +1090,7 @@ function loopMaze() {
   if (keys.left) dx -= spd;
   if (keys.right) dx += spd;
   if (dx || dy) moverPlayer(dx, dy);
+  if (playerInWall()) unstickPlayer(); // never let the player stay embedded
 
   // Speed trail: drop fading dots in the world so they fall behind the player.
   if (state.speedBoost && (dx || dy)) {
@@ -1033,8 +1146,6 @@ function collect(data) {
   }
   // "bonus" effect (Family Token, Wellness Star) is a pure score bonus — no state change.
   updateHUD();
-  // Show the labeled bonus and a short personal message.
-  toast(`+${data.points} ${data.bonusLabel} — ${rand(data.messages)}`);
   // Feedback: floating score, particle burst, and a sound at the player.
   const c = centerOf(document.getElementById("player"));
   const warm = data.effect === "bonus"; // Family / Wellness get a warmer, bigger popup
@@ -1042,6 +1153,13 @@ function collect(data) {
   floatText(`+${data.points}`, c.x, c.y, color, warm);
   burst(c.x, c.y, color);
   playSound("collect");
+  // Show the labeled bonus + personal message as a large, centered overlay.
+  bigMessage(rand(data.messages), {
+    icon: data.emoji,
+    title: `+${data.points} ${data.bonusLabel}`,
+    tone: warm ? "bonus" : "good",
+    duration: 1500,
+  });
 }
 
 /* ---------- Power-up effects (Phase 6 — clear, visible feedback) ---------- */
@@ -1183,19 +1301,38 @@ function hitByHazard() {
   playSound("hit");
   shake();
   floatText("-30", c.x, c.y, "#ff6b6b");
-  toast(
-    rand(["Flu slowed you down!", "Watch out for the flu!", "Stay protected out there."]),
-    1400,
-  );
-  player.x = Math.max(20, player.x - 40); // small knockback
+  bigMessage(rand(HAZARD_LINES), {
+    icon: "🦠",
+    title: "-30",
+    tone: "warn",
+    duration: 1500,
+  });
+  // Small knockback — but ONLY if the spot is clear. Previously this shoved the
+  // player left unconditionally, which could push them INTO a serpentine wall and
+  // trap them there (the "freeze after the virus pushes you aside" bug).
+  const back = { x: Math.max(20, player.x - 40), y: player.y, w: player.w, h: player.h };
+  if (!walls.some((w) => overlap(back, w))) player.x = back.x;
+  unstickPlayer(); // final safety net — never leave the player inside a wall
   if (state.health <= 0) {
     state.health = 3;
     updateHUD();
-    player.x = 110;
-    player.y = 430; // back to the entrance (the run keeps going)
-    toast("The flu caught up — back to the entrance!", 1800);
+    player.x = 100;
+    player.y = 520; // back to the entrance (the known clear spawn spot)
+    unstickPlayer();
+    bigMessage("The flu caught up — back to the entrance. Keep going!", {
+      icon: "🏥",
+      tone: "warn",
+      duration: 1800,
+    });
   }
 }
+
+// Correction lines shown when a flu hazard catches the player.
+const HAZARD_LINES = [
+  "Flu slowed you down — stay protected out there.",
+  "Watch out for the flu! Vaccination lowers your risk.",
+  "The flu caught you. A flu shot helps you bounce back faster.",
+];
 
 /* ---------- Keycard + locked vault ---------- */
 function checkKeycard() {
@@ -1444,13 +1581,13 @@ function beginSprintRound() {
 function sprintJump() {
   if (!sprintActive || sprint.jumping || sprint.sliding) return;
   sprint.jumping = true;
-  sprint.vjump = 15;
+  sprint.vjump = 18; // higher launch so a good jump fully clears obstacles (was 15)
   playSound("collect");
 }
 function sprintSlide() {
   if (!sprintActive || sprint.sliding || sprint.jumping) return;
   sprint.sliding = true;
-  sprint.slideT = 32;
+  sprint.slideT = 40; // stay down a little longer so overhead obstacles fully pass (was 32)
 }
 
 function spawnSprintObj(stage, groundY) {
@@ -1461,14 +1598,21 @@ function spawnSprintObj(stage, groundY) {
     el.className = "sprint-obj sprint-collect";
     el.innerHTML = SPRINT_ICONS[data.icon] + `<span class="spr-label">${data.text}</span>`;
     stage.appendChild(el);
+    const w = el.offsetWidth,
+      h = el.offsetHeight;
     box = {
       el,
       x: stage.clientWidth,
       y: groundY - 78,
-      w: el.offsetWidth,
-      h: el.offsetHeight,
+      w,
+      h,
       kind: "collect",
       data,
+      // Generous grab box (still slightly inset from the chip edges).
+      hx: w * 0.12,
+      hy: 6,
+      hw: w * 0.76,
+      hh: h - 12,
     };
   } else {
     const data = rand(SPRINT_OBSTACLES);
@@ -1477,14 +1621,23 @@ function spawnSprintObj(stage, groundY) {
     stage.appendChild(el);
     const w = el.offsetWidth,
       h = el.offsetHeight;
+    const y = data.overhead ? groundY - 92 : groundY - h;
     box = {
       el,
       x: stage.clientWidth,
-      y: data.overhead ? groundY - 92 : groundY - h,
+      y,
       w,
       h,
       kind: "obstacle",
       data,
+      // Fair collision box: narrower than the visible chip (so a tiny edge touch
+      // doesn't count) and inset from the top so a clean jump/duck clears it.
+      hx: w * 0.24,
+      hw: w * 0.52,
+      // Overhead = a slim band up high you duck under; ground = a solid box you
+      // jump over, with the top trimmed so a good jump doesn't clip its corner.
+      hy: data.overhead ? 6 : 16,
+      hh: data.overhead ? 40 : Math.max(20, h - 18),
     };
   }
   el.style.left = box.x + "px";
@@ -1496,6 +1649,12 @@ function sprintLoop() {
   const screen = document.getElementById("screen-sprint");
   if (!sprintActive || !screen.classList.contains("active")) {
     sprintActive = false;
+    return;
+  }
+  // Freeze the run while a full-screen message is open (and keep the loop alive so
+  // it resumes cleanly). The player can't be hit by an obstacle while reading.
+  if (overlayPaused) {
+    sprintFrame = requestAnimationFrame(sprintLoop);
     return;
   }
   const stage = document.getElementById("sprint-stage");
@@ -1528,8 +1687,10 @@ function sprintLoop() {
     sprint.spawnGap = 230 + Math.random() * 170;
   }
 
-  const ph = sprint.sliding ? 34 : 68;
-  const pBox = { x: 55, y: groundY - ph - sprint.jumpOffset, w: 40, h: ph };
+  // Player collision box. Ducking makes it much shorter (22 vs 68) so overhead
+  // obstacles clear consistently; it's narrow so only a real overlap counts.
+  const ph = sprint.sliding ? 22 : 68;
+  const pBox = { x: 58, y: groundY - ph - sprint.jumpOffset, w: 30, h: ph };
 
   sprint.objs = sprint.objs.filter((o) => {
     o.x -= sprint.speed;
@@ -1538,8 +1699,10 @@ function sprintLoop() {
       o.el.remove();
       return false;
     }
-    if (!o.done && overlap(pBox, { x: o.x, y: o.y, w: o.w, h: o.h })) {
-      o.done = true;
+    // Use the fair inset hitbox (o.hx/hy/hw/hh), not the full visible chip.
+    const hitBox = { x: o.x + o.hx, y: o.y + o.hy, w: o.hw, h: o.hh };
+    if (!o.done && overlap(pBox, hitBox)) {
+      o.done = true; // one event per object — never re-fires every frame
       sprintHit(o);
       if (o.kind === "collect") {
         o.el.remove();
@@ -1551,8 +1714,9 @@ function sprintLoop() {
 
   const runner = stage.querySelector(".sprint-runner");
   if (runner) {
+    // Duck visual matches the shorter hitbox (squash lower from the feet).
     runner.style.transform = `translateY(${-sprint.jumpOffset}px) scale(0.45) scaleY(${
-      sprint.sliding ? 0.55 : 1
+      sprint.sliding ? 0.42 : 1
     })`;
   }
 
@@ -1569,7 +1733,7 @@ function sprintHit(o) {
     floatText(`+${o.data.score}`, cx, cy, "#ffd34d");
     burst(cx, cy, "#ffd34d");
     playSound("success");
-    toast(o.data.msg, 1500);
+    bigMessage(o.data.msg, { title: `+${o.data.score}`, tone: "good", duration: 1300 });
   } else {
     if (sprint.hitT > 0) return; // brief grace so one stumble isn't punished twice
     sprint.hitT = 45;
@@ -1578,7 +1742,7 @@ function sprintHit(o) {
     playSound("hit");
     shake();
     floatText("-50", cx, cy, "#ff6b6b");
-    toast(o.data.msg, 1800);
+    bigMessage(o.data.msg, { icon: "⚠️", title: "-50", tone: "warn", duration: 1600 });
   }
   document.getElementById("sprint-score").textContent = sprint.score;
 }
@@ -1992,6 +2156,11 @@ function dartsLoop() {
     dartsActive = false;
     return;
   }
+  // Freeze while a full-screen message is open; keep the loop alive to resume.
+  if (overlayPaused) {
+    dartsFrame = requestAnimationFrame(dartsLoop);
+    return;
+  }
   const stage = document.getElementById("darts-stage");
   const W = stage.clientWidth,
     H = stage.clientHeight;
@@ -2044,7 +2213,11 @@ function dartHitBoard(board) {
     floatText(`+${pts}`, cx, cy, "#ffd34d");
     burst(cx, cy, "#ffd34d");
     playSound("success");
-    toast(board.feedback + (darts.combo >= 2 ? `  (Combo x${darts.combo})` : ""), 1700);
+    bigMessage(board.feedback, {
+      title: `+${pts}${darts.combo >= 2 ? `  ·  Combo x${darts.combo}` : ""}`,
+      tone: "good",
+      duration: 1600,
+    });
     board.el.remove();
     darts.boards = darts.boards.filter((b) => b !== board);
   } else {
@@ -2055,7 +2228,7 @@ function dartHitBoard(board) {
     floatText("-50", cx, cy, "#ff6b6b");
     playSound("error");
     shake();
-    toast(board.feedback, 2200);
+    bigMessage(board.feedback, { icon: "⚠️", title: "-50", tone: "warn", duration: 1800 });
     board.el.classList.add("dart-board-hit");
     setTimeout(() => board.el.classList.remove("dart-board-hit"), 300);
   }
@@ -2083,8 +2256,9 @@ function finishDarts() {
 }
 
 /* ---------- 6d. MEMORY MATCH ---------- */
-// Rebuilt per Milestone F: 16 cards / 8 pairs, shuffled and de-adjacent, neutral
-// cards (no colour tell), educational feedback on a match, short message on a miss.
+// 12 cards / 6 pairs — each pair is one picture card + one fact card. Shuffled and
+// de-adjacent, neutral cards (no colour tell), an educational explanation after every
+// correct match, and a short message on a miss.
 let memory = {};
 function startMemory() {
   showScreen("screen-memory");
@@ -2111,11 +2285,11 @@ function beginMemoryRound() {
   stage.innerHTML = "";
   toast(rand(MEMORY_MESSAGES), 1800);
 
-  // Deck: each pair -> two cards sharing a pairId.
+  // Deck: each pair -> one picture card + one fact card, both sharing a pairId.
   const deck = [];
   MEMORY_PAIRS.forEach((pair, i) => {
-    deck.push({ pairId: i, text: pair.a });
-    deck.push({ pairId: i, text: pair.b });
+    deck.push({ pairId: i, kind: "img", img: pair.img, alt: pair.alt });
+    deck.push({ pairId: i, kind: "fact", text: pair.fact });
   });
   // Fisher–Yates shuffle.
   for (let i = deck.length - 1; i > 0; i--) {
@@ -2146,7 +2320,15 @@ function beginMemoryRound() {
   deck.forEach((card) => {
     const el = document.createElement("div");
     el.className = "mem-card";
-    el.innerHTML = `<span class="mem-back">＋</span><span class="mem-face">${card.text}</span>`;
+    let face;
+    if (card.kind === "img") {
+      // Picture card: show ONLY the image, contained (never cropped/stretched).
+      face = `<span class="mem-face mem-face-img"><img class="mem-img" src="${card.img}" alt="${card.alt}"></span>`;
+    } else {
+      // Fact card: centered, wrapping text — no image, no explanation.
+      face = `<span class="mem-face mem-face-fact">${card.text}</span>`;
+    }
+    el.innerHTML = `<span class="mem-back">＋</span>${face}`;
     el.dataset.pair = card.pairId;
     el.addEventListener("click", () => flipCard(el));
     stage.appendChild(el);
@@ -2181,7 +2363,12 @@ function flipCard(el) {
     playSound("success");
     const mc = centerOf(el);
     floatText("+100", mc.x, mc.y, "#57d38c");
-    toast(MEMORY_PAIRS[Number(el.dataset.pair)].msg, 2200);
+    bigMessage(MEMORY_PAIRS[Number(el.dataset.pair)].msg, {
+      icon: "✅",
+      title: "Match!",
+      tone: "good",
+      duration: 2600,
+    });
     if (memory.pairs === MEMORY_PAIRS.length) finishMemory();
   } else {
     // Miss — short message, then flip both back (no point loss).
