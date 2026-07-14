@@ -1621,7 +1621,18 @@ function startFreeze() {
 function beginFreezeRound() {
   const stage = document.getElementById("freeze-stage");
   stage.innerHTML = "";
-  freeze = { score: 0, lives: 3, time: 60, combo: 0, items: [], slicing: false, lx: 0, ly: 0 };
+  freeze = {
+    score: 0,
+    lives: 3,
+    time: 60,
+    combo: 0,
+    items: [],
+    slicing: false,
+    lx: 0,
+    ly: 0,
+    paused: false,
+    corrT: null,
+  };
   document.getElementById("freeze-score").textContent = 0;
   document.getElementById("freeze-lives").textContent = 3;
   document.getElementById("freeze-time").textContent = 60;
@@ -1630,6 +1641,7 @@ function beginFreezeRound() {
   miniTimers.push(setInterval(spawnFreezeItem, 1200));
   miniTimers.push(
     setInterval(() => {
+      if (freeze.paused) return; // don't lose time while reading a correction
       freeze.time--;
       document.getElementById("freeze-time").textContent = freeze.time;
       if (freeze.time <= 0) finishFreeze();
@@ -1647,7 +1659,7 @@ function beginFreezeRound() {
 }
 
 function spawnFreezeItem() {
-  if (!freezeActive) return;
+  if (!freezeActive || freeze.paused) return;
   const stage = document.getElementById("freeze-stage");
   const positive = Math.random() < 0.55;
   const data = positive ? rand(FREEZE_POSITIVE) : rand(FREEZE_NEGATIVE);
@@ -1678,20 +1690,22 @@ function freezeLoop() {
     freezeActive = false;
     return;
   }
-  const H = document.getElementById("freeze-stage").clientHeight;
-  freeze.items = freeze.items.filter((it) => {
-    it.vy += 0.13; // gravity (lower = slower, floatier arc that's easy to read/slice)
-    it.x += it.vx;
-    it.y += it.vy;
-    it.el.style.left = it.x + "px";
-    it.el.style.top = it.y + "px";
-    if (it.y > H + 90) {
-      it.el.remove();
-      if (it.positive) freeze.combo = 0; // missed a good item — combo resets
-      return false;
-    }
-    return true;
-  });
+  if (!freeze.paused) {
+    const H = document.getElementById("freeze-stage").clientHeight;
+    freeze.items = freeze.items.filter((it) => {
+      it.vy += 0.13; // gravity (lower = slower, floatier arc that's easy to read/slice)
+      it.x += it.vx;
+      it.y += it.vy;
+      it.el.style.left = it.x + "px";
+      it.el.style.top = it.y + "px";
+      if (it.y > H + 90) {
+        it.el.remove();
+        if (it.positive) freeze.combo = 0; // missed a good item — combo resets
+        return false;
+      }
+      return true;
+    });
+  }
   freezeFrame = requestAnimationFrame(freezeLoop);
 }
 
@@ -1700,6 +1714,7 @@ function freezeLocalXY(e, stage) {
   return { x: e.clientX - r.left, y: e.clientY - r.top };
 }
 function freezePointerDown(e) {
+  if (freeze.paused) return;
   freeze.slicing = true;
   const p = freezeLocalXY(e, document.getElementById("freeze-stage"));
   freeze.lx = p.x;
@@ -1707,7 +1722,7 @@ function freezePointerDown(e) {
   freezeSliceAt(p.x, p.y);
 }
 function freezePointerMove(e) {
-  if (!freeze.slicing) return;
+  if (!freeze.slicing || freeze.paused) return;
   const p = freezeLocalXY(e, document.getElementById("freeze-stage"));
   freezeSliceAt(p.x, p.y);
   freezeSliceAt((p.x + freeze.lx) / 2, (p.y + freeze.ly) / 2); // catch fast swipes
@@ -1757,16 +1772,42 @@ function sliceFreezeItem(item) {
     floatText("−1 life", cx, cy, "#ff6b6b");
     playSound("error");
     shake();
-    toast(rand(FREEZE_LIFE_LOST) + "  " + item.data.feedback, 2600);
-    if (freeze.lives <= 0) {
-      finishFreeze();
-      return;
-    }
+    // Big centered correction card — pauses the game so it can be read.
+    showFreezeCorrection(item, freeze.lives <= 0);
   }
   document.getElementById("freeze-score").textContent = freeze.score;
 }
 
+// Prominent "here's the correction" overlay shown after a wrong slice.
+function showFreezeCorrection(item, final) {
+  const stage = document.getElementById("freeze-stage");
+  let ov = document.getElementById("freeze-correction");
+  if (!ov) {
+    ov = document.createElement("div");
+    ov.id = "freeze-correction";
+    ov.className = "mg-correction";
+    stage.appendChild(ov);
+  }
+  ov.innerHTML =
+    '<div class="mg-correction-card">' +
+    `<div class="mg-correction-tag">${rand(FREEZE_LIFE_LOST)}</div>` +
+    `<div class="mg-correction-item">${item.data.text}</div>` +
+    `<div class="mg-correction-text">${item.data.feedback}</div>` +
+    `<div class="mg-correction-lives">${final ? "No lives left" : "Lives left: " + freeze.lives}</div>` +
+    "</div>";
+  ov.classList.add("show");
+  freeze.paused = true;
+  clearTimeout(freeze.corrT);
+  freeze.corrT = setTimeout(() => {
+    ov.classList.remove("show");
+    freeze.paused = false;
+    if (final) finishFreeze();
+  }, 2800);
+}
+
 function finishFreeze() {
+  if (!freezeActive) return; // guard against a stray correction timeout after exit
+  clearTimeout(freeze.corrT);
   freezeActive = false;
   cancelAnimationFrame(freezeFrame);
   clearMiniTimers();

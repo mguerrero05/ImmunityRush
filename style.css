@@ -1324,6 +1324,65 @@ body {
     transform: scale(0.3);
   }
 }
+/* Big centered correction overlay (shown after a wrong slice in Flu Freeze). */
+.mg-correction {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 30, 50, 0.55);
+  z-index: 20;
+  padding: 20px;
+}
+.mg-correction.show {
+  display: flex;
+}
+.mg-correction.show .mg-correction-card {
+  animation: corrIn 0.22s ease;
+}
+@keyframes corrIn {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.mg-correction-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  max-width: 300px;
+  text-align: center;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+  border-top: 6px solid var(--bad);
+}
+.mg-correction-tag {
+  font-weight: 800;
+  color: var(--bad);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.mg-correction-item {
+  font-weight: 700;
+  color: var(--shn-blue);
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+.mg-correction-text {
+  color: #234;
+  font-size: 14px;
+  line-height: 1.35;
+  margin-bottom: 10px;
+}
+.mg-correction-lives {
+  font-size: 12px;
+  font-weight: 700;
+  color: #789;
+}
 
 /* Memory match */
 .memory-grid {
