@@ -32,6 +32,12 @@
   `~/.local/node/bin` — add it to PATH in a plain shell: `export PATH="$HOME/.local/node/bin:$PATH"`.
 - **Key files:** `BUILD_PLAN.md` (roadmap), `GAME_SPEC.md` (design), `CLAUDE.md` (context).
 
+## Deploy
+
+- Sharing via **GitHub Pages** (static site, files at repo root). URL once enabled:
+  `https://mguerrero05.github.io/ImmunityRush/`. Repo must be public; Settings → Pages →
+  Deploy from branch `main` / root. Re-push to update the live site.
+
 ## Session log
 
 - 2026-07-07 — Read the Immunity Rush context packet and saved the full game design
@@ -82,3 +88,11 @@
   "Not now"/exit teleport-into-wall bug, and enlarged the maze to a 5-lane serpentine
   (1050) with more turns, 5 hazards, ~14 boosters. User approved each. Next: Milestone G
   (custom icons replacing emoji, hospital maze detail, sound/music, mobile/accessibility).
+- 2026-07-14 — Readability + polish: slowed Vaccine Darts, Hospital Sprint, and Flu Freeze
+  so the educational text is readable. Started Milestone G with custom inline-SVG icons for
+  the Sprint items. Added a big centered correction card in Flu Freeze (pauses the game to
+  read) on a wrong slice. Enlarged the bonus vault + widened its door so it's enterable,
+  moved the rewards inside, added a "find the keycard" hint. Added a home slogan. Prepping
+  a **GitHub Pages** deploy so the supervisor can play it (making the repo public). Next:
+  finish the icon pass (maze collectibles/hazards/keycard emoji), then clinic completed
+  states, sound, mobile.
