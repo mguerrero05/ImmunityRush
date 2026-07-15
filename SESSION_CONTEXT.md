@@ -127,3 +127,13 @@
   grey (no colour tell before selection); the only post-hit class on a board is a shake, not
   a colour. Verified headlessly (7 checks pass, no errors). Next unchanged: Milestone G icon
   pass, clinic completed states, sound, mobile.
+- 2026-07-14 (session 11 — backups + presentation brief): Confirmed the project is fully
+  backed up to GitHub (local == origin). Added a **local backup habit**: created a dated
+  ZIP snapshot on the Desktop (`ImmunityRush-backup-YYYY-MM-DD.zip`, excludes node_modules/
+  .git/.DS_Store) and updated the **/termino** command so every Termino now also refreshes
+  that Desktop ZIP (same-day overwrites). The real working copy stays at `~/ImmunityRush`;
+  the ZIP is just a frozen safety copy. Also wrote **`PRESENTATION_BRIEF.md`** — a detailed,
+  plain-English snapshot of the whole project (what it is, the maze + 4 mini-games, what's
+  done, what's next, known limitations, a suggested slide outline, and a ready-to-paste
+  ChatGPT prompt) so the user can build a progress slideshow. Next unchanged: Milestone G
+  icon pass, clinic completed states, sound, mobile; plus grab screenshots for the slides.
