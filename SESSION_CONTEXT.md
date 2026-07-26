@@ -191,3 +191,23 @@
   widescreen frame (deferred — biggest visual next step), emoji→custom icons, compress the
   Memory photos, keyboard-operable Memory cards. Also still pending from before: supply the
   `assets/characters/*-hero.png` renders to show hero art on home.
+- 2026-07-26 (session 15 — 2.5D character upgrade + landscape maze rebuild):
+  **Character:** upgraded the CSS character toward the SHN nurse renders — male = spiky dark
+  hair, female = brown BUN (was long-hair-down), stethoscope on BOTH, SHN sleeve logo + chest
+  badge, rounded 2.5D gradient shading (color-mix on --skin/--hair/--scrubs), bigger eyes.
+  CSS-only; customization + maze/sprint inherit it. **Maze → full landscape overview (Steps
+  1–2), user chose it to match the maze reference:** on widescreen (`@media
+  (min-aspect-ratio:1/1) and (min-width:760px)`) #game goes wide (~1150×700), the WHOLE maze
+  shows at once (loopMaze overview branch centres world, no camera-follow; #maze-world scaled
+  ~0.66), and a reference-style HUD replaces the top bar: LEFT panel (logo w/ green RUSH,
+  tagline, circular portrait via #mhud-char, HEALTH/SHIELD/SPEED pips reusing Stage-1 .pips,
+  FAMILY TOKENS n/3), top Mission + ★SCORE + gear, bottom legend + Tip. New JS: `pipRow`,
+  `updateHudLand` (from updateHUD), `state.family` (reset in beginGame, ++ in collect for
+  key==="family"), updateMission also sets #mhud-mission. **Portrait UNCHANGED** (top bar +
+  camera-follow; HUD hidden by media query). 7/7 jsdom HUD checks, lint clean, no errors.
+  Approved wording kept. **HONEST CAPABILITY LIMIT:** cannot generate/repro the AI render
+  exactly (no image tools). Path B = user supplies art (clean `maze-bg.png` with NO
+  ui/path/characters + `sprite-*.png` transparent sprites) → wrote `assets/maze/README.md`
+  spec; I'll trace walls from maze-bg to align collisions. Next: Path A (Step 3 CSS polish —
+  dashed path, props, bigger germs) OR Path B (wire user's assets). Still needed: landscape
+  layouts for home + the 4 mini-games (work but sit in a centred column).

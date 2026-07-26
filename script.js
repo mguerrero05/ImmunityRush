@@ -417,6 +417,7 @@ let state = {
   health: 3,
   shielded: false,
   speedBoost: false,
+  family: 0, // family tokens collected this run (shown in the landscape HUD)
   runSeconds: 0, // overall run time; the run ends at RUN_LIMIT_SECONDS
 };
 
@@ -737,6 +738,7 @@ function beginGame() {
   state.health = 3;
   state.shielded = false;
   state.speedBoost = false;
+  state.family = 0;
   // Clear mini-game state so zone doors work again on a fresh run. Without this,
   // dying in a mini-game (which ends the run) left zoneCooldown stuck "on", so
   // walking into a mini-game door did nothing after Play Again.
@@ -749,6 +751,7 @@ function beginGame() {
 
   showScreen("screen-maze");
   buildMaze();
+  buildCharacter(document.getElementById("mhud-char")); // landscape HUD portrait
   resetPowerups();
   updateHUD();
   updateMission();
@@ -792,6 +795,29 @@ function updateHUD() {
   document.getElementById("hud-score").textContent = state.score;
   document.getElementById("hud-health").textContent = state.health;
   document.getElementById("hud-shield").classList.toggle("on", state.shielded);
+  updateHudLand();
+}
+
+// Render a row of pips (health/shield/speed) into an element.
+function pipRow(el, count, full, cls) {
+  if (!el) return;
+  el.innerHTML = "";
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement("span");
+    p.className = "pip " + cls + (i < full ? " full" : "");
+    el.appendChild(p);
+  }
+}
+
+// Landscape maze HUD (left panel + score). No-ops in portrait (elements hidden).
+function updateHudLand() {
+  const sc = document.getElementById("mhud-score");
+  if (sc) sc.textContent = state.score;
+  pipRow(document.getElementById("mhud-health"), 5, state.health, "");
+  pipRow(document.getElementById("mhud-shield-l"), 3, state.shielded ? 1 : 0, "shield");
+  pipRow(document.getElementById("mhud-speed-l"), 4, state.speedBoost ? 4 : 0, "energy");
+  const fam = document.getElementById("mhud-family");
+  if (fam) fam.textContent = (state.family || 0) + "/3";
 }
 
 function addScore(n) {
@@ -1131,12 +1157,23 @@ function loopMaze() {
   }
   pEl.classList.toggle("walking", moving); // walk animation only while actually moving
 
-  // Camera: center the player by translating the world.
+  // Camera. Landscape = static full-maze OVERVIEW (whole maze in view, no follow);
+  // portrait = camera follows the player. Collision/movement are unchanged either way.
   const world = document.getElementById("maze-world");
-  const camX = VIEW_W / 2 - (player.x + player.w / 2);
-  const camY = VIEW_H / 2 - (player.y + player.h / 2);
-  world.style.left = camX + "px";
-  world.style.top = camY + "px";
+  const overview = window.matchMedia("(min-aspect-ratio: 1/1)").matches;
+  let camX = 0,
+    camY = 0;
+  if (overview) {
+    const vp = document.getElementById("maze-viewport");
+    // Centre the (CSS-scaled) 1050×1050 world in the viewport; scale is in CSS.
+    world.style.left = (vp.clientWidth - WORLD_SIZE) / 2 + "px";
+    world.style.top = (vp.clientHeight - WORLD_SIZE) / 2 + "px";
+  } else {
+    camX = VIEW_W / 2 - (player.x + player.w / 2);
+    camY = VIEW_H / 2 - (player.y + player.h / 2);
+    world.style.left = camX + "px";
+    world.style.top = camY + "px";
+  }
 
   checkCollectibles();
   checkZones();
@@ -1162,6 +1199,7 @@ function checkCollectibles() {
 
 function collect(data) {
   addScore(data.points);
+  if (data.key === "family") state.family = (state.family || 0) + 1; // HUD counter
   // Apply the effect (with clear, visible feedback — see power-up functions below).
   if (data.effect === "shield") {
     activateShield(6);
@@ -1391,13 +1429,13 @@ function checkKeycard() {
 /* ---------- Mission: visit all four clinics ---------- */
 function updateMission() {
   const count = Object.keys(missionVisited).length;
+  const txt = missionDone
+    ? "✅ Mission complete — all 4 clinics visited!"
+    : `Mission: visit all 4 clinics (${count}/4)`;
   const el = document.getElementById("mission");
-  if (!el) return;
-  if (missionDone) {
-    el.textContent = "✅ Mission complete — all 4 clinics visited!";
-    return;
-  }
-  el.textContent = `Mission: visit all 4 clinics (${count}/4)`;
+  if (el) el.textContent = txt;
+  const el2 = document.getElementById("mhud-mission");
+  if (el2) el2.textContent = txt;
 }
 function markClinicVisited(key) {
   // Visual "completed" state on the clinic door in the maze.

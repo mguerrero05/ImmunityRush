@@ -225,6 +225,63 @@
         <!-- Current mission / objective -->
         <div id="mission" class="mission">Mission: visit all 4 clinics (0/4)</div>
 
+        <!-- Landscape HUD (shown only on widescreen; matches the maze reference
+             layout, using our approved wording). Portrait uses the top bar above. -->
+        <div class="mhud" aria-hidden="true">
+          <div class="mhud-left">
+            <div class="mhud-logo">
+              <span class="mhud-badge">＋</span>
+              <span class="mhud-title">IMMUNITY<b>RUSH</b></span>
+            </div>
+            <div class="mhud-tag">Keep your plans. Not the flu.</div>
+            <div class="mhud-portrait"><div id="mhud-char" class="character-stage"></div></div>
+            <div class="mhud-row">
+              <span class="mhud-lbl">❤ HEALTH</span><span class="pips" id="mhud-health"></span>
+            </div>
+            <div class="mhud-row">
+              <span class="mhud-lbl">🛡 SHIELD</span><span class="pips" id="mhud-shield-l"></span>
+            </div>
+            <div class="mhud-row">
+              <span class="mhud-lbl">⚡ SPEED</span><span class="pips" id="mhud-speed-l"></span>
+            </div>
+            <div class="mhud-row">
+              <span class="mhud-lbl">👪 FAMILY TOKENS</span
+              ><span class="mhud-fam" id="mhud-family">0/3</span>
+            </div>
+          </div>
+
+          <div class="mhud-mission">
+            <span id="mhud-mission">Mission: visit all 4 clinics</span>
+          </div>
+          <div class="mhud-score">
+            <span class="mhud-star">★</span> SCORE <b id="mhud-score">0</b>
+          </div>
+          <button class="mhud-gear" onclick="toggleMute()" aria-label="Settings / sound">⚙</button>
+
+          <div class="mhud-legend">
+            <div class="lg">
+              <span class="lg-ic shield">🛡</span>
+              <div><b>Vaccine Shield</b><small>Protects you from one flu obstacle.</small></div>
+            </div>
+            <div class="lg">
+              <span class="lg-ic speed">⚡</span>
+              <div><b>Speed Boost</b><small>Run faster for a short time.</small></div>
+            </div>
+            <div class="lg">
+              <span class="lg-ic heart">❤</span>
+              <div><b>Health Boost</b><small>Restore one health point.</small></div>
+            </div>
+            <div class="lg">
+              <span class="lg-ic fam">👪</span>
+              <div><b>Family Token</b><small>Protect the moments that matter.</small></div>
+            </div>
+            <div class="lg tip">
+              <span class="lg-ic">💡</span>
+              <div><b>Tip</b><small>Explore every path — some doors are locked.</small></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Directional arrows to mini-games sit on the edges -->
         <div id="direction-arrows"></div>
 
