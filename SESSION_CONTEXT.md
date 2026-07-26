@@ -158,3 +158,16 @@
   scale. All verified headlessly + screenshots; no gameplay/wording/geometry changed; lint
   clean. **Next: Stage 5 — Vaccine Darts** (awaiting approval each stage). Optional: a dedicated
   responsive-landscape frame pass before continuing.
+- 2026-07-25 (session 13 — Stage 5 Vaccine Darts visuals): Re-confirmed from CODE that the
+  approved rule is **hit the MYTHS, protect the FACTS** (the reference image inverts this to
+  "hit the facts" — IGNORED per the visual-only rule). Visual-only upgrade: darts area is now a
+  hospital clinic (wall→floor + baseboard) with a **decorative dartboard** on the back wall;
+  statement cards restyled as **pinned clinic cards, identical for myths & facts** (no colour
+  tell before the throw); the dart is a **steel arrow that rotates to point along its flight**
+  (one JS line in the shots loop); aim indicator is a dashed line + arrowhead; launcher pad
+  polished with a "drag from here" pulse. Green/red result overlays still appear ONLY after a
+  hit. Verified: jsdom scoring (myth=+pts, fact=−50) + identical card class; real browser shows
+  cards drift in as neutral pinned cards (jsdom shows 0 cards at start only because clientWidth=0
+  breaks the drift/cull math — a headless artifact, not a bug). Files: `style.css` (Stage 5
+  section) + `script.js` (dart rotation line). **Stage 6 — Flu Freeze** just STARTED (checkpoint
+  tag `stage6-start` + code inspection only; no visual changes yet). Next: build Stage 6.

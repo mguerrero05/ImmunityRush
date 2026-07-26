@@ -2223,6 +2223,7 @@ function dartsLoop() {
     s.y += s.vy;
     s.el.style.left = s.x + "px";
     s.el.style.top = s.y + "px";
+    s.el.style.transform = `rotate(${Math.atan2(s.vy, s.vx)}rad)`; // point along flight
     const sBox = { x: s.x - 6, y: s.y - 6, w: 12, h: 12 };
     for (const b of darts.boards) {
       if (overlap(sBox, { x: b.x, y: b.y, w: b.w, h: b.h })) {
