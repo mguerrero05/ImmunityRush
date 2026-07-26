@@ -229,3 +229,15 @@
   just coordinate tweaks now. Sprites (germ/shield/etc.) still emoji — user's `icons.png` sheet
   needs splitting into individual TRANSPARENT PNGs (`sprite-*.png`) before use. Also pending:
   landscape layouts for home + 4 mini-games; portrait maze still camera-follow over the image.
+- 2026-07-26 (session 17 — refine image-maze alignment): Overlaid a coordinate grid on
+  maze-bg.png (via a canvas render) to read pixel positions, then refined `buildImageMaze`:
+  the 4 clinic markers now sit ON their labelled rooms (darts 585,200 · freeze 870,195 ·
+  sprint 255,460 · memory 955,375; ZONES x/y synced for entry detection), player starts at
+  reception (400,250), boosters + 3 germs repositioned onto open floor. First real wall trace
+  (outer bounds + ~12 internal dividers, image-pixel space). Added a `DEBUG_WALLS` flag +
+  `.dbg-wall` red overlay to align collisions against the art (now set false). Honest note:
+  precise wall-by-wall collision on an isometric drawing is approximate — the interactive
+  positions (clinics/player/boosters) are the solid win; internal walls are loose and can be
+  nudged per-spot during play. Next: playtest + nudge any wall that feels wrong; split
+  `icons.png` into transparent `sprite-*.png` and swap emoji→sprites; landscape layouts for
+  home + mini-games.

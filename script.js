@@ -900,6 +900,7 @@ let mazeFrame;
 // Image-maze mode: use the supplied maze artwork as the floor instead of the
 // CSS-drawn maze. Positions are in the image's pixel space (1586×992).
 const USE_IMAGE_MAZE = true;
+const DEBUG_WALLS = false; // draws collision walls in red to align them; off when done
 const IMG_W = 1586,
   IMG_H = 992;
 
@@ -1054,29 +1055,46 @@ function buildImageMaze(worldEl) {
   worldEl.style.width = IMG_W + "px";
   worldEl.style.height = IMG_H + "px";
 
-  // Collision walls (image pixel space). Outer boundary first; a few internal
-  // dividers give it a maze feel. Refined pass-by-pass.
-  const B = 46; // outer wall thickness
+  worldEl.querySelectorAll(".dbg-wall").forEach((n) => n.remove());
+
+  // Collision walls (image pixel space), traced from the artwork's grid.
+  // W = a vertical wall, H = horizontal. Refined pass-by-pass with the red overlay.
+  const TW = 24; // internal wall thickness
   walls = [
-    { x: 0, y: 0, w: IMG_W, h: B }, // top
-    { x: 0, y: IMG_H - B, w: IMG_W, h: B }, // bottom
-    { x: 0, y: 0, w: B, h: IMG_H }, // left
-    { x: IMG_W - B, y: 0, w: B, h: IMG_H }, // right
-    // internal (approximate — we nudge these with screenshots)
-    { x: 470, y: 300, w: 26, h: 360 },
-    { x: 760, y: 120, w: 26, h: 300 },
-    { x: 760, y: 560, w: 26, h: 300 },
-    { x: 1080, y: 300, w: 26, h: 360 },
-    { x: 300, y: 620, w: 380, h: 26 },
-    { x: 900, y: 640, w: 360, h: 26 },
+    // Outer bounds (keep the player on the floor; top rooms are entered via markers)
+    { x: 0, y: 0, w: IMG_W, h: 175 }, // top
+    { x: 0, y: 925, w: IMG_W, h: 67 }, // bottom
+    { x: 0, y: 0, w: 55, h: IMG_H }, // left
+    { x: 1528, y: 0, w: 58, h: IMG_H }, // right
+    // Internal dividers (approximate)
+    { x: 500, y: 270, w: 275, h: TW },
+    { x: 490, y: 285, w: TW, h: 225 },
+    { x: 605, y: 400, w: TW, h: 220 },
+    { x: 750, y: 175, w: TW, h: 130 },
+    { x: 750, y: 560, w: TW, h: 265 },
+    { x: 300, y: 490, w: 205, h: TW },
+    { x: 895, y: 300, w: TW, h: 245 },
+    { x: 895, y: 525, w: 235, h: TW },
+    { x: 1106, y: 300, w: TW, h: 250 },
+    { x: 300, y: 610, w: 380, h: TW },
+    { x: 900, y: 635, w: 375, h: TW },
+    { x: 1120, y: 640, w: TW, h: 245 },
   ];
+  if (DEBUG_WALLS) {
+    walls.forEach((w) => {
+      const d = document.createElement("div");
+      d.className = "dbg-wall";
+      d.style.cssText = `left:${w.x}px;top:${w.y}px;width:${w.w}px;height:${w.h}px`;
+      worldEl.appendChild(d);
+    });
+  }
 
   // Four mini-game clinics, placed on their labelled rooms in the artwork.
   const IZONES = [
-    { key: "darts", short: "Vaccine Darts", x: 610, y: 210, color: "rgba(125,47,166,0.55)" },
-    { key: "freeze", short: "Flu Freeze", x: 890, y: 195, color: "rgba(43,179,179,0.5)" },
-    { key: "sprint", short: "Hospital Sprint", x: 300, y: 470, color: "rgba(192,81,43,0.5)" },
-    { key: "memory", short: "Memory Clinic", x: 1010, y: 380, color: "rgba(125,91,166,0.5)" },
+    { key: "darts", short: "Vaccine Darts", x: 585, y: 200, color: "rgba(125,47,166,0.5)" },
+    { key: "freeze", short: "Flu Freeze", x: 870, y: 195, color: "rgba(43,179,179,0.45)" },
+    { key: "sprint", short: "Hospital Sprint", x: 255, y: 460, color: "rgba(192,81,43,0.45)" },
+    { key: "memory", short: "Memory Clinic", x: 955, y: 375, color: "rgba(125,91,166,0.45)" },
   ];
   IZONES.forEach((z) => {
     const d = document.createElement("div");
@@ -1094,15 +1112,15 @@ function buildImageMaze(worldEl) {
     }
   });
 
-  // Boosters scattered on the floor.
+  // Boosters scattered on open floor.
   liveCollectibles = [];
   [
-    [560, 520, "shield"],
-    [880, 540, "heart"],
-    [1180, 560, "speed"],
-    [430, 700, "family"],
-    [720, 720, "wellness"],
-    [1000, 760, "family"],
+    [560, 300, "shield"],
+    [800, 340, "heart"],
+    [1210, 470, "speed"],
+    [470, 660, "family"],
+    [730, 560, "wellness"],
+    [1040, 740, "family"],
   ].forEach(([x, y, key]) =>
     spawnCollectible(
       worldEl,
@@ -1112,11 +1130,11 @@ function buildImageMaze(worldEl) {
     ),
   );
 
-  // Patrolling germs.
+  // Patrolling germs (on open floor).
   hazards = [
-    { x: 640, y: 480, w: 46, h: 46, min: 320, max: 780, vy: 2.0 },
-    { x: 1000, y: 640, w: 46, h: 46, min: 420, max: 840, vy: -2.2 },
-    { x: 380, y: 560, w: 46, h: 46, min: 400, max: 820, vy: 1.8 },
+    { x: 650, y: 460, w: 46, h: 46, min: 350, max: 590, vy: 2.0 },
+    { x: 1000, y: 650, w: 46, h: 46, min: 480, max: 780, vy: -2.2 },
+    { x: 400, y: 640, w: 46, h: 46, min: 520, max: 820, vy: 1.8 },
   ];
   hazardCooldown = 0;
   hazards.forEach((h) => {
@@ -1134,8 +1152,8 @@ function buildImageMaze(worldEl) {
   vaultHintShown = true;
 
   // Player starts at the reception (top-left).
-  player.x = 360;
-  player.y = 300;
+  player.x = 400;
+  player.y = 250;
   player.speed = 4.4;
   const playerEl = document.getElementById("player");
   buildCharacter(playerEl);

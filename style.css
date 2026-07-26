@@ -3665,3 +3665,11 @@ img {
     animation: none;
   }
 }
+
+.dbg-wall {
+  position: absolute;
+  background: rgba(255, 0, 0, 0.38);
+  outline: 1px solid #f00;
+  z-index: 16;
+  pointer-events: none;
+}
