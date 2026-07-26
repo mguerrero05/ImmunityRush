@@ -171,3 +171,23 @@
   breaks the drift/cull math — a headless artifact, not a bug). Files: `style.css` (Stage 5
   section) + `script.js` (dart rotation line). **Stage 6 — Flu Freeze** just STARTED (checkpoint
   tag `stage6-start` + code inspection only; no visual changes yet). Next: build Stage 6.
+- 2026-07-26 (session 14 — Stages 6–10, visual upgrade COMPLETE): Finished the staged
+  visual pass. **Stage 6 Flu Freeze:** hospital corridor (ceiling lights + perspective floor),
+  frosty floating items (identical for positive/negative — no colour tell), glowing frost slice
+  trail; 3 lives + correction card preserved. **Stage 7 Hospital Sprint:** side-scroll corridor
+  (scrolling walls/floor), and collectibles vs obstacles are now colour-coded (green vs caution)
+  since Sprint is reflex not read-and-decide; chip box sizes kept identical so the tuned hitboxes
+  stay aligned; CSS-only (no JS). **Stage 8 Memory Clinic:** clinic backdrop, SHN-blue medallion
+  card backs, smoother flip, teal match glow (post-match), + a small mismatch shake (one JS
+  addition); approved 6 pairs + real photos kept. **Stage 9 Responsive/a11y:** re-enabled pinch
+  zoom (WCAG), aria-labels on sound + D-pad, bigger tap targets, darker slogan for contrast,
+  img max-width safety; reduced-motion already covered. **Stage 10 Final QA:** removed 7 dead
+  CSS blocks (old home scene), ran a 28/28 automated verification (flow, all booster effects,
+  hazard, all 4 mini-game entry+return, leaderboard, 5-min timer, VaxFacts+ link, NO PII — only
+  immunity* localStorage — and every approved fact/myth/explanation UNCHANGED, no errors), and
+  wrote **`QA_CHECKLIST.md`** (final file structure + asset-replacement guide + regression
+  checklist). Checkpoint tags per stage (stage6..stage10-start). Nothing gameplay/wording/
+  geometry changed across the whole upgrade. **Remaining optional follow-ups:** landscape/
+  widescreen frame (deferred — biggest visual next step), emoji→custom icons, compress the
+  Memory photos, keyboard-operable Memory cards. Also still pending from before: supply the
+  `assets/characters/*-hero.png` renders to show hero art on home.

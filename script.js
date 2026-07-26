@@ -2426,9 +2426,11 @@ function flipCard(el) {
     const a = memory.first,
       b = el;
     memory.first = null;
+    a.classList.add("mem-miss"); // brief shake — mismatch feedback (visual only)
+    b.classList.add("mem-miss");
     setTimeout(() => {
-      a.classList.remove("flipped");
-      b.classList.remove("flipped");
+      a.classList.remove("flipped", "mem-miss");
+      b.classList.remove("flipped", "mem-miss");
       memory.lock = false;
     }, 850);
   }

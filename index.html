@@ -2,10 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+    <!-- Allow pinch-zoom for accessibility (WCAG 1.4.4). Game play areas set
+         touch-action:none, so zoom won't interfere with in-game swipes/drags. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Immunity Rush</title>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -29,7 +28,15 @@
       </div>
 
       <!-- Sound on/off. Visible on every screen. -->
-      <button id="mute-btn" class="mute-btn" onclick="toggleMute()" title="Sound on/off">🔊</button>
+      <button
+        id="mute-btn"
+        class="mute-btn"
+        onclick="toggleMute()"
+        title="Sound on/off"
+        aria-label="Toggle sound on or off"
+      >
+        🔊
+      </button>
 
       <!-- =====================================================
          SCREEN 1: HOME
@@ -231,10 +238,10 @@
 
         <!-- Mobile touch D-pad -->
         <div id="dpad">
-          <button class="dbtn up" data-dir="up">▲</button>
-          <button class="dbtn left" data-dir="left">◀</button>
-          <button class="dbtn right" data-dir="right">▶</button>
-          <button class="dbtn down" data-dir="down">▼</button>
+          <button class="dbtn up" data-dir="up" aria-label="Move up">▲</button>
+          <button class="dbtn left" data-dir="left" aria-label="Move left">◀</button>
+          <button class="dbtn right" data-dir="right" aria-label="Move right">▶</button>
+          <button class="dbtn down" data-dir="down" aria-label="Move down">▼</button>
         </div>
       </section>
 
