@@ -3602,3 +3602,66 @@ img {
     background: rgba(43, 179, 179, 0.2);
   }
 }
+
+/* =========================================================================
+   IMAGE MAZE MODE — use the supplied artwork (assets/maze/maze-bg.png) as the
+   floor. Flat (no 3D tilt); elements sit on top at image-pixel positions.
+   ========================================================================= */
+#maze-world.img-mode {
+  background: url("assets/maze/maze-bg.png") center / 100% 100% no-repeat;
+  transform: none;
+}
+#maze-world.img-mode::before {
+  display: none;
+}
+/* No tilt = no billboard counter-rotation; elements lie flat on the art. */
+.img-mode .zone,
+.img-mode .collectible,
+.img-mode .hazard,
+.img-mode .keycard {
+  transform: none !important;
+}
+.img-mode .maze-player,
+.img-mode .maze-player[data-facing="right"],
+.img-mode .maze-player[data-facing="front"],
+.img-mode .maze-player[data-facing="back"] {
+  transform: scale(1.05) !important;
+}
+.img-mode .maze-player[data-facing="left"] {
+  transform: scale(1.05) scaleX(-1) !important;
+}
+/* Bigger pickups/germs so they read on the large artwork. */
+.img-mode .collectible {
+  font-size: 42px;
+  width: 46px;
+  height: 46px;
+  animation: none;
+}
+.img-mode .hazard {
+  font-size: 46px;
+  width: 48px;
+  height: 48px;
+}
+/* Clinic entry markers: a soft glowing pad over the room doorway. */
+.img-mode .zone {
+  width: 128px;
+  height: 96px;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  color: #fff;
+  font-size: 13px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(1px);
+}
+.img-mode .zone .zone-icon {
+  font-size: 30px;
+}
+
+/* Landscape overview: fit the whole 1586×992 image into the inset play area. */
+@media (min-aspect-ratio: 1/1) and (min-width: 760px) {
+  #maze-world.img-mode,
+  #maze-world.img-mode.zooming {
+    transform: scale(0.53) !important;
+    animation: none;
+  }
+}

@@ -897,13 +897,23 @@ let keys = {};
 let mazeRunning = false;
 let mazeFrame;
 
+// Image-maze mode: use the supplied maze artwork as the floor instead of the
+// CSS-drawn maze. Positions are in the image's pixel space (1586×992).
+const USE_IMAGE_MAZE = true;
+const IMG_W = 1586,
+  IMG_H = 992;
+
 // Build all maze elements fresh.
 function buildMaze() {
   const worldEl = document.getElementById("maze-world");
   // Clear everything except the player element.
   worldEl
-    .querySelectorAll(".wall, .zone, .collectible, .room, .room-sign, .hazard, .locked-door")
+    .querySelectorAll(
+      ".wall, .zone, .collectible, .room, .room-sign, .hazard, .locked-door, .keycard",
+    )
     .forEach((n) => n.remove());
+
+  if (USE_IMAGE_MAZE) return buildImageMaze(worldEl);
 
   // --- Hospital rooms (decorative floor areas + standing signs) ---
   // Drawn first so they sit behind the walls, doors, and collectibles.
@@ -1036,6 +1046,103 @@ function buildMaze() {
   buildDirectionArrows();
 }
 
+// Build the maze on top of the supplied artwork (assets/maze/maze-bg.png).
+// All coordinates are in the image's pixel space (IMG_W×IMG_H). This is a first
+// alignment pass — clinic/wall positions are refined with screenshots.
+function buildImageMaze(worldEl) {
+  worldEl.classList.add("img-mode");
+  worldEl.style.width = IMG_W + "px";
+  worldEl.style.height = IMG_H + "px";
+
+  // Collision walls (image pixel space). Outer boundary first; a few internal
+  // dividers give it a maze feel. Refined pass-by-pass.
+  const B = 46; // outer wall thickness
+  walls = [
+    { x: 0, y: 0, w: IMG_W, h: B }, // top
+    { x: 0, y: IMG_H - B, w: IMG_W, h: B }, // bottom
+    { x: 0, y: 0, w: B, h: IMG_H }, // left
+    { x: IMG_W - B, y: 0, w: B, h: IMG_H }, // right
+    // internal (approximate — we nudge these with screenshots)
+    { x: 470, y: 300, w: 26, h: 360 },
+    { x: 760, y: 120, w: 26, h: 300 },
+    { x: 760, y: 560, w: 26, h: 300 },
+    { x: 1080, y: 300, w: 26, h: 360 },
+    { x: 300, y: 620, w: 380, h: 26 },
+    { x: 900, y: 640, w: 360, h: 26 },
+  ];
+
+  // Four mini-game clinics, placed on their labelled rooms in the artwork.
+  const IZONES = [
+    { key: "darts", short: "Vaccine Darts", x: 610, y: 210, color: "rgba(125,47,166,0.55)" },
+    { key: "freeze", short: "Flu Freeze", x: 890, y: 195, color: "rgba(43,179,179,0.5)" },
+    { key: "sprint", short: "Hospital Sprint", x: 300, y: 470, color: "rgba(192,81,43,0.5)" },
+    { key: "memory", short: "Memory Clinic", x: 1010, y: 380, color: "rgba(125,91,166,0.5)" },
+  ];
+  IZONES.forEach((z) => {
+    const d = document.createElement("div");
+    d.className = "zone";
+    d.dataset.key = z.key;
+    d.style.left = z.x + "px";
+    d.style.top = z.y + "px";
+    d.style.background = z.color;
+    d.innerHTML = `<div class="zone-icon">${ZONES.find((q) => q.key === z.key).icon}</div>${z.short}`;
+    worldEl.appendChild(d);
+    const zd = ZONES.find((q) => q.key === z.key); // keep entry-detection in sync
+    if (zd) {
+      zd.x = z.x;
+      zd.y = z.y;
+    }
+  });
+
+  // Boosters scattered on the floor.
+  liveCollectibles = [];
+  [
+    [560, 520, "shield"],
+    [880, 540, "heart"],
+    [1180, 560, "speed"],
+    [430, 700, "family"],
+    [720, 720, "wellness"],
+    [1000, 760, "family"],
+  ].forEach(([x, y, key]) =>
+    spawnCollectible(
+      worldEl,
+      x,
+      y,
+      COLLECTIBLES.find((c) => c.key === key),
+    ),
+  );
+
+  // Patrolling germs.
+  hazards = [
+    { x: 640, y: 480, w: 46, h: 46, min: 320, max: 780, vy: 2.0 },
+    { x: 1000, y: 640, w: 46, h: 46, min: 420, max: 840, vy: -2.2 },
+    { x: 380, y: 560, w: 46, h: 46, min: 400, max: 820, vy: 1.8 },
+  ];
+  hazardCooldown = 0;
+  hazards.forEach((h) => {
+    const d = document.createElement("div");
+    d.className = "hazard";
+    d.textContent = "🦠";
+    d.style.left = h.x + "px";
+    d.style.top = h.y + "px";
+    worldEl.appendChild(d);
+    h.el = d;
+  });
+
+  keycard = null;
+  lockedDoor = null;
+  vaultHintShown = true;
+
+  // Player starts at the reception (top-left).
+  player.x = 360;
+  player.y = 300;
+  player.speed = 4.4;
+  const playerEl = document.getElementById("player");
+  buildCharacter(playerEl);
+  playerEl.classList.add("walking");
+  buildDirectionArrows();
+}
+
 function spawnCollectible(worldEl, x, y, data) {
   const d = document.createElement("div");
   d.className = "collectible";
@@ -1165,9 +1272,10 @@ function loopMaze() {
     camY = 0;
   if (overview) {
     const vp = document.getElementById("maze-viewport");
-    // Centre the (CSS-scaled) 1050×1050 world in the viewport; scale is in CSS.
-    world.style.left = (vp.clientWidth - WORLD_SIZE) / 2 + "px";
-    world.style.top = (vp.clientHeight - WORLD_SIZE) / 2 + "px";
+    // Centre the (CSS-scaled) world in the viewport; scale is in CSS. Uses the
+    // world's real size so it works for both the CSS maze and the image maze.
+    world.style.left = (vp.clientWidth - world.offsetWidth) / 2 + "px";
+    world.style.top = (vp.clientHeight - world.offsetHeight) / 2 + "px";
   } else {
     camX = VIEW_W / 2 - (player.x + player.w / 2);
     camY = VIEW_H / 2 - (player.y + player.h / 2);

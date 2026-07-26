@@ -211,3 +211,21 @@
   spec; I'll trace walls from maze-bg to align collisions. Next: Path A (Step 3 CSS polish —
   dashed path, props, bigger germs) OR Path B (wire user's assets). Still needed: landscape
   layouts for home + the 4 mini-games (work but sit in a centred column).
+- 2026-07-26 (session 16 — REAL maze artwork wired in): User generated + saved a clean maze
+  background (no UI/path/movers) to `assets/maze/maze-bg.png` (1586×992). Built **IMAGE MAZE
+  MODE**: `USE_IMAGE_MAZE=true`; buildMaze branches to new `buildImageMaze(worldEl)` which sets
+  #maze-world to `.img-mode` (background = the image, size 1586×992, NO rotateX tilt — flat),
+  defines collision `walls` in image-pixel space (outer bounds + a few internal — APPROXIMATE,
+  needs refinement), places the 4 clinic markers on their labelled rooms (syncs ZONES x/y so
+  checkZones/entry still works), scatters boosters + 3 germs, player starts at reception
+  (~360,300). loopMaze camera now centres via `world.offsetWidth/Height` (works for both the
+  CSS maze and the 1586×992 image). CSS `.img-mode`: image floor, no tilt, flat (un-billboard)
+  elements via `transform:none !important`, bigger pickups/germs, glowing clinic pads; landscape
+  scales the world 0.53 to fit the inset play area. Result: the reference render IS the playable
+  maze now — with the Stage-15 landscape HUD (left panel/mission/score/legend). Verified 6/6
+  jsdom (img-mode, 4 clinics, walls, player, enter+return), lint clean, no errors. Removed a
+  duplicate `maze-bg` (no-ext) file. **STILL APPROXIMATE (next = "refine"):** clinic marker
+  positions, invisible wall alignment to the picture, player start, booster/germ spots — all
+  just coordinate tweaks now. Sprites (germ/shield/etc.) still emoji — user's `icons.png` sheet
+  needs splitting into individual TRANSPARENT PNGs (`sprite-*.png`) before use. Also pending:
+  landscape layouts for home + 4 mini-games; portrait maze still camera-follow over the image.
