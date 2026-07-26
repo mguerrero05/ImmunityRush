@@ -137,3 +137,24 @@
   done, what's next, known limitations, a suggested slide outline, and a ready-to-paste
   ChatGPT prompt) so the user can build a progress slideshow. Next unchanged: Milestone G
   icon pass, clinic completed states, sound, mobile; plus grab screenshots for the slides.
+- 2026-07-25 (session 12 — visual upgrade, staged Stages 0–4): Kicked off a big polish pass
+  following the user's staged brief (visual references supplied; their on-image text is
+  illustrative and IGNORED — approved wording is the source of truth). Chosen layout target:
+  **responsive portrait + landscape** (landscape frame still deferred to protect mini-game
+  geometry). Checkpoint tags: `baseline-pre-visual-2026-07-25`, plus per-stage `stageN-start`.
+  **Stage 0** audit (no code changes; flagged 5 image/content conflicts — notably the Darts
+  reference INVERTS the approved rule: our game = hit MYTHS, protect FACTS; keep ours).
+  **Stage 1** shared design system: expanded `:root` tokens, refined buttons/popups/overlays/
+  cards, focus-visible + reduced-motion, reusable `.panel/.stat-chip/.pips/.icon-btn` + state
+  classes. **Stage 2** character: directional facing (front/back/left/right) + walk/idle on the
+  maze player (visual only, collision unchanged); hybrid **hero-portrait** slot on home that
+  loads `assets/characters/<gender>-hero.png` with graceful CSS fallback (README added). NOTE:
+  I can't generate/background-remove images here, so hero renders must be supplied as files.
+  **Stage 3** home rebuilt as a CSS hospital lobby (ceiling lights, wall, floor, plants,
+  prominent character, one tagline, real buttons preserved, VaxFacts+ chip, compact mode for
+  short frames). **Stage 4** maze 2.5D polish (raised walls, tiled floor + centre light, room
+  plaques, glowing clinic doorways with ▾ + "✓ Visited" completed state, booster glows, hazard
+  danger glow) + fixed a Stage-2 regression where facing rules overrode the player's billboard/
+  scale. All verified headlessly + screenshots; no gameplay/wording/geometry changed; lint
+  clean. **Next: Stage 5 — Vaccine Darts** (awaiting approval each stage). Optional: a dedicated
+  responsive-landscape frame pass before continuing.

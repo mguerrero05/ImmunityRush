@@ -35,42 +35,70 @@
          SCREEN 1: HOME
          ===================================================== -->
       <section id="screen-home" class="screen active">
-        <div class="hospital-bg">
-          <!-- Simple hospital building made from CSS -->
-          <div class="hospital-building">
-            <div class="hospital-cross">＋</div>
-            <div class="hospital-doors"></div>
-            <div class="hospital-windows">
-              <span></span><span></span><span></span> <span></span><span></span><span></span>
-            </div>
+        <!-- Hospital lobby scene — built from CSS, non-interactive, sits behind the UI.
+             (Not a baked background image: it is real, responsive layout.) -->
+        <div class="lobby" aria-hidden="true">
+          <div class="lobby-ceiling">
+            <span class="ceil-light"></span>
+            <span class="ceil-light"></span>
+            <span class="ceil-light"></span>
           </div>
+          <div class="lobby-wall">
+            <span class="lobby-window"></span>
+            <span class="lobby-window"></span>
+          </div>
+          <div class="lobby-floor"></div>
+          <div class="plant left"><i></i></div>
+          <div class="plant right"><i></i></div>
         </div>
 
-        <!-- Replaceable SHN logo. Swap the text/img here later. -->
-        <div class="logo" id="logo">SHN</div>
+        <!-- Foreground UI: all real, interactive, editable -->
+        <div class="home-content">
+          <!-- Replaceable SHN logo. Swap the text/img here later. -->
+          <div class="logo" id="logo">SHN</div>
 
-        <h1 class="title">Immunity Rush</h1>
-        <p class="subtitle">Keep your plans. Not the flu.</p>
+          <h1 class="title">Immunity Rush</h1>
+          <p class="subtitle">Keep your plans. Not the flu.</p>
 
-        <!-- Rotating motivational slogan -->
-        <p class="slogan" id="home-slogan">Protect your plans this flu season.</p>
+          <!-- Rotating motivational slogan (separate from the tagline above) -->
+          <p class="slogan" id="home-slogan">Protect your plans this flu season.</p>
 
-        <!-- Character standing in front of the hospital -->
-        <div id="home-character" class="character-stage"></div>
+          <!-- Selected character. Hero render shows if its asset exists; otherwise
+               the built-in CSS character is the fallback. See assets/characters/README.md. -->
+          <div id="home-char-wrap" class="home-char-wrap">
+            <img
+              id="home-hero"
+              class="hero-portrait"
+              alt="Your selected healthcare-worker character"
+              hidden
+            />
+            <div id="home-character" class="character-stage"></div>
+          </div>
 
-        <div class="menu">
-          <button class="btn btn-primary" onclick="startInitials()">Start Game</button>
-          <button
-            class="btn"
-            onclick="
-              showScreen('screen-leaderboard');
-              renderLeaderboard();
-            "
+          <div class="menu">
+            <button class="btn btn-primary" onclick="startInitials()">Start Game</button>
+            <button
+              class="btn"
+              onclick="
+                showScreen('screen-leaderboard');
+                renderLeaderboard();
+              "
+            >
+              Leaderboard
+            </button>
+            <button class="btn" onclick="showScreen('screen-instructions')">Instructions</button>
+            <button class="btn" onclick="showScreen('screen-customize')">
+              Customize Character
+            </button>
+          </div>
+
+          <a
+            class="vaxfacts-chip"
+            href="https://www.shn.ca/vaxfacts/"
+            target="_blank"
+            rel="noopener"
+            >Have vaccine questions? Visit VaxFacts+</a
           >
-            Leaderboard
-          </button>
-          <button class="btn" onclick="showScreen('screen-instructions')">Instructions</button>
-          <button class="btn" onclick="showScreen('screen-customize')">Customize Character</button>
         </div>
       </section>
 

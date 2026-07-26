@@ -16,6 +16,89 @@
   --good: #2e9e5b;
   --bad: #e0533d;
   --shadow: 0 8px 24px rgba(15, 76, 129, 0.18);
+
+  /* =========================================================
+     STAGE 1 — SHARED DESIGN TOKENS
+     Additive only. Existing variables above are unchanged so nothing
+     that references them can break. New screens/components use these.
+     ========================================================= */
+
+  /* Extended palette (references: deep navy bg, bright blue panels, green accents) */
+  --shn-navy: #0c2a4a; /* deep background navy */
+  --shn-navy-2: #123a63; /* raised navy surface */
+  --shn-blue-3: #2f80ed; /* vivid interactive blue */
+  --shn-green: #34c759; /* controlled green accent (success/rewards) */
+  --shn-green-ink: #147a40;
+  --panel: #ffffff; /* default content panel */
+  --panel-2: #f4f8fc; /* subtle panel tint */
+  --panel-navy: #123a63; /* dark UI panel (HUD / game chrome) */
+  --line: #d7e2ec; /* hairline border */
+  --line-strong: #b9cadb;
+  --ink-2: #3a4a5a; /* muted body text */
+  --ink-on-navy: #eaf3fb; /* text on navy surfaces */
+
+  /* Semantic (aliases so intent is explicit; map to existing hues) */
+  --success: var(--good);
+  --danger: var(--bad);
+  --warn: #e8863b;
+  --info: var(--shn-blue-2);
+
+  /* Typography */
+  --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --fs-xs: 11px;
+  --fs-sm: 13px;
+  --fs-md: 15px;
+  --fs-lg: 18px;
+  --fs-xl: 22px;
+  --fs-2xl: 28px;
+  --fw-normal: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 800;
+  --lh-tight: 1.2;
+  --lh-normal: 1.45;
+
+  /* Spacing scale (4px base) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* Radius scale */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* Borders */
+  --bd: 1px solid var(--line);
+  --bd-panel: 2px solid rgba(31, 111, 235, 0.25);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 6px rgba(15, 76, 129, 0.12);
+  --shadow-md: 0 8px 24px rgba(15, 76, 129, 0.18);
+  --shadow-lg: 0 18px 44px rgba(12, 42, 74, 0.28);
+  --focus-ring: 0 0 0 3px rgba(47, 128, 237, 0.55);
+
+  /* Motion */
+  --t-fast: 0.12s;
+  --t-base: 0.2s;
+  --t-slow: 0.35s;
+  --ease: cubic-bezier(0.2, 0.8, 0.3, 1);
+
+  /* Z-index scale */
+  --z-hud: 20;
+  --z-arrows: 25;
+  --z-overlay: 65;
+  --z-popup: 70;
+  --z-toast: 60;
+  --z-float: 80;
+
+  /* Responsive breakpoints (reference values; used in @media below).
+     --bp-tablet: 640px;  --bp-desktop: 960px;  --bp-wide: 1200px; */
 }
 
 * {
@@ -1910,4 +1993,779 @@ body {
 }
 .hud-speed.on {
   opacity: 1;
+}
+
+/* =========================================================================
+   STAGE 1 — SHARED VISUAL SYSTEM
+   Layered on top of the existing styles (appended = wins on equal specificity).
+   Polishes always-shared components and defines reusable classes for later
+   stages. Deliberately does NOT change any gameplay geometry: no frame size,
+   no .mg-stage / #maze-viewport / .character-stage dimensions, no positions.
+   ========================================================================= */
+
+/* ---- Global accessibility: visible keyboard focus everywhere ---- */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--r-sm);
+}
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Buttons (refined; box model preserved) ---- */
+.btn {
+  font-family: var(--font);
+  border-radius: var(--r-lg);
+  border: 1px solid rgba(15, 76, 129, 0.08);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--t-fast) var(--ease),
+    background var(--t-base) var(--ease),
+    box-shadow var(--t-base) var(--ease),
+    filter var(--t-base) var(--ease);
+}
+.btn:hover {
+  filter: brightness(1.03);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+.btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary {
+  background: linear-gradient(180deg, var(--shn-blue-3), var(--shn-blue-2));
+  border-color: rgba(12, 42, 74, 0.25);
+  color: #fff;
+}
+.btn-primary:hover {
+  filter: brightness(1.06);
+}
+/* Optional semantic button variants (for later stages) */
+.btn-success {
+  background: linear-gradient(180deg, #46d16a, var(--shn-green));
+  color: #06351a;
+  border-color: rgba(20, 122, 64, 0.35);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--shn-blue);
+  box-shadow: none;
+  border: 2px solid rgba(31, 111, 235, 0.35);
+}
+/* Disabled state (works via [disabled] or .is-disabled) */
+.btn:disabled,
+.btn.is-disabled {
+  opacity: 0.5;
+  filter: grayscale(0.3);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+  pointer-events: none;
+}
+
+/* ---- Screen titles / type rhythm (shared) ---- */
+.screen-title {
+  font-weight: var(--fw-black);
+  letter-spacing: 0.2px;
+}
+
+/* ---- Reusable panel (rounded blue-accented surface) ---- */
+.panel {
+  background: var(--panel);
+  border: var(--bd-panel);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-md);
+  padding: var(--sp-4);
+}
+.panel-navy {
+  background: linear-gradient(180deg, var(--shn-navy-2), var(--shn-navy));
+  border: 1px solid rgba(91, 192, 190, 0.25);
+  color: var(--ink-on-navy);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---- Reusable stat chip (score / timer / label boxes) ---- */
+.stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-sm);
+  line-height: 1;
+  white-space: nowrap;
+}
+.stat-chip b {
+  color: #fff;
+}
+.stat-chip.chip-score {
+  background: rgba(255, 209, 77, 0.18);
+  border-color: rgba(255, 209, 77, 0.5);
+}
+.stat-chip.chip-time {
+  background: rgba(91, 192, 190, 0.2);
+  border-color: rgba(91, 192, 190, 0.5);
+}
+
+/* ---- Health / booster pips (reusable indicator row) ---- */
+.pips {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.pip {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+.pip.full {
+  background: var(--danger);
+  box-shadow: 0 0 6px rgba(224, 83, 61, 0.6);
+}
+.pip.shield.full {
+  background: var(--shn-blue-2);
+  box-shadow: 0 0 6px rgba(31, 111, 235, 0.6);
+}
+.pip.energy.full {
+  background: #ffd34d;
+  box-shadow: 0 0 6px rgba(255, 211, 77, 0.6);
+}
+
+/* ---- Small round icon button (settings / sound / pause) ---- */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: var(--panel-navy);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--t-fast) var(--ease),
+    filter var(--t-base) var(--ease);
+}
+.icon-btn:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+.icon-btn:active {
+  transform: scale(0.94);
+}
+
+/* ---- Badge / tag (room labels, "Complete", etc. — for later stages) ---- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  background: var(--shn-blue-2);
+  color: #fff;
+}
+
+/* ---- Shared UI STATE classes (for cards, rooms, tiles in later stages) ---- */
+.is-complete {
+  border-color: var(--shn-green) !important;
+  box-shadow: 0 0 0 2px rgba(52, 199, 89, 0.35);
+}
+.is-locked {
+  filter: grayscale(0.5) brightness(0.9);
+  opacity: 0.85;
+}
+.state-success {
+  color: var(--shn-green-ink);
+}
+.state-error {
+  color: var(--danger);
+}
+
+/* ---- Popup + card polish (readability + reference-style rounding) ---- */
+.popup-box {
+  border: var(--bd-panel);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+}
+.card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---- HUD bars: size-neutral polish only (no layout/box changes) ---- */
+.hud,
+.mg-hud {
+  background: linear-gradient(180deg, rgba(18, 58, 99, 0.96), rgba(12, 42, 74, 0.96));
+  box-shadow: 0 2px 10px rgba(12, 42, 74, 0.35);
+  border-bottom: 1px solid rgba(91, 192, 190, 0.3);
+}
+.hud b,
+.mg-hud b {
+  color: #ffe9a8; /* make live values pop without resizing anything */
+}
+
+/* ---- Responsive scaffolding for the design system ----
+   Screen/frame RESTRUCTURE happens in later per-screen stages. Here we only
+   scale shared type/controls gently so the system is ready for landscape. */
+@media (min-width: 640px) {
+  :root {
+    --fs-md: 16px;
+    --fs-lg: 19px;
+  }
+}
+@media (min-width: 960px) {
+  .btn {
+    max-width: 320px;
+  }
+}
+
+/* =========================================================================
+   STAGE 2 — CHARACTER INTEGRATION
+   Directional facing + walk/idle for the CSS character (visual only — the
+   collision box is unchanged), and the hybrid hero-portrait slot.
+   ========================================================================= */
+
+/* Smooth turns between facings */
+.character-stage {
+  transition: transform 0.12s var(--ease);
+}
+
+/* Left / right — mirror the front view so travel direction reads (simplified;
+   true side profiles arrive with real sprite art). */
+.character-stage[data-facing="left"] {
+  transform: scaleX(-1);
+}
+.character-stage[data-facing="right"] {
+  transform: scaleX(1);
+}
+
+/* Back view — hide the face/front details so the character reads as seen from
+   behind (hair-covered head, plain scrub back). */
+.character-stage[data-facing="back"] .char-eyes,
+.character-stage[data-facing="back"] .char-brows,
+.character-stage[data-facing="back"] .char-nose,
+.character-stage[data-facing="back"] .char-smile,
+.character-stage[data-facing="back"] .char-cheek,
+.character-stage[data-facing="back"] .char-steth,
+.character-stage[data-facing="back"] .char-badge,
+.character-stage[data-facing="back"] .char-pocket {
+  opacity: 0;
+}
+.character-stage[data-facing="back"] .char-hair {
+  filter: brightness(0.92);
+}
+
+/* ---- Hybrid hero portrait (home screen) ----
+   A framed portrait so a supplied render (transparent OR studio-background)
+   reads as an intentional character card. Hidden until its asset loads. */
+.home-char-wrap {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 160px;
+}
+.hero-portrait {
+  width: 150px;
+  max-width: 60%;
+  max-height: 250px;
+  object-fit: contain;
+  object-position: bottom center;
+  border-radius: var(--r-xl);
+  background: linear-gradient(180deg, #eef6fd, #d9eaf7);
+  border: 2px solid rgba(31, 111, 235, 0.28);
+  box-shadow: var(--shadow-md);
+  filter: drop-shadow(0 8px 10px rgba(15, 76, 129, 0.15));
+}
+@media (min-width: 640px) {
+  .hero-portrait {
+    width: 180px;
+    max-height: 300px;
+  }
+}
+
+/* =========================================================================
+   STAGE 3 — HOME SCREEN: HOSPITAL LOBBY
+   A CSS-built reception scene behind real, interactive UI. No baked image.
+   ========================================================================= */
+
+#screen-home {
+  padding: 0;
+  overflow: hidden;
+  justify-content: flex-start;
+}
+#screen-home .lobby {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+#screen-home .home-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 58px 18px 16px;
+  gap: 2px;
+}
+
+/* ---- Ceiling with recessed lights ---- */
+.lobby-ceiling {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8%;
+  background: linear-gradient(180deg, #0c2a4a, #16406c);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: inset 0 -6px 14px rgba(0, 0, 0, 0.25);
+}
+.ceil-light {
+  width: 22%;
+  height: 34%;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #eafaff, #bfe6ff);
+  box-shadow: 0 6px 20px rgba(174, 226, 255, 0.65);
+}
+
+/* ---- Back wall (soft blue hospital lighting) ---- */
+.lobby-wall {
+  position: absolute;
+  top: 8%;
+  left: 0;
+  right: 0;
+  height: 52%;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.7), transparent 60%),
+    linear-gradient(180deg, #cfe6f8, #e7f3fc);
+}
+.lobby-window {
+  position: absolute;
+  top: 40%;
+  width: 44px;
+  height: 62px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #d7efff, #a9d6f5);
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.35);
+}
+.lobby-window:nth-of-type(1) {
+  left: 5%;
+}
+.lobby-window:nth-of-type(2) {
+  right: 5%;
+}
+/* (wall medallion removed — the standing character is the focal point) */
+.wayfinding {
+  position: absolute;
+  top: 9.5%;
+  right: 5%;
+  background: var(--shn-teal);
+  color: #04333a;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+}
+.wayfinding span {
+  display: block;
+}
+
+/* ---- Floor with a hint of perspective ---- */
+.lobby-floor {
+  position: absolute;
+  top: 60%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(120, 150, 175, 0.12) 0 1px, transparent 1px 46px),
+    linear-gradient(180deg, #e3ebf1 0%, #cdd9e4 100%);
+}
+.lobby-floor::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 76, 129, 0.08), transparent 40%);
+}
+
+/* ---- Potted plants ---- */
+.plant {
+  position: absolute;
+  bottom: 3%;
+  width: 42px;
+  height: 70px;
+}
+.plant.left {
+  left: 5%;
+}
+.plant.right {
+  right: 5%;
+}
+.plant::after {
+  /* pot */
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 26px;
+  background: linear-gradient(180deg, #c8703c, #9c5024);
+  border-radius: 4px 4px 8px 8px;
+}
+.plant i {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 48px;
+  background:
+    radial-gradient(10px 16px at 50% 90%, #2f9e5b 60%, transparent),
+    radial-gradient(9px 14px at 26% 70%, #34c06a 60%, transparent),
+    radial-gradient(9px 14px at 74% 70%, #34c06a 60%, transparent),
+    radial-gradient(8px 12px at 40% 40%, #3fbf74 60%, transparent),
+    radial-gradient(8px 12px at 62% 42%, #3fbf74 60%, transparent);
+  background-repeat: no-repeat;
+}
+
+/* ---- Foreground title / logo treatment ---- */
+#screen-home .logo {
+  background: linear-gradient(180deg, #16406c, var(--shn-blue));
+  border: 1px solid rgba(91, 192, 190, 0.35);
+  margin: 2px 0 2px;
+}
+#screen-home .title {
+  font-size: clamp(34px, 11vw, 44px);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--shn-blue);
+  text-shadow:
+    0 2px 0 #fff,
+    0 6px 16px rgba(15, 76, 129, 0.25);
+  margin-top: 2px;
+}
+#screen-home .subtitle {
+  font-weight: 700;
+  color: #1c3a57;
+  margin: 2px 12px;
+}
+#screen-home .slogan {
+  margin: 0 0 2px;
+  font-size: var(--fs-sm);
+}
+#screen-home .home-char-wrap {
+  flex: 1;
+  min-height: 150px;
+  align-items: center;
+}
+/* Prominent hero character standing in the lobby, with a soft floor shadow. */
+#screen-home #home-character {
+  transform: scale(1.55);
+  transform-origin: bottom center;
+}
+#screen-home .home-char-wrap::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  width: 120px;
+  height: 20px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(12, 42, 74, 0.28), transparent 70%);
+  z-index: -1;
+}
+#screen-home .menu {
+  margin-top: 6px;
+  gap: 10px;
+  width: 100%;
+  padding-top: 6px;
+}
+#screen-home .menu .btn {
+  max-width: 320px;
+}
+
+/* ---- VaxFacts+ resource chip ---- */
+.vaxfacts-chip {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--r-pill);
+  background: rgba(43, 179, 179, 0.14);
+  border: 1px solid rgba(43, 179, 179, 0.45);
+  color: #0e6b6b;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-decoration: none;
+}
+.vaxfacts-chip:hover {
+  background: rgba(43, 179, 179, 0.22);
+}
+
+/* ---- Sound control: consistent round icon button (global, all screens) ---- */
+.mute-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: linear-gradient(180deg, #16406c, var(--shn-blue));
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.mute-btn:hover {
+  filter: brightness(1.12);
+}
+
+/* ---- Larger screens: give the lobby a bit more presence ---- */
+@media (min-width: 640px) {
+  #screen-home .title {
+    font-size: 48px;
+  }
+}
+
+/* ---- Short / landscape frames: compact so the home still fits without clipping.
+   (Full landscape widescreen layout is a separate, coordinated responsive pass.) ---- */
+@media (max-height: 660px) {
+  #screen-home .home-content {
+    padding-top: 40px;
+    justify-content: space-between;
+  }
+  #screen-home #home-character {
+    transform: scale(1);
+  }
+  #screen-home .home-char-wrap {
+    min-height: 80px;
+  }
+  #screen-home .title {
+    font-size: clamp(26px, 7vw, 34px);
+    margin-top: 0;
+  }
+  .lobby-window {
+    display: none;
+  }
+  .vaxfacts-chip {
+    margin-top: 4px;
+    padding: 5px 12px;
+  }
+  #screen-home .menu {
+    gap: 8px;
+  }
+  #screen-home .menu .btn {
+    padding: 10px 18px;
+  }
+}
+
+/* =========================================================================
+   STAGE 4 — MAIN MAZE: 2.5D HOSPITAL POLISH
+   Visual only. No geometry, collision, world size, or logic changes.
+   ========================================================================= */
+
+/* ---- FIX (from Stage 2): keep the maze player's billboard + scale when it
+   faces left/right. The generic .character-stage[data-facing] rules must not
+   wipe out the player's rotateX()/scale(). These win by coming later. ---- */
+.maze-player[data-facing="left"] {
+  transform: rotateX(calc(-1 * var(--tilt))) scale(0.5) scaleX(-1);
+}
+.maze-player[data-facing="right"],
+.maze-player[data-facing="front"],
+.maze-player[data-facing="back"] {
+  transform: rotateX(calc(-1 * var(--tilt))) scale(0.5);
+}
+
+/* ---- Hospital lighting on the scene behind/around the floor ---- */
+#maze-viewport {
+  background:
+    radial-gradient(120% 80% at 50% 18%, rgba(255, 255, 255, 0.55), transparent 55%),
+    linear-gradient(#aebfd2 0%, #c4d3e2 30%, #d3dfea 100%);
+}
+
+/* ---- Floor: cleaner clinical tile + soft centre light ---- */
+#maze-world {
+  background-color: #eef5fb;
+}
+#maze-world::before {
+  /* gentle pool of light in the middle of the ward */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 45% at 50% 45%, rgba(255, 255, 255, 0.45), transparent 70%);
+  pointer-events: none;
+}
+
+/* ---- Walls: raised hospital partitions (top highlight + cast shadow) ---- */
+.wall {
+  background: linear-gradient(180deg, #93a9be 0%, #6f889f 55%, #5b7386 100%);
+  border-radius: 5px;
+  box-shadow:
+    0 7px 10px rgba(18, 45, 74, 0.28),
+    inset 0 3px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.16);
+}
+
+/* ---- Rooms: recessed, tinted floor zones with a clean edge ---- */
+.room {
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.65),
+    inset 0 0 22px rgba(15, 76, 129, 0.06);
+  opacity: 0.96;
+}
+.room-game {
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 255, 255, 0.85),
+    inset 0 0 26px rgba(15, 76, 129, 0.1),
+    0 0 12px rgba(15, 76, 129, 0.08);
+}
+
+/* ---- Room signs: hanging hospital plaque with an accent dot ---- */
+.room-sign {
+  background: linear-gradient(180deg, #ffffff, #eef4fb);
+  color: #22384c;
+  border: 1px solid rgba(15, 76, 129, 0.18);
+  border-radius: 7px;
+  padding: 2px 8px 2px 16px;
+  font-size: 9.5px;
+  letter-spacing: 0.2px;
+}
+.room-sign::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--shn-teal);
+}
+
+/* ---- Clinic entrances (zones): lit doorway with a clear label ---- */
+.zone {
+  border: 3px solid rgba(255, 255, 255, 0.75);
+  border-radius: 16px;
+  box-shadow:
+    0 10px 18px rgba(12, 42, 74, 0.35),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  animation: zonePulse 2.4s ease-in-out infinite;
+}
+@keyframes zonePulse {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 18px rgba(12, 42, 74, 0.35),
+      0 0 0 0 rgba(255, 255, 255, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 10px 18px rgba(12, 42, 74, 0.35),
+      0 0 18px 4px rgba(255, 255, 255, 0.55);
+  }
+}
+.zone .zone-icon {
+  font-size: 28px;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
+}
+/* "Enter" hint arrow under each clinic door */
+.zone::after {
+  content: "▾";
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+/* Completed clinic: calm it down + show a check badge */
+.zone.done {
+  filter: saturate(0.7) brightness(0.92);
+  animation: none;
+}
+.zone.done::after {
+  content: "✓ Visited";
+  bottom: -18px;
+  font-size: 9px;
+  font-weight: 800;
+  color: #eafff2;
+  background: var(--shn-green);
+  padding: 1px 7px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+/* ---- Collectibles: booster with a glow + a floor shadow "puddle" ---- */
+.collectible {
+  filter: drop-shadow(0 3px 4px rgba(12, 42, 74, 0.3));
+}
+.collectible::before {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 26px;
+  height: 8px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(12, 42, 74, 0.28), transparent 70%);
+  z-index: -1;
+}
+
+/* ---- Flu hazard: reads clearly as a threat ---- */
+.hazard {
+  filter: drop-shadow(0 0 7px rgba(224, 83, 61, 0.7));
+  animation: hazPulse 1.1s ease-in-out infinite;
+}
+@keyframes hazPulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 6px rgba(224, 83, 61, 0.55));
+  }
+  50% {
+    filter: drop-shadow(0 0 11px rgba(224, 83, 61, 0.85));
+  }
+}
+
+/* ---- Locked vault door: a clearer secured gate ---- */
+.locked-door {
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 0 8px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }

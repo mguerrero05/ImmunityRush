@@ -664,6 +664,25 @@ function applyCharacter(el) {
   el.dataset.gender = character.gender; // female = long hair (see CSS)
 }
 
+// Hybrid hero art: show a supplied character render on the home screen if the
+// asset exists (assets/characters/<gender>-hero.png); otherwise fall back to the
+// built-in CSS character. Drop the files in and they appear automatically.
+function updateHeroArt() {
+  const img = document.getElementById("home-hero");
+  const css = document.getElementById("home-character");
+  if (!img || !css) return;
+  img.onload = () => {
+    img.hidden = false;
+    css.style.display = "none";
+  };
+  img.onerror = () => {
+    img.hidden = true;
+    css.style.display = "";
+  };
+  // Cache-bust nothing; just point at the gender-specific hero file.
+  img.src = `assets/characters/${character.gender}-hero.png`;
+}
+
 // Rotate slogans on the home screen.
 function rotateSlogan(elId) {
   const el = document.getElementById(elId);
@@ -678,6 +697,7 @@ function rotateSlogan(elId) {
 // Called once when the page loads.
 function init() {
   buildCharacter(document.getElementById("home-character"));
+  updateHeroArt();
   rotateSlogan("home-slogan");
   // Rotate the home slogan every few seconds.
   setInterval(() => {
@@ -1103,6 +1123,14 @@ function loopMaze() {
   pEl.style.left = player.x + "px";
   pEl.style.top = player.y + "px";
 
+  // Directional facing + walk/idle (VISUAL ONLY — the collision box is unchanged).
+  const moving = !!(dx || dy);
+  if (moving) {
+    if (Math.abs(dx) > Math.abs(dy)) pEl.dataset.facing = dx < 0 ? "left" : "right";
+    else pEl.dataset.facing = dy < 0 ? "back" : "front";
+  }
+  pEl.classList.toggle("walking", moving); // walk animation only while actually moving
+
   // Camera: center the player by translating the world.
   const world = document.getElementById("maze-world");
   const camX = VIEW_W / 2 - (player.x + player.w / 2);
@@ -1372,6 +1400,9 @@ function updateMission() {
   el.textContent = `Mission: visit all 4 clinics (${count}/4)`;
 }
 function markClinicVisited(key) {
+  // Visual "completed" state on the clinic door in the maze.
+  const zEl = document.querySelector(`.zone[data-key="${key}"]`);
+  if (zEl) zEl.classList.add("done");
   if (missionDone) return;
   missionVisited[key] = true;
   if (Object.keys(missionVisited).length >= ZONES.length) {
@@ -2239,7 +2270,12 @@ function dartHitBoard(board) {
     playSound("error");
     shake();
     // Incorrect (a fact) → RED result feedback (only shown after the hit).
-    bigMessage(board.feedback, { icon: "❌", title: "Not quite  −50", tone: "wrong", duration: 2000 });
+    bigMessage(board.feedback, {
+      icon: "❌",
+      title: "Not quite  −50",
+      tone: "wrong",
+      duration: 2000,
+    });
     board.el.classList.add("dart-board-hit");
     setTimeout(() => board.el.classList.remove("dart-board-hit"), 300);
   }
@@ -2519,6 +2555,7 @@ function saveCharacter() {
   localStorage.setItem("immunityCharacter", JSON.stringify(character));
   // Update the home-screen character too.
   applyCharacter(document.getElementById("home-character"));
+  updateHeroArt(); // swap the hero render if the selected gender changed
   toast("Character saved!");
 }
 
