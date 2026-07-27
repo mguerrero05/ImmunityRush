@@ -291,3 +291,23 @@
   every fix (START, triggers-in-rooms, all openings) automatically. Optional polish still open:
   emoji->sprite icons; landscape layouts for home + the 4 mini-games; and the game could be made
   gentler (more health / fewer germs) if desired.
+- 2026-07-27 (session 20 — Home screen from a reference image + icon-swap prep):
+  **Home screen rebuilt from artwork (same approach as the maze).** User supplied a full
+  home mockup at `assets/home/home-bg.png` (1536x1024) — SHN Research Institute logo,
+  "Immunity Rush" title, two nurses, hospital lobby, and the 4 menu buttons + VaxFacts+ chip
+  all DRAWN IN. Replaced the old CSS lobby/logo/title/character-preview home with the image as
+  the background + REAL invisible clickable buttons laid over the drawn ones. New markup:
+  `.home-stage` (holds `<img class="home-bg">` shown "contain") + five `.home-hit` overlay
+  buttons positioned as % of the image (Start Game=startInitials, Leaderboard, Instructions,
+  Customize, VaxFacts+ link). CSS appended at end of style.css; `?v=1` cache-bust on the home
+  image. Made `buildCharacter`/`applyCharacter` null-safe (the Home character preview element
+  is gone). NOTE: Home no longer shows the LIVE customized character — it shows the two drawn
+  nurses; customization still applies to the maze player (offered to re-add a live preview if
+  wanted). **Button %-positions are ESTIMATES — alignment not yet confirmed by the user; may
+  need nudging** (each `.home-hit` has inline left/top/width/height %; to align precisely can
+  set `DEBUG_PROBE`-style clicks or just tweak the %). VaxFacts+ = https://www.shn.ca/vaxfacts/
+  new tab (unchanged; end-screen link matches). **Icon-swap prepped but DEFERRED:** user will
+  replace germs + the 5 pickups (shield/speed/heart/family/star, NOT the 4 clinic-pad icons)
+  with custom art delivered as ONE sprite sheet -> `assets/icons/icons.png`, which I'll slice
+  and wire in (currently emojis via `data.emoji` / `textContent="🦠"`). Folder + README ready;
+  waiting on the sheet. Next: confirm/nudge home button alignment; then do the icon swap.

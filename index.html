@@ -31,70 +31,46 @@
          SCREEN 1: HOME
          ===================================================== -->
       <section id="screen-home" class="screen active">
-        <!-- Hospital lobby scene — built from CSS, non-interactive, sits behind the UI.
-             (Not a baked background image: it is real, responsive layout.) -->
-        <div class="lobby" aria-hidden="true">
-          <div class="lobby-ceiling">
-            <span class="ceil-light"></span>
-            <span class="ceil-light"></span>
-            <span class="ceil-light"></span>
-          </div>
-          <div class="lobby-wall">
-            <span class="lobby-window"></span>
-            <span class="lobby-window"></span>
-          </div>
-          <div class="lobby-floor"></div>
-          <div class="plant left"><i></i></div>
-          <div class="plant right"><i></i></div>
-        </div>
-
-        <!-- Foreground UI: all real, interactive, editable -->
-        <div class="home-content">
-          <!-- Replaceable SHN logo. Swap the text/img here later. -->
-          <div class="logo" id="logo">SHN</div>
-
-          <h1 class="title">Immunity Rush</h1>
-          <p class="subtitle">Keep your plans. Not the flu.</p>
-
-          <!-- Rotating motivational slogan (separate from the tagline above) -->
-          <p class="slogan" id="home-slogan">Protect your plans this flu season.</p>
-
-          <!-- Selected character. Hero render shows if its asset exists; otherwise
-               the built-in CSS character is the fallback. See assets/characters/README.md. -->
-          <div id="home-char-wrap" class="home-char-wrap">
-            <img
-              id="home-hero"
-              class="hero-portrait"
-              alt="Your selected healthcare-worker character"
-              hidden
-            />
-            <div id="home-character" class="character-stage"></div>
-          </div>
-
-          <div class="menu">
-            <button class="btn btn-primary" onclick="startInitials()">Start Game</button>
-            <button
-              class="btn"
-              onclick="
-                showScreen('screen-leaderboard');
-                renderLeaderboard();
-              "
-            >
-              Leaderboard
-            </button>
-            <button class="btn" onclick="showScreen('screen-instructions')">Instructions</button>
-            <button class="btn" onclick="showScreen('screen-customize')">
-              Customize Character
-            </button>
-          </div>
-
+        <!-- Home = the reference artwork (assets/home/home-bg.png) with the REAL,
+             clickable buttons laid on top of the drawn ones (same idea as the maze).
+             The button positions are % of the image, so they scale with it. -->
+        <div class="home-stage">
+          <img class="home-bg" src="assets/home/home-bg.png?v=1" alt="Immunity Rush — SHN" />
+          <button
+            class="home-hit"
+            style="left: 37.3%; top: 56.2%; width: 24.4%; height: 6.6%"
+            onclick="startInitials()"
+            aria-label="Start Game"
+          ></button>
+          <button
+            class="home-hit"
+            style="left: 38.6%; top: 63.1%; width: 22.4%; height: 5.7%"
+            onclick="
+              showScreen('screen-leaderboard');
+              renderLeaderboard();
+            "
+            aria-label="Leaderboard"
+          ></button>
+          <button
+            class="home-hit"
+            style="left: 38.6%; top: 69.9%; width: 22.4%; height: 5.9%"
+            onclick="showScreen('screen-instructions')"
+            aria-label="Instructions"
+          ></button>
+          <button
+            class="home-hit"
+            style="left: 38.6%; top: 76.8%; width: 22.4%; height: 6%"
+            onclick="showScreen('screen-customize')"
+            aria-label="Customize Character"
+          ></button>
           <a
-            class="vaxfacts-chip"
+            class="home-hit"
+            style="left: 38.4%; top: 87%; width: 22.7%; height: 4.6%"
             href="https://www.shn.ca/vaxfacts/"
             target="_blank"
             rel="noopener"
-            >Have vaccine questions? Visit VaxFacts+</a
-          >
+            aria-label="Have vaccine questions? Visit VaxFacts+"
+          ></a>
         </div>
       </section>
 

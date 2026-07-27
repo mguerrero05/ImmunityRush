@@ -3716,3 +3716,47 @@ img {
   color: #00e5ff;
   text-shadow: 0 0 3px #000, 0 0 3px #000;
 }
+
+/* =========================================================================
+   HOME SCREEN = reference artwork + clickable overlay buttons
+   The image (assets/home/home-bg.png) is shown "contain" inside the frame,
+   and transparent buttons are positioned as % of it, over the drawn buttons.
+   ========================================================================= */
+#screen-home {
+  padding: 0;
+  justify-content: center; /* centre the artwork vertically (flex column) */
+  overflow: hidden;
+}
+.home-stage {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+  line-height: 0;
+}
+.home-bg {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+.home-hit {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  display: block;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.home-hit:hover,
+.home-hit:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.65) inset;
+  outline: none;
+}

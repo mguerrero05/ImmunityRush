@@ -624,6 +624,7 @@ function shake() {
 
 // Build the CSS-shape character inside a given container element.
 function buildCharacter(el) {
+  if (!el) return; // e.g. the Home character preview no longer exists (image home screen)
   el.innerHTML = `
     <div class="char-arm left"></div>
     <div class="char-arm right"></div>
@@ -658,6 +659,7 @@ function buildCharacter(el) {
 
 // Apply the current character colours/style to a container.
 function applyCharacter(el) {
+  if (!el) return; // Home character preview may not exist (image home screen)
   el.style.setProperty("--skin", character.skin);
   el.style.setProperty("--hair", character.hair);
   el.style.setProperty("--eyes", character.eyes);
