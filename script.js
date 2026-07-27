@@ -908,6 +908,10 @@ const USE_IMAGE_MAZE = true;
 const DEBUG_PROBE = false; // click the maze to print exact coordinates (temporary tuning tool)
 const IMG_W = 1586,
   IMG_H = 992;
+// THE START: player top-left position at the "WELCOME TO SHN" reception (top-left).
+// Used for BOTH the run start and the respawn-after-flu, so they can't drift apart.
+const START_X = 300,
+  START_Y = 230;
 
 // Collision mask baked from the maze artwork (assets/maze/wallmask.js): one bit
 // per maskF-pixel cell, 1 = wall/blocked. This lets the player walk exactly on
@@ -1154,11 +1158,11 @@ function buildImageMaze(worldEl) {
     ),
   );
 
-  // Patrolling germs (on the reachable player corridors).
+  // Patrolling germs — kept away from the reception START so you're not hit at spawn.
   hazards = [
-    { x: 500, y: 400, w: 46, h: 46, min: 340, max: 470, vy: 1.8 },
-    { x: 690, y: 420, w: 46, h: 46, min: 360, max: 480, vy: -1.8 },
-    { x: 300, y: 360, w: 46, h: 46, min: 300, max: 430, vy: 1.6 },
+    { x: 700, y: 430, w: 46, h: 46, min: 360, max: 500, vy: 1.8 },
+    { x: 950, y: 540, w: 46, h: 46, min: 460, max: 640, vy: -1.8 },
+    { x: 560, y: 640, w: 46, h: 46, min: 560, max: 720, vy: 1.6 },
   ];
   hazardCooldown = 0;
   hazards.forEach((h) => {
@@ -1175,9 +1179,9 @@ function buildImageMaze(worldEl) {
   lockedDoor = null;
   vaultHintShown = true;
 
-  // Player starts on a verified open-floor spot (feet centred at ~482,362).
-  player.x = 459;
-  player.y = 296;
+  // Player starts at the SHN reception (top-left) — the labelled START.
+  player.x = START_X;
+  player.y = START_Y;
   player.speed = 4.4;
   const playerEl = document.getElementById("player");
   buildCharacter(playerEl);
@@ -1599,10 +1603,10 @@ function hitByHazard() {
   if (state.health <= 0) {
     state.health = 3;
     updateHUD();
-    player.x = 100;
-    player.y = 520; // back to the entrance (the known clear spawn spot)
+    player.x = START_X;
+    player.y = START_Y; // back to the START (the SHN reception, top-left)
     unstickPlayer();
-    bigMessage("The flu caught up — back to the entrance. Keep going!", {
+    bigMessage("The flu caught up — back to the start. Keep going!", {
       icon: "🏥",
       tone: "warn",
       duration: 1800,

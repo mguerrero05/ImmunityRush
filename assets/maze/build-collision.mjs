@@ -136,7 +136,7 @@ const oLine = (x0, y0, x1, y1, rc) => {
 };
 
 // ---- Player footprint + body-reachability (matches the game's feetBlocked) ----
-const SPAWN = [459, 296]; // player top-left
+const SPAWN = [300, 230]; // player top-left — the SHN reception START (matches script.js START_X/Y)
 const feetB = (px, py, B) =>
   [
     [px + 23, py + 68],
@@ -228,6 +228,14 @@ for (let it = 0; it < 8; it++) {
 oLine(259, 604, 313, 704, 8);
 oLine(313, 704, 829, 616, 8);
 oLine(829, 616, 1019, 738, 8);
+markDirty();
+// 5. Straight passage DOWN from the Freeze hallway into the Memory room (the
+//    Freeze->Memory hallway used to dead-end just above Memory).
+oLine(970, 320, 1015, 405, 8);
+markDirty();
+// 6. Open the thick wall block that trapped the lower-left corridor (by Hospital
+//    Sprint / Information) — a direct east-west passage so you don't backtrack.
+oLine(258, 760, 362, 760, 8);
 markDirty();
 
 // ---- Verify + write ----

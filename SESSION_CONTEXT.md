@@ -271,3 +271,23 @@
   more and/or widen the exact stuck spots (turn `DEBUG_PROBE=true` in script.js → click the
   maze → it prints exact coords), then re-run build-collision.mjs. Saved progress at user's
   request before continuing that fix.
+- 2026-07-27 (session 19 — fix "kicked back to start" + open two more stuck hallways):
+  **Respawn bug (the big one):** the "it keeps putting me back to the start near Hospital
+  Sprint" was the death-respawn (`hitByHazard`, health<=0) teleporting to `(100,520)` — the OLD
+  CSS-maze entrance, which in the image maze is the bottom-left by Sprint — while the real start
+  was elsewhere. Fixed by defining ONE `START_X=300, START_Y=230` constant (the "WELCOME TO SHN"
+  reception, top-left) used by BOTH the run start (buildImageMaze) AND the respawn, so they can
+  never drift apart again; respawn message now says "back to the start". Also moved the 3
+  patrolling germs off the reception so you're not hit at spawn. **Two more stuck hallways
+  opened** (added to `build-collision.mjs` as fixes #5/#6, so they persist on image swap):
+  (5) a straight passage DOWN from the Flu Freeze hallway into the Memory room — it used to
+  dead-end just above Memory (`oLine(970,320 -> 1015,405)`); (6) punched a direct east-west
+  passage through the thick wall block that trapped the lower-left corridor by Hospital Sprint /
+  Information (`oLine(258,760 -> 362,760)`). Also earlier this session: slimmed the character's
+  foot-collision to ~9px so it fits tight hallways (raised body-reachable floor 64%->76%). All
+  verified by the real-body flood: start on floor + all 4 clinics reachable, lint clean, debug
+  off. User confirmed it plays great. **Workflow reminder:** to change walls, edit `maze-bg.png`
+  in place (same 1586x992) and re-run `node assets/maze/build-collision.mjs` — it re-applies
+  every fix (START, triggers-in-rooms, all openings) automatically. Optional polish still open:
+  emoji->sprite icons; landscape layouts for home + the 4 mini-games; and the game could be made
+  gentler (more health / fewer germs) if desired.
