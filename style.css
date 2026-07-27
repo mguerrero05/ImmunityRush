@@ -3393,8 +3393,8 @@ img {
    ========================================================================= */
 @media (min-aspect-ratio: 1/1) and (min-width: 760px) {
   #game {
-    width: min(1150px, 97vw);
-    height: min(700px, 94vh);
+    width: min(1280px, 98vw);
+    height: min(800px, 96vh);
   }
   /* Whole maze visible + centred (no camera follow); disable the zoom-in anim. */
   #maze-world,
@@ -3402,8 +3402,11 @@ img {
     transform: rotateX(var(--tilt)) scale(0.6);
     animation: none;
   }
-  /* All zones are visible in overview, so edge arrows aren't needed. */
-  #direction-arrows {
+  /* All zones are visible in overview, so edge arrows aren't needed. On
+     widescreen the keyboard drives movement, so the touch D-pad is hidden too
+     (it stays available on portrait/touch devices). */
+  #direction-arrows,
+  #dpad {
     display: none;
   }
 }
@@ -3423,12 +3426,14 @@ img {
   .mhud {
     display: block;
   }
-  /* Inset the maze so the panels frame it, and fit the whole map inside. */
+  /* Inset the maze so the panels frame it, and fit the whole map inside.
+     Left panel is slim now and the bottom legend is gone, so the maze fills
+     almost the whole frame — it's the focal point. */
   #maze-viewport {
-    top: 56px;
-    left: 292px;
+    top: 50px;
+    left: 172px;
     right: 12px;
-    bottom: 104px;
+    bottom: 14px;
     border-radius: 16px;
   }
   #maze-world,
@@ -3442,14 +3447,18 @@ img {
     position: absolute;
     top: 12px;
     left: 12px;
-    width: 268px;
+    bottom: 12px; /* skinnier + taller: fills the left column top-to-bottom */
+    width: 148px;
     z-index: 22;
     background: linear-gradient(180deg, #123a63, #0c2a4a);
     border: 1px solid rgba(91, 192, 190, 0.32);
     border-radius: 16px;
-    padding: 14px 16px 16px;
+    padding: 16px 14px;
     color: #eaf3fb;
     box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
   .mhud-logo {
     display: flex;
@@ -3483,14 +3492,15 @@ img {
     margin: 7px 0 10px;
   }
   .mhud-portrait {
-    width: 86px;
-    height: 86px;
+    width: 78px;
+    height: 78px;
     border-radius: 50%;
     overflow: hidden;
-    margin: 0 auto 12px;
+    margin: 8px auto 10px;
     background: radial-gradient(circle at 40% 34%, #2a5f8f, #123a63);
     border: 3px solid #5bc0be;
     position: relative;
+    flex-shrink: 0;
   }
   .mhud-portrait .character-stage {
     position: absolute;
@@ -3502,15 +3512,17 @@ img {
   }
   .mhud-row {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin: 8px 0;
+    flex-direction: column; /* label above its pips — fits the skinny box */
+    align-items: flex-start;
+    gap: 5px;
+    margin: 7px 0;
     font-size: 11px;
     font-weight: 700;
   }
   .mhud-lbl {
     white-space: nowrap;
+    letter-spacing: 0.3px;
+    opacity: 0.9;
   }
   .mhud .pips {
     gap: 5px;
@@ -3544,7 +3556,7 @@ img {
     transform: translateX(-50%);
   }
   .mhud-score {
-    right: 62px;
+    right: 12px;
   }
   .mhud-star {
     color: #ffd34d;
@@ -3608,7 +3620,7 @@ img {
    floor. Flat (no 3D tilt); elements sit on top at image-pixel positions.
    ========================================================================= */
 #maze-world.img-mode {
-  background: url("assets/maze/maze-bg.png") center / 100% 100% no-repeat;
+  background: url("assets/maze/maze-bg.png?v=2") center / 100% 100% no-repeat;
   transform: none;
 }
 #maze-world.img-mode::before {
@@ -3657,19 +3669,50 @@ img {
   font-size: 30px;
 }
 
-/* Landscape overview: fit the whole 1586×992 image into the inset play area. */
+/* Landscape overview: fit the whole 1586×992 image into the inset play area.
+   Play area is now ~1054×736, so the artwork scales up to fill it. */
 @media (min-aspect-ratio: 1/1) and (min-width: 760px) {
   #maze-world.img-mode,
   #maze-world.img-mode.zooming {
-    transform: scale(0.53) !important;
+    transform: scale(0.66) !important;
     animation: none;
   }
 }
 
-.dbg-wall {
+/* DEBUG click-probe readout + dots (temporary tuning tool) */
+#dbg-readout {
   position: absolute;
-  background: rgba(255, 0, 0, 0.38);
-  outline: 1px solid #f00;
-  z-index: 16;
+  top: 8px;
+  right: 8px;
+  z-index: 60;
+  max-height: 90%;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.82);
+  color: #eaff00;
+  font: 700 15px monospace;
+  line-height: 1.35;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #eaff00;
   pointer-events: none;
+}
+.dbg-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  background: #00e5ff;
+  border: 2px solid #002;
+  border-radius: 50%;
+  z-index: 30;
+  pointer-events: none;
+}
+.dbg-dot::after {
+  content: attr(data-n);
+  position: absolute;
+  left: 12px;
+  top: -6px;
+  font: 900 20px monospace;
+  color: #00e5ff;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
 }

@@ -417,7 +417,7 @@ let state = {
   health: 3,
   shielded: false,
   speedBoost: false,
-  family: 0, // family tokens collected this run (shown in the landscape HUD)
+  family: 0, // family tokens collected this run (shown in the status box)
   runSeconds: 0, // overall run time; the run ends at RUN_LIMIT_SECONDS
 };
 
@@ -554,10 +554,11 @@ function floatText(text, x, y, color = "#ffd34d", big = false) {
   setTimeout(() => el.remove(), 950);
 }
 
-// C2 — tiny built-in sound effects using the browser's Web Audio API.
-// No sound files, nothing paid. A mute toggle is saved in localStorage.
+// C2 — sound is turned OFF for this project (no music, no effects). The player
+// stays muted; to bring back the subtle Web Audio effects later, set this to
+// false (and restore a toggle button if you want players to control it).
 let audioCtx = null;
-let muted = localStorage.getItem("immunityMuted") === "1";
+let muted = true;
 const SOUND_PRESETS = {
   collect: { type: "triangle", f1: 660, f2: 990, dur: 0.15 },
   success: { type: "sine", f1: 523, f2: 784, dur: 0.25 },
@@ -708,9 +709,6 @@ function init() {
   }, 3500);
   setupCustomizeControls();
   setupControls();
-  // Reflect saved mute preference on the sound button.
-  const muteBtn = document.getElementById("mute-btn");
-  if (muteBtn) muteBtn.textContent = muted ? "🔇" : "🔊";
 }
 
 // Home -> initials screen.
@@ -794,7 +792,8 @@ function updateHUD() {
   document.getElementById("hud-initials").textContent = state.initials;
   document.getElementById("hud-score").textContent = state.score;
   document.getElementById("hud-health").textContent = state.health;
-  document.getElementById("hud-shield").classList.toggle("on", state.shielded);
+  const hs = document.getElementById("hud-shield");
+  if (hs) hs.classList.toggle("on", state.shielded);
   updateHudLand();
 }
 
@@ -880,6 +879,12 @@ const WORLD_SIZE = 1050;
 const VIEW_W = 430,
   VIEW_H = 860;
 
+// Playable world bounds. Set per maze: the CSS maze is WORLD_SIZE square; the
+// image maze is the artwork's pixel size (IMG_W×IMG_H). Movement is clamped to
+// these so the player can reach the whole map.
+let worldW = WORLD_SIZE,
+  worldH = WORLD_SIZE;
+
 // Player position/size within the world.
 let player = { x: 400, y: 400, w: 46, h: 76, speed: 4 };
 
@@ -900,9 +905,50 @@ let mazeFrame;
 // Image-maze mode: use the supplied maze artwork as the floor instead of the
 // CSS-drawn maze. Positions are in the image's pixel space (1586×992).
 const USE_IMAGE_MAZE = true;
-const DEBUG_WALLS = false; // draws collision walls in red to align them; off when done
+const DEBUG_PROBE = false; // click the maze to print exact coordinates (temporary tuning tool)
 const IMG_W = 1586,
   IMG_H = 992;
+
+// Collision mask baked from the maze artwork (assets/maze/wallmask.js): one bit
+// per maskF-pixel cell, 1 = wall/blocked. This lets the player walk exactly on
+// the painted floor and never on a wall — no hand-placed rectangles needed.
+let maskBits = null,
+  maskW = 0,
+  maskH = 0,
+  maskF = 4;
+(function loadWallMask() {
+  const M = typeof window !== "undefined" && window.WALL_MASK;
+  if (!M) return;
+  maskW = M.w;
+  maskH = M.h;
+  maskF = M.f;
+  const bin = atob(M.bits);
+  maskBits = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) maskBits[i] = bin.charCodeAt(i);
+})();
+// Is this image-pixel point inside a wall? Outside the artwork counts as wall.
+function maskBlocked(imgX, imgY) {
+  if (!maskBits) return false;
+  if (imgX < 0 || imgY < 0 || imgX >= IMG_W || imgY >= IMG_H) return true;
+  const mx = (imgX / maskF) | 0,
+    my = (imgY / maskF) | 0;
+  const idx = my * maskW + mx;
+  return ((maskBits[idx >> 3] >> (idx & 7)) & 1) === 1;
+}
+// The player's "feet" footprint is what must stay on the floor — in this angled
+// view the head/body can pass in front of a wall, only the feet stand on tiles.
+function feetBlocked(px, py) {
+  const w = player.w,
+    h = player.h;
+  // A compact footprint (~9px wide) so the character fits through tight hallways;
+  // in this angled view the wider body/shoes can pass in front of a wall.
+  return (
+    maskBlocked(px + w * 0.5, py + h - 8) ||
+    maskBlocked(px + w * 0.4, py + h - 9) ||
+    maskBlocked(px + w * 0.6, py + h - 9) ||
+    maskBlocked(px + w * 0.5, py + h - 14)
+  );
+}
 
 // Build all maze elements fresh.
 function buildMaze() {
@@ -915,6 +961,9 @@ function buildMaze() {
     .forEach((n) => n.remove());
 
   if (USE_IMAGE_MAZE) return buildImageMaze(worldEl);
+
+  worldW = WORLD_SIZE;
+  worldH = WORLD_SIZE;
 
   // --- Hospital rooms (decorative floor areas + standing signs) ---
   // Drawn first so they sit behind the walls, doors, and collectibles.
@@ -1054,73 +1103,48 @@ function buildImageMaze(worldEl) {
   worldEl.classList.add("img-mode");
   worldEl.style.width = IMG_W + "px";
   worldEl.style.height = IMG_H + "px";
+  worldW = IMG_W;
+  worldH = IMG_H;
 
-  worldEl.querySelectorAll(".dbg-wall").forEach((n) => n.remove());
+  // Collision comes from the pixel mask (maskBlocked/feetBlocked), so no
+  // hand-placed wall rectangles are needed here.
+  walls = [];
+  if (DEBUG_PROBE) setupClickProbe(worldEl);
 
-  // Collision walls (image pixel space), traced from the artwork's grid.
-  // W = a vertical wall, H = horizontal. Refined pass-by-pass with the red overlay.
-  const TW = 24; // internal wall thickness
-  walls = [
-    // Outer bounds (keep the player on the floor; top rooms are entered via markers)
-    { x: 0, y: 0, w: IMG_W, h: 175 }, // top
-    { x: 0, y: 925, w: IMG_W, h: 67 }, // bottom
-    { x: 0, y: 0, w: 55, h: IMG_H }, // left
-    { x: 1528, y: 0, w: 58, h: IMG_H }, // right
-    // Internal dividers (approximate)
-    { x: 500, y: 270, w: 275, h: TW },
-    { x: 490, y: 285, w: TW, h: 225 },
-    { x: 605, y: 400, w: TW, h: 220 },
-    { x: 750, y: 175, w: TW, h: 130 },
-    { x: 750, y: 560, w: TW, h: 265 },
-    { x: 300, y: 490, w: 205, h: TW },
-    { x: 895, y: 300, w: TW, h: 245 },
-    { x: 895, y: 525, w: 235, h: TW },
-    { x: 1106, y: 300, w: TW, h: 250 },
-    { x: 300, y: 610, w: 380, h: TW },
-    { x: 900, y: 635, w: 375, h: TW },
-    { x: 1120, y: 640, w: TW, h: 245 },
-  ];
-  if (DEBUG_WALLS) {
-    walls.forEach((w) => {
-      const d = document.createElement("div");
-      d.className = "dbg-wall";
-      d.style.cssText = `left:${w.x}px;top:${w.y}px;width:${w.w}px;height:${w.h}px`;
-      worldEl.appendChild(d);
-    });
-  }
-
-  // Four mini-game clinics, placed on their labelled rooms in the artwork.
+  // Four mini-game clinics. (cx,cy) is the trigger CENTRE, placed INSIDE each
+  // room (Darts/Freeze in their open alcoves; Memory/Sprint in the rooms opened
+  // for them). The pad art (128×96) is centred on it.
   const IZONES = [
-    { key: "darts", short: "Vaccine Darts", x: 585, y: 200, color: "rgba(125,47,166,0.5)" },
-    { key: "freeze", short: "Flu Freeze", x: 870, y: 195, color: "rgba(43,179,179,0.45)" },
-    { key: "sprint", short: "Hospital Sprint", x: 255, y: 460, color: "rgba(192,81,43,0.45)" },
-    { key: "memory", short: "Memory Clinic", x: 955, y: 375, color: "rgba(125,91,166,0.45)" },
+    { key: "darts", short: "Vaccine Darts", cx: 645, cy: 210, color: "rgba(125,47,166,0.5)" },
+    { key: "freeze", short: "Flu Freeze", cx: 935, cy: 200, color: "rgba(43,179,179,0.45)" },
+    { key: "sprint", short: "Hospital Sprint", cx: 304, cy: 532, color: "rgba(192,81,43,0.45)" },
+    { key: "memory", short: "Memory Clinic", cx: 1030, cy: 438, color: "rgba(125,91,166,0.45)" },
   ];
   IZONES.forEach((z) => {
     const d = document.createElement("div");
     d.className = "zone";
     d.dataset.key = z.key;
-    d.style.left = z.x + "px";
-    d.style.top = z.y + "px";
+    d.style.left = z.cx - 64 + "px"; // 128 wide, centred on the trigger
+    d.style.top = z.cy - 48 + "px"; // 96 tall, centred on the trigger
     d.style.background = z.color;
     d.innerHTML = `<div class="zone-icon">${ZONES.find((q) => q.key === z.key).icon}</div>${z.short}`;
     worldEl.appendChild(d);
-    const zd = ZONES.find((q) => q.key === z.key); // keep entry-detection in sync
+    const zd = ZONES.find((q) => q.key === z.key); // store the CENTRE for entry detection
     if (zd) {
-      zd.x = z.x;
-      zd.y = z.y;
+      zd.x = z.cx;
+      zd.y = z.cy;
     }
   });
 
-  // Boosters scattered on open floor.
+  // Boosters, each on a verified naturally-reachable floor spot (top-left = feet − 15).
   liveCollectibles = [];
   [
-    [560, 300, "shield"],
-    [800, 340, "heart"],
-    [1210, 470, "speed"],
-    [470, 660, "family"],
-    [730, 560, "wellness"],
-    [1040, 740, "family"],
+    [284, 335, "shield"],
+    [484, 385, "heart"],
+    [684, 415, "speed"],
+    [544, 285, "family"],
+    [984, 235, "wellness"],
+    [302, 381, "family"],
   ].forEach(([x, y, key]) =>
     spawnCollectible(
       worldEl,
@@ -1130,11 +1154,11 @@ function buildImageMaze(worldEl) {
     ),
   );
 
-  // Patrolling germs (on open floor).
+  // Patrolling germs (on the reachable player corridors).
   hazards = [
-    { x: 650, y: 460, w: 46, h: 46, min: 350, max: 590, vy: 2.0 },
-    { x: 1000, y: 650, w: 46, h: 46, min: 480, max: 780, vy: -2.2 },
-    { x: 400, y: 640, w: 46, h: 46, min: 520, max: 820, vy: 1.8 },
+    { x: 500, y: 400, w: 46, h: 46, min: 340, max: 470, vy: 1.8 },
+    { x: 690, y: 420, w: 46, h: 46, min: 360, max: 480, vy: -1.8 },
+    { x: 300, y: 360, w: 46, h: 46, min: 300, max: 430, vy: 1.6 },
   ];
   hazardCooldown = 0;
   hazards.forEach((h) => {
@@ -1151,9 +1175,9 @@ function buildImageMaze(worldEl) {
   lockedDoor = null;
   vaultHintShown = true;
 
-  // Player starts at the reception (top-left).
-  player.x = 400;
-  player.y = 250;
+  // Player starts on a verified open-floor spot (feet centred at ~482,362).
+  player.x = 459;
+  player.y = 296;
   player.speed = 4.4;
   const playerEl = document.getElementById("player");
   buildCharacter(playerEl);
@@ -1171,6 +1195,32 @@ function spawnCollectible(worldEl, x, y, data) {
   liveCollectibles.push({ el: d, x, y, w: 30, h: 30, data });
 }
 
+// DEBUG tuning tool: click the maze to drop a numbered dot and print its exact
+// image-pixel coordinate. Used to locate stuck spots + desired room positions.
+function setupClickProbe(worldEl) {
+  let out = document.getElementById("dbg-readout");
+  if (!out) {
+    out = document.createElement("div");
+    out.id = "dbg-readout";
+    document.getElementById("game").appendChild(out);
+  }
+  out.innerHTML = "<b>Clicks (screenshot me):</b><br>";
+  let n = 0;
+  worldEl.onclick = (e) => {
+    const rect = worldEl.getBoundingClientRect();
+    const s = rect.width / IMG_W;
+    const ix = Math.round((e.clientX - rect.left) / s);
+    const iy = Math.round((e.clientY - rect.top) / s);
+    n++;
+    const dot = document.createElement("div");
+    dot.className = "dbg-dot";
+    dot.dataset.n = n;
+    dot.style.cssText = `left:${ix}px;top:${iy}px`;
+    worldEl.appendChild(dot);
+    out.innerHTML += `${n}: ${ix}, ${iy}<br>`;
+  };
+}
+
 // AABB overlap test.
 function overlap(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -1185,24 +1235,65 @@ function overlap(a, b) {
 // the player ever ends up inside a wall (e.g. a knockback), they can always move
 // back out — they can never become permanently trapped.
 function moverPlayer(dx, dy) {
-  const cur = { x: player.x, y: player.y, w: player.w, h: player.h };
+  // Image maze: walk the pixel mask, one pixel at a time per axis so the player
+  // stops flush against a wall (no gap, no overshoot) and slides along it.
+  if (maskBits) {
+    stepAxisMask(Math.sign(dx), 0, Math.round(Math.abs(dx)));
+    stepAxisMask(0, Math.sign(dy), Math.round(Math.abs(dy)));
+    return;
+  }
+  const startX = player.x,
+    startY = player.y;
   // --- Horizontal ---
   if (dx !== 0) {
-    const nx = Math.max(0, Math.min(WORLD_SIZE - player.w, player.x + dx));
-    const box = { x: nx, y: player.y, w: player.w, h: player.h };
-    if (!walls.some((w) => overlap(box, w) && !overlap(cur, w))) player.x = nx;
+    let nx = Math.max(0, Math.min(worldW - player.w, startX + dx));
+    for (const w of walls) {
+      const box = { x: nx, y: startY, w: player.w, h: player.h };
+      const already = overlap({ x: startX, y: startY, w: player.w, h: player.h }, w);
+      // If this step would newly enter the wall, stop FLUSH against its edge
+      // (no gap, no overshoot) instead of rejecting the whole step. If we're
+      // already inside it (e.g. a knockback), don't clamp — always allow escape.
+      if (overlap(box, w) && !already) {
+        if (dx > 0) nx = Math.min(nx, w.x - player.w);
+        else nx = Math.max(nx, w.x + w.w);
+      }
+    }
+    player.x = nx;
   }
   // --- Vertical ---
   if (dy !== 0) {
-    cur.x = player.x; // x may have changed above
-    const ny = Math.max(0, Math.min(WORLD_SIZE - player.h, player.y + dy));
-    const box = { x: player.x, y: ny, w: player.w, h: player.h };
-    if (!walls.some((w) => overlap(box, w) && !overlap(cur, w))) player.y = ny;
+    let ny = Math.max(0, Math.min(worldH - player.h, startY + dy));
+    for (const w of walls) {
+      const box = { x: player.x, y: ny, w: player.w, h: player.h };
+      const already = overlap({ x: player.x, y: startY, w: player.w, h: player.h }, w);
+      if (overlap(box, w) && !already) {
+        if (dy > 0) ny = Math.min(ny, w.y - player.h);
+        else ny = Math.max(ny, w.y + w.h);
+      }
+    }
+    player.y = ny;
   }
 }
 
-// Is the player's box overlapping any wall at the given position?
+// Step the player along one axis, one pixel at a time, up to `steps` pixels,
+// stopping the instant the feet would enter a wall. If the feet already start
+// inside a wall (e.g. a knockback), movement is allowed so we can never trap.
+function stepAxisMask(sgnX, sgnY, steps) {
+  if ((sgnX === 0 && sgnY === 0) || steps <= 0) return;
+  const stuck = feetBlocked(player.x, player.y);
+  for (let i = 0; i < steps; i++) {
+    const nx = Math.max(0, Math.min(worldW - player.w, player.x + sgnX));
+    const ny = Math.max(0, Math.min(worldH - player.h, player.y + sgnY));
+    if (nx === player.x && ny === player.y) break; // hit world edge
+    if (!stuck && feetBlocked(nx, ny)) break; // flush against a wall
+    player.x = nx;
+    player.y = ny;
+  }
+}
+
+// Is the player standing in a wall at the given position?
 function playerInWall(x = player.x, y = player.y) {
+  if (maskBits) return feetBlocked(x, y);
   const box = { x, y, w: player.w, h: player.h };
   return walls.some((w) => overlap(box, w));
 }
@@ -1224,8 +1315,8 @@ function unstickPlayer() {
   ];
   for (let r = 4; r <= 260; r += 4) {
     for (const [ox, oy] of dirs) {
-      const nx = Math.max(0, Math.min(WORLD_SIZE - player.w, player.x + ox * r));
-      const ny = Math.max(0, Math.min(WORLD_SIZE - player.h, player.y + oy * r));
+      const nx = Math.max(0, Math.min(worldW - player.w, player.x + ox * r));
+      const ny = Math.max(0, Math.min(worldH - player.h, player.y + oy * r));
       if (!playerInWall(nx, ny)) {
         player.x = nx;
         player.y = ny;
@@ -1325,7 +1416,7 @@ function checkCollectibles() {
 
 function collect(data) {
   addScore(data.points);
-  if (data.key === "family") state.family = (state.family || 0) + 1; // HUD counter
+  if (data.key === "family") state.family = (state.family || 0) + 1; // status counter
   // Apply the effect (with clear, visible feedback — see power-up functions below).
   if (data.effect === "shield") {
     activateShield(6);
@@ -1581,9 +1672,11 @@ function markClinicVisited(key) {
 
 // Detect when the player stands on a mini-game zone.
 let zoneCooldown = false;
+const ZONE_HIT = 56; // trigger box (centred on z.x,z.y) — small, so it only fires inside the room
 function checkZones() {
   const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
-  const onAnyZone = ZONES.some((z) => overlap(pBox, { x: z.x, y: z.y, w: 90, h: 90 }));
+  const hitBox = (z) => ({ x: z.x - ZONE_HIT / 2, y: z.y - ZONE_HIT / 2, w: ZONE_HIT, h: ZONE_HIT });
+  const onAnyZone = ZONES.some((z) => overlap(pBox, hitBox(z)));
   // While cooled down (just declined a zone or just finished a mini-game), wait until
   // the player physically walks off the zone before it can trigger again. No teleport.
   if (zoneCooldown) {
@@ -1591,7 +1684,7 @@ function checkZones() {
     return;
   }
   for (const z of ZONES) {
-    if (overlap(pBox, { x: z.x, y: z.y, w: 90, h: 90 })) {
+    if (overlap(pBox, hitBox(z))) {
       openZonePopup(z);
       return;
     }
@@ -1643,9 +1736,9 @@ function buildDirectionArrows() {
 function updateDirectionArrows(camX, camY) {
   document.querySelectorAll("#direction-arrows .dir").forEach((a) => {
     const z = ZONES.find((zz) => zz.key === a.dataset.key);
-    // Zone center in screen coordinates.
-    let sx = z.x + 45 + camX;
-    let sy = z.y + 45 + camY;
+    // Zone center in screen coordinates (z.x,z.y is already the centre).
+    let sx = z.x + camX;
+    let sy = z.y + camY;
     const margin = 28;
     const onScreen = sx > 0 && sx < VIEW_W && sy > 60 && sy < VIEW_H;
     a.style.opacity = onScreen ? "0" : "1"; // hide arrow when zone is visible

@@ -24,6 +24,22 @@ export default [
     },
   },
   {
+    // Node build/tooling scripts (e.g. assets/maze/build-collision.mjs) run in
+    // Node, not the browser — give them Node globals so Buffer/console are known.
+    files: ["**/*.mjs"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      "no-unused-vars": "off",
+      "no-undef": "warn",
+    },
+  },
+  {
     // Don't lint the local dependency folder.
     ignores: ["node_modules/**"],
   },

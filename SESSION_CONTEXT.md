@@ -241,3 +241,33 @@
   nudged per-spot during play. Next: playtest + nudge any wall that feels wrong; split
   `icons.png` into transparent `sprite-*.png` and swap emoji→sprites; landscape layouts for
   home + mini-games.
+- 2026-07-27 (session 18 — PIXEL-MASK collision + UI cleanup + image-swap workflow): Big
+  rework of how the maze collision works, plus UI polish. **UI:** removed the sound toggle +
+  gear (game is muted by default — flip `muted=false` in script.js to bring the subtle
+  effects back); removed only the bottom-right legend (kept the left status box + the floor
+  boosters — user clarified they only meant the legend); reshaped the left landscape HUD panel
+  to a skinny full-height column; widened the maze play area; hid the touch D-pad on
+  widescreen (still there on phones). **NEW COLLISION SYSTEM (the big one):** replaced the
+  hand-placed wall rectangles with a **pixel mask read from the artwork**. `assets/maze/
+  build-collision.mjs` decodes `maze-bg.png` (manual PNG decode, no libs), classifies teal
+  pixels = floor / cream+gray = wall, **dilates to widen hallways**, applies all our hand-tuned
+  openings, and bakes `assets/maze/wallmask.js` (a 1-bit-per-4px mask, loaded via a `<script>`
+  in index.html BEFORE script.js). In script.js: `maskBlocked`/`feetBlocked` test the mask;
+  `moverPlayer` pixel-steps so the player stops FLUSH against walls; the player is verified
+  reachable by a real-body flood-fill (not a point). This auto-matches the art and fixed the
+  "character standing on walls" problem. **Triggers now INSIDE rooms:** Darts/Freeze use their
+  natural open alcoves; Memory (1030,438) and Sprint (304,532) rooms were opened so their pads
+  sit inside; hit box shrunk to 56px centred so mini-games only start once you walk in (no
+  hallway triggers). **Navigation fixes:** widened the Freeze→Memory pinch hallway; carved a
+  bottom corridor (Sprint → left doors → above Information → centre dead-end wall → the right
+  side) so the sealed bottom-centre connects. **Character foot-collision slimmed** to ~9px so
+  it fits tight hallways (raised body-reachable floor from 64%→76%). **IMAGE-SWAP WORKFLOW
+  (important):** the collision is DERIVED from the picture, so to change walls the user edits
+  `maze-bg.png` in place (SAME 1586×992 size + same layout, paint walls over with teal floor)
+  and I just re-run `node assets/maze/build-collision.mjs` — no re-mapping. User already did
+  one swap (walls painted out); added a `?v=2` cache-bust on the CSS bg url so the browser
+  loads the new image. **STILL OPEN (do next):** user still gets stuck in some hallways
+  (remaining pinch points) even after the footprint slim — next: slim the footprint a touch
+  more and/or widen the exact stuck spots (turn `DEBUG_PROBE=true` in script.js → click the
+  maze → it prints exact coords), then re-run build-collision.mjs. Saved progress at user's
+  request before continuing that fix.

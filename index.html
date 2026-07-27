@@ -27,17 +27,6 @@
         </div>
       </div>
 
-      <!-- Sound on/off. Visible on every screen. -->
-      <button
-        id="mute-btn"
-        class="mute-btn"
-        onclick="toggleMute()"
-        title="Sound on/off"
-        aria-label="Toggle sound on or off"
-      >
-        🔊
-      </button>
-
       <!-- =====================================================
          SCREEN 1: HOME
          ===================================================== -->
@@ -245,7 +234,7 @@
               <span class="mhud-lbl">⚡ SPEED</span><span class="pips" id="mhud-speed-l"></span>
             </div>
             <div class="mhud-row">
-              <span class="mhud-lbl">👪 FAMILY TOKENS</span
+              <span class="mhud-lbl">👪 FAMILY</span
               ><span class="mhud-fam" id="mhud-family">0/3</span>
             </div>
           </div>
@@ -255,30 +244,6 @@
           </div>
           <div class="mhud-score">
             <span class="mhud-star">★</span> SCORE <b id="mhud-score">0</b>
-          </div>
-          <button class="mhud-gear" onclick="toggleMute()" aria-label="Settings / sound">⚙</button>
-
-          <div class="mhud-legend">
-            <div class="lg">
-              <span class="lg-ic shield">🛡</span>
-              <div><b>Vaccine Shield</b><small>Protects you from one flu obstacle.</small></div>
-            </div>
-            <div class="lg">
-              <span class="lg-ic speed">⚡</span>
-              <div><b>Speed Boost</b><small>Run faster for a short time.</small></div>
-            </div>
-            <div class="lg">
-              <span class="lg-ic heart">❤</span>
-              <div><b>Health Boost</b><small>Restore one health point.</small></div>
-            </div>
-            <div class="lg">
-              <span class="lg-ic fam">👪</span>
-              <div><b>Family Token</b><small>Protect the moments that matter.</small></div>
-            </div>
-            <div class="lg tip">
-              <span class="lg-ic">💡</span>
-              <div><b>Tip</b><small>Explore every path — some doors are locked.</small></div>
-            </div>
           </div>
         </div>
 
@@ -428,6 +393,8 @@
       </div>
     </div>
 
+    <!-- Collision map auto-generated from the maze artwork (see assets/maze/). -->
+    <script src="assets/maze/wallmask.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
