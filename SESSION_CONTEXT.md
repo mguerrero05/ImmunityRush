@@ -380,3 +380,26 @@
   maze; (2) the other 3 mini-games' visuals (Vaccine Darts, Flu Freeze, Memory) — same
   method as Sprint: user supplies a background image, I build the look around it
   (`darts-bg.png`, `freeze-bg.png`, `memory-bg.png`).
+- 2026-07-27 (session 24 — Memory Match gets a clinic-scene backdrop + card tray):
+  Added a hospital-scene background behind Memory Match and put the 12 cards on their
+  own centred "tray" so the layout is deliberate at ANY screen size. **Background:**
+  user supplied `assets/minigames/memory-bg.png` (a clean SHN clinic waiting-room — blue
+  door, VaxFacts+ sign, shelf; the FIRST two attempts had a drawn card-board / were
+  landscape, final one is the empty room). Wired into `#memory-stage` as a scrim +
+  cover image + gradient fallback (cache-buster now `?v=3` — bump it whenever the image
+  is replaced). **Why a tray, not aligning to the photo:** `cover` crops the image
+  differently per window size, so a painted board can't stay under the cards — the tray
+  decouples them. **How:** `beginMemoryRound` now builds a `.mem-board.memory-grid`
+  wrapper inside the stage and appends the cards to IT (not the stage). `#memory-stage`
+  is a flex box that centres the tray; `.memory-grid` is `repeat(4, 92px)` fixed-size
+  columns, centred (was `repeat(4,1fr)`, which BALLOONED the cards to giant overflowing
+  tiles on the wide desktop layout — that was the bug the user hit). `.mem-board` = a
+  glassy rounded panel (translucent white, blur, shadow). **Also:** removed the
+  `.mg-hint` line under the board ("Flip two cards • connect each action to its
+  benefit" — user disliked it) and removed the `memory-grid` class from the stage in
+  HTML (the tray carries it now). All lint/prettier clean, node --check OK.
+  **Preview tool:** `scratchpad/preview-memory.mjs` renders the portrait cover-crop +
+  scrim so we can eyeball framing without a browser. **STILL OPEN:** custom germ+pickup
+  icons (`assets/icons/`, one sprite sheet -> slice); the other 2 mini-games' visuals
+  (Vaccine Darts `darts-bg.png`, Flu Freeze `freeze-bg.png` — same method: user supplies
+  a backdrop, I build around it); optional Memory card-back refresh to match the scene.

@@ -2591,6 +2591,11 @@ function startMemory() {
 function beginMemoryRound() {
   const stage = document.getElementById("memory-stage");
   stage.innerHTML = "";
+  // The cards live inside a centred "tray" so they always look deliberately
+  // placed on the clinic scene, at any screen size (no aligning to the photo).
+  const board = document.createElement("div");
+  board.className = "mem-board memory-grid";
+  stage.appendChild(board);
   toast(rand(MEMORY_MESSAGES), 1800);
 
   // Deck: each pair -> one picture card + one fact card, both sharing a pairId.
@@ -2639,7 +2644,7 @@ function beginMemoryRound() {
     el.innerHTML = `<span class="mem-back">＋</span>${face}`;
     el.dataset.pair = card.pairId;
     el.addEventListener("click", () => flipCard(el));
-    stage.appendChild(el);
+    board.appendChild(el);
   });
 }
 

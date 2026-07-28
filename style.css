@@ -1394,10 +1394,26 @@ body {
 /* Memory match */
 .memory-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  padding: 8px;
-  align-content: start;
+  /* Fixed card size + centred board, so cards never stretch to fill a wide
+     stage (which ballooned them on desktop). The clinic backdrop frames it. */
+  grid-template-columns: repeat(4, 92px);
+  grid-auto-rows: auto;
+  gap: 10px;
+  justify-content: center;
+  align-content: center;
+}
+/* The card tray: a soft glassy panel the 12 cards sit on, centred on the
+   clinic scene so the layout is deliberate at any screen size. */
+.mem-board {
+  padding: 14px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 14px 34px rgba(4, 18, 34, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
 }
 .mem-card {
   aspect-ratio: 3/4;
@@ -3077,11 +3093,18 @@ body {
 /* ---- Clinic backdrop behind the card board ---- */
 #memory-stage {
   background:
+    /* soft scrim so the white/blue cards stay readable over the scene */
+    linear-gradient(180deg, rgba(9, 32, 56, 0.28), rgba(9, 32, 56, 0.42)),
+    /* the clinic backdrop (drop assets/minigames/memory-bg.png) */
+    url("assets/minigames/memory-bg.png?v=3") center / cover no-repeat,
+    /* fallback shown if the backdrop image is missing */
     radial-gradient(90% 55% at 50% 8%, rgba(255, 255, 255, 0.6), transparent 60%),
     linear-gradient(180deg, #e7f1f8 0%, #dbe9f4 55%, #cadcea 100%);
-  gap: 10px;
-  padding: 12px 10px;
-  align-content: center;
+  /* Centre the card tray on the scene (the tray holds the grid now). */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
 }
 
 /* ---- Card back: SHN-blue medallion, not a bare "+" ---- */
