@@ -422,19 +422,29 @@ let state = {
 };
 
 // Character look. Defaults match the CSS defaults.
+// The player is now chosen from a gallery of finished character images
+// (assets/characters/*.png). `preset` is the index into CHAR_PRESETS below.
+const CHAR_PRESETS = ["woman-1", "woman-2", "woman-3", "man-1", "man-2", "man-3"];
 let character = {
-  gender: "male",
-  skin: "#f7d5b5",
-  hair: "#2b1b0e",
-  hairstyle: "short",
-  eyes: "#4a3728",
-  scrubs: "#1f6feb",
+  preset: 0,
 };
+function characterSrc() {
+  return `assets/characters/${CHAR_PRESETS[character.preset] || CHAR_PRESETS[0]}.png`;
+}
 
 // Load a saved character if one exists.
 (function loadCharacter() {
   const saved = localStorage.getItem("immunityCharacter");
-  if (saved) character = JSON.parse(saved);
+  if (saved) {
+    try {
+      const c = JSON.parse(saved);
+      if (typeof c.preset === "number" && c.preset >= 0 && c.preset < CHAR_PRESETS.length) {
+        character.preset = c.preset;
+      }
+    } catch (e) {
+      /* ignore a bad/old saved value — keep the default */
+    }
+  }
 })();
 
 /* =========================================================
@@ -623,49 +633,17 @@ function shake() {
 }
 
 // Build the CSS-shape character inside a given container element.
+// Render the selected character IMAGE into a stage element. The maze player, the
+// HUD portrait, the Sprint runner and the Customize preview all use this.
 function buildCharacter(el) {
-  if (!el) return; // e.g. the Home character preview no longer exists (image home screen)
-  el.innerHTML = `
-    <div class="char-arm left"></div>
-    <div class="char-arm right"></div>
-    <div class="char-legs">
-      <div class="char-leg left"><span class="char-shoe"></span></div>
-      <div class="char-leg right"><span class="char-shoe"></span></div>
-    </div>
-    <div class="char-body">
-      <div class="char-sleeve left"></div>
-      <div class="char-sleeve right"></div>
-      <div class="char-steth"></div>
-      <div class="char-pocket"></div>
-      <div class="char-badge">SHN</div>
-    </div>
-    <div class="char-hair-long"></div>
-    <div class="char-head">
-      <span class="char-ear left"></span>
-      <span class="char-ear right"></span>
-      <div class="char-hair"></div>
-      <div class="char-hair-extra"></div>
-      <div class="char-bun"></div>
-      <div class="char-brows"><span></span><span></span></div>
-      <div class="char-eyes"><span></span><span></span></div>
-      <div class="char-nose"></div>
-      <span class="char-cheek left"></span>
-      <span class="char-cheek right"></span>
-      <div class="char-smile"></div>
-    </div>
-  `;
-  applyCharacter(el);
+  if (!el) return;
+  el.classList.add("char-photo");
+  el.innerHTML = `<img class="char-img" src="${characterSrc()}" alt="" draggable="false" />`;
 }
 
-// Apply the current character colours/style to a container.
+// Presets are finished images, so "applying" a change just re-draws the chosen one.
 function applyCharacter(el) {
-  if (!el) return; // Home character preview may not exist (image home screen)
-  el.style.setProperty("--skin", character.skin);
-  el.style.setProperty("--hair", character.hair);
-  el.style.setProperty("--eyes", character.eyes);
-  el.style.setProperty("--scrubs", character.scrubs);
-  el.dataset.hairstyle = character.hairstyle;
-  el.dataset.gender = character.gender; // female = long hair (see CSS)
+  buildCharacter(el);
 }
 
 // Hybrid hero art: show a supplied character render on the home screen if the
@@ -700,15 +678,6 @@ function rotateSlogan(elId) {
 
 // Called once when the page loads.
 function init() {
-  buildCharacter(document.getElementById("home-character"));
-  updateHeroArt();
-  rotateSlogan("home-slogan");
-  // Rotate the home slogan every few seconds.
-  setInterval(() => {
-    if (document.getElementById("screen-home").classList.contains("active")) {
-      rotateSlogan("home-slogan");
-    }
-  }, 3500);
   setupCustomizeControls();
   setupControls();
 }
@@ -817,8 +786,7 @@ function updateHudLand() {
   pipRow(document.getElementById("mhud-health"), 5, state.health, "");
   pipRow(document.getElementById("mhud-shield-l"), 3, state.shielded ? 1 : 0, "shield");
   pipRow(document.getElementById("mhud-speed-l"), 4, state.speedBoost ? 4 : 0, "energy");
-  const fam = document.getElementById("mhud-family");
-  if (fam) fam.textContent = (state.family || 0) + "/3";
+  pipRow(document.getElementById("mhud-family"), 3, state.family || 0, "fam");
 }
 
 function addScore(n) {
@@ -2801,27 +2769,22 @@ function hidePopup() {
    ========================================================= */
 function setupCustomizeControls() {
   buildCharacter(document.getElementById("preview-character"));
-
-  // Highlight the swatches/pills that match the current character.
-  document.querySelectorAll("#screen-customize [data-key]").forEach((group) => {
-    const key = group.dataset.key;
-    group.querySelectorAll("[data-val]").forEach((btn) => {
-      if (btn.dataset.val === character[key]) btn.classList.add("active");
-      btn.addEventListener("click", () => {
-        group.querySelectorAll("[data-val]").forEach((x) => x.classList.remove("active"));
-        btn.classList.add("active");
-        character[key] = btn.dataset.val;
-        applyCharacter(document.getElementById("preview-character"));
-      });
+  // Gallery: pick one of the finished character images.
+  document.querySelectorAll("#char-gallery .char-pick").forEach((btn) => {
+    const idx = Number(btn.dataset.preset);
+    if (idx === character.preset) btn.classList.add("active");
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#char-gallery .char-pick").forEach((x) => x.classList.remove("active"));
+      btn.classList.add("active");
+      character.preset = idx;
+      buildCharacter(document.getElementById("preview-character"));
     });
   });
 }
 
 function saveCharacter() {
   localStorage.setItem("immunityCharacter", JSON.stringify(character));
-  // Update the home-screen character too.
-  applyCharacter(document.getElementById("home-character"));
-  updateHeroArt(); // swap the hero render if the selected gender changed
+  buildCharacter(document.getElementById("mhud-char")); // refresh the HUD portrait
   toast("Character saved!");
 }
 

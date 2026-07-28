@@ -2069,6 +2069,10 @@ body {
   background: #ffd34d;
   box-shadow: 0 0 6px rgba(255, 211, 77, 0.6);
 }
+.pip.fam.full {
+  background: #ff9e6d;
+  box-shadow: 0 0 6px rgba(255, 158, 109, 0.6);
+}
 
 /* ---- Small round icon button (settings / sound / pause) ---- */
 .icon-btn {
@@ -3505,8 +3509,10 @@ img {
   .mhud-portrait .character-stage {
     position: absolute;
     left: 50%;
-    top: 16px;
-    transform: translateX(-50%) scale(1.55);
+    top: 4px;
+    /* Anchor to the head (top) so the circle frames the FACE, not the chest. */
+    transform: translateX(-50%) scale(1.8);
+    transform-origin: top center;
     filter: none;
     margin: 0;
   }
@@ -3637,10 +3643,10 @@ img {
 .img-mode .maze-player[data-facing="right"],
 .img-mode .maze-player[data-facing="front"],
 .img-mode .maze-player[data-facing="back"] {
-  transform: scale(1.05) !important;
+  transform: scale(2) !important; /* bottom-center origin keeps the feet planted */
 }
 .img-mode .maze-player[data-facing="left"] {
-  transform: scale(1.05) scaleX(-1) !important;
+  transform: scale(2) scaleX(-1) !important;
 }
 /* Bigger pickups/germs so they read on the large artwork. */
 .img-mode .collectible {
@@ -3759,4 +3765,57 @@ img {
   background: rgba(255, 255, 255, 0.16);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.65) inset;
   outline: none;
+}
+
+/* =========================================================================
+   CHARACTER = finished image (assets/characters/*.png), shown in the stage.
+   Replaces the old code-drawn character. Fills the stage height, feet at bottom.
+   ========================================================================= */
+.char-photo {
+  overflow: visible;
+}
+.char-photo .char-img {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  height: 100%;
+  width: auto;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Customize: gallery of finished characters to pick from */
+.char-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+.char-pick {
+  background: linear-gradient(180deg, #eef5fc, #d6e6f5);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 6px;
+  cursor: pointer;
+  aspect-ratio: 3 / 4;
+  display: grid;
+  place-items: end center;
+  overflow: hidden;
+}
+.char-pick img {
+  height: 94%;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 4px rgba(15, 76, 129, 0.25));
+}
+.char-pick:hover {
+  border-color: rgba(31, 111, 235, 0.5);
+}
+.char-pick.active {
+  border-color: var(--shn-blue, #1f6feb);
+  box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.28);
 }

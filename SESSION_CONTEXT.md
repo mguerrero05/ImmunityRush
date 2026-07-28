@@ -311,3 +311,25 @@
   with custom art delivered as ONE sprite sheet -> `assets/icons/icons.png`, which I'll slice
   and wire in (currently emojis via `data.emoji` / `textContent="🦠"`). Folder + README ready;
   waiting on the sheet. Next: confirm/nudge home button alignment; then do the icon swap.
+- 2026-07-27 (session 21 — image-based PLAYER CHARACTER + Customize gallery + HUD polish):
+  **Home button alignment done** (Start pad at top 55.8%). **PLAYER CHARACTER is now real
+  artwork, not CSS.** User supplied `assets/characters/characters-front.png` (1024x1536,
+  transparent; a 3x2 grid: WOMEN top row, MEN bottom row) + `characters-back.png` (transparent
+  too, but came out a MISMATCHED 3x3 with smaller figures — DEFERRED). I sliced the front sheet
+  into 6 individual transparent PNGs with a from-scratch Node PNG decode+encode:
+  `woman-1/2/3.png`, `man-1/2/3.png` (auto-detected the grid via alpha row/column profiles).
+  Rewrote the character system: `character = {preset}` (index into
+  `CHAR_PRESETS=[woman-1,woman-2,woman-3,man-1,man-2,man-3]`); `buildCharacter(el)` now renders
+  `<img class="char-img">` of the chosen preset (used by maze player, HUD portrait, Sprint
+  runner, Customize preview); `applyCharacter` just re-draws it; colour customization removed.
+  **Customize screen** = text buttons grouped **Female / Male**, each Character 1/2/3 (class
+  `char-pick`, `data-preset`), preview updates live. Maze player **scale bumped 1.05 -> 2** (was
+  too small; bottom-center origin keeps feet planted). HUD **portrait** re-anchored to the head
+  (`transform-origin: top center; scale 1.8; top 4px`) so the circle frames the FACE not the
+  chest. **FAMILY** HUD row changed from "n/3" text to 3 coral **pips** (`.pip.fam.full`), like
+  HEALTH/SHIELD/SPEED. Dead home-slogan/hero code removed from init. **STILL TO DO:** back sheet
+  needs regenerating to MATCH the front (3 across x 2 down, women top/men bottom, same size) so
+  I can add turn-around when walking up (front-only + left-mirror for now); the germ+pickup icon
+  swap is still pending (`assets/icons/` ready). **NEXT (starting now):** Vaccine Darts + Flu
+  Freeze trigger centres drifted a bit low — nudge them further INSIDE their rooms (they're
+  `IZONES` cx/cy in `buildImageMaze`, script.js).
