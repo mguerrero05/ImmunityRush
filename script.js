@@ -1653,7 +1653,12 @@ let zoneCooldown = false;
 const ZONE_HIT = 56; // trigger box (centred on z.x,z.y) — small, so it only fires inside the room
 function checkZones() {
   const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
-  const hitBox = (z) => ({ x: z.x - ZONE_HIT / 2, y: z.y - ZONE_HIT / 2, w: ZONE_HIT, h: ZONE_HIT });
+  const hitBox = (z) => ({
+    x: z.x - ZONE_HIT / 2,
+    y: z.y - ZONE_HIT / 2,
+    w: ZONE_HIT,
+    h: ZONE_HIT,
+  });
   const onAnyZone = ZONES.some((z) => overlap(pBox, hitBox(z)));
   // While cooled down (just declined a zone or just finished a mini-game), wait until
   // the player physically walks off the zone before it can trigger again. No teleport.
@@ -1768,8 +1773,8 @@ function startSprint() {
   showScreen("screen-sprint");
   showPopup(
     "Hospital Sprint",
-    "Your shift is moving fast. Jump over flu obstacles, collect boosts, and keep your plans on track before time runs out.\n\n" +
-      "• Tap / click / Space to jump.\n• Press Down (or swipe down) to slide under high barriers.\n• Collect boosts and avoid flu obstacles.\n• Reach the finish before time runs out.",
+    "Your shift is moving fast. Move between lanes to grab boosts and dodge flu obstacles rushing toward you.\n\n" +
+      "• ← / → (or swipe) to switch lanes.\n• Space / Up / tap to jump over low obstacles.\n• Down (or swipe down) to duck under high barriers.\n• Run into boosts to collect them. Reach the finish before time runs out.",
     [
       {
         text: "Start Sprint",
@@ -1783,22 +1788,54 @@ function startSprint() {
   );
 }
 
+// ===== Hospital Sprint — perspective "into-the-screen" runner =====
+// Geometry as fractions of the stage, tuned to assets/minigames/sprint-bg.png
+// (the FINISH is the vanishing point). PHASE 1 = the look: the corridor backdrop
+// with obstacles/pickups rushing toward the camera down 3 lanes, and the
+// back-facing player at the near centre. (Controls + collision come next.)
+const SPR3 = {
+  vpx: 0.51, // vanishing point X (the FINISH), fraction of stage width
+  vpy: 0.36, // vanishing point Y
+  nearY: 0.9, // ground line near the bottom (runner's feet)
+  lanes: [0.4, 0.5, 0.6], // near X of the left / centre / right lanes
+  depth: 6, // perspective strength (bigger = things shrink faster with distance)
+  baseSize: 130, // near pixel size of an object
+};
+function sprProject(stage, laneFrac, z) {
+  const W = stage.clientWidth || 800,
+    H = stage.clientHeight || 450;
+  const a = 1 / (1 + Math.max(0, z) * SPR3.depth); // apparent scale (1 = at the camera, ~0 = far)
+  const vx = SPR3.vpx * W,
+    vy = SPR3.vpy * H,
+    ny = SPR3.nearY * H;
+  return { x: vx + (laneFrac * W - vx) * a, y: vy + (ny - vy) * a, scale: a };
+}
+function positionRunner(stage) {
+  const r = stage.querySelector(".spr3-runner");
+  if (!r) return;
+  const p = sprProject(stage, SPR3.lanes[sprint.lane], 0.02);
+  r.style.left = p.x + "px";
+  r.style.top = p.y - sprint.jumpOffset + "px";
+  r.style.transform = `translate(-50%, -100%) scaleY(${sprint.sliding ? 0.55 : 1})`;
+}
+
 function beginSprintRound() {
   const stage = document.getElementById("sprint-stage");
+  stage.classList.add("sprint3d");
   stage.innerHTML =
-    '<div class="sprint-bg"></div><div class="sprint-ground"></div>' +
+    '<div class="spr3-scene"></div>' +
+    '<div class="spr3-speed"></div>' +
+    '<div class="spr3-vignette"></div>' +
     '<div class="sprint-progress"><div class="sprint-progress-fill" id="sprint-fill"></div></div>' +
-    '<div class="sprint-runner character-stage"></div>';
-  const runnerEl = stage.querySelector(".sprint-runner");
-  buildCharacter(runnerEl);
-  runnerEl.classList.add("walking");
-  runnerEl.style.transform = "scale(0.6)"; // shrink the full-size character to runner size
+    '<div class="spr3-runner character-stage" data-facing="back"></div>';
+  buildCharacter(stage.querySelector(".spr3-runner"));
   sprint = {
     score: 0,
     time: 60,
     speed: 5,
     dist: 0,
     target: 14000,
+    lane: 1, // 0 = left, 1 = centre, 2 = right
     jumpOffset: 0,
     vjump: 0,
     jumping: false,
@@ -1806,14 +1843,12 @@ function beginSprintRound() {
     slideT: 0,
     hitT: 0,
     objs: [],
-    spawnGap: 180,
-    py: null,
-    gesture: null,
+    spawnGap: 40,
+    scene: stage.querySelector(".spr3-scene"),
   };
   document.getElementById("sprint-score").textContent = 0;
   document.getElementById("sprint-time").textContent = 60;
   toast("Run! Keep your plans. Not the flu.", 1800);
-
   miniTimers.push(
     setInterval(() => {
       sprint.time--;
@@ -1821,29 +1856,54 @@ function beginSprintRound() {
       if (sprint.time <= 0) finishSprint();
     }, 1000),
   );
-
-  // Touch/mouse: a tap jumps, a downward swipe slides.
-  stage.onpointerdown = (e) => {
-    sprint.py = e.clientY;
-    sprint.gesture = null;
-  };
-  stage.onpointermove = (e) => {
-    if (sprint.py != null && !sprint.gesture && e.clientY - sprint.py > 40) {
-      sprint.gesture = "slide";
-      sprintSlide();
-    }
-  };
-  stage.onpointerup = () => {
-    if (sprint.gesture !== "slide") sprintJump();
-    sprint.py = null;
-    sprint.gesture = null;
-  };
-
+  positionRunner(stage);
+  setupSprintTouch(stage);
   sprintActive = true;
   cancelAnimationFrame(sprintFrame);
   sprintLoop();
 }
 
+// Touch / mouse gestures for the sprint stage: swipe to change lane, swipe up
+// to jump, swipe down to duck, tap to jump.
+function setupSprintTouch(stage) {
+  let sx = 0,
+    sy = 0,
+    down = false;
+  const start = (e) => {
+    down = true;
+    const t = e.touches ? e.touches[0] : e;
+    sx = t.clientX;
+    sy = t.clientY;
+  };
+  const end = (e) => {
+    if (!down) return;
+    down = false;
+    const t = e.changedTouches ? e.changedTouches[0] : e;
+    const dx = t.clientX - sx,
+      dy = t.clientY - sy;
+    if (Math.abs(dx) < 24 && Math.abs(dy) < 24) {
+      sprintJump(); // tap
+    } else if (Math.abs(dx) > Math.abs(dy)) {
+      sprintMove(dx > 0 ? 1 : -1);
+    } else if (dy < 0) {
+      sprintJump();
+    } else {
+      sprintSlide();
+    }
+  };
+  stage.addEventListener("touchstart", start, { passive: true });
+  stage.addEventListener("touchend", end);
+  stage.addEventListener("mousedown", start);
+  stage.addEventListener("mouseup", end);
+}
+
+function sprintMove(dir) {
+  if (!sprintActive) return;
+  const next = Math.max(0, Math.min(2, sprint.lane + dir));
+  if (next === sprint.lane) return;
+  sprint.lane = next;
+  playSound("collect");
+}
 function sprintJump() {
   if (!sprintActive || sprint.jumping || sprint.sliding) return;
   sprint.jumping = true;
@@ -1856,59 +1916,20 @@ function sprintSlide() {
   sprint.slideT = 55; // stay down longer so overhead obstacles fully pass
 }
 
-function spawnSprintObj(stage, groundY) {
+function spawnSprintObj() {
+  const collect = Math.random() < 0.5;
+  const data = collect ? rand(SPRINT_COLLECT) : rand(SPRINT_OBSTACLES);
   const el = document.createElement("div");
-  let box;
-  if (Math.random() < 0.5) {
-    const data = rand(SPRINT_COLLECT);
-    el.className = "sprint-obj sprint-collect";
-    el.innerHTML = SPRINT_ICONS[data.icon] + `<span class="spr-label">${data.text}</span>`;
-    stage.appendChild(el);
-    const w = el.offsetWidth,
-      h = el.offsetHeight;
-    box = {
-      el,
-      x: stage.clientWidth,
-      y: groundY - 78,
-      w,
-      h,
-      kind: "collect",
-      data,
-      // Generous grab box (still slightly inset from the chip edges).
-      hx: w * 0.12,
-      hy: 6,
-      hw: w * 0.76,
-      hh: h - 12,
-    };
-  } else {
-    const data = rand(SPRINT_OBSTACLES);
-    el.className = "sprint-obj sprint-obstacle" + (data.overhead ? " overhead" : "");
-    el.innerHTML = SPRINT_ICONS[data.icon] + `<span class="spr-label">${data.text}</span>`;
-    stage.appendChild(el);
-    const w = el.offsetWidth,
-      h = el.offsetHeight;
-    const y = data.overhead ? groundY - 92 : groundY - h;
-    box = {
-      el,
-      x: stage.clientWidth,
-      y,
-      w,
-      h,
-      kind: "obstacle",
-      data,
-      // Fair collision box: narrower than the visible chip (so a tiny edge touch
-      // doesn't count) and inset from the top so a clean jump/duck clears it.
-      hx: w * 0.24,
-      hw: w * 0.52,
-      // Overhead = a slim band up high you duck under; ground = a solid box you
-      // jump over, with the top trimmed so a good jump doesn't clip its corner.
-      hy: data.overhead ? 6 : 16,
-      hh: data.overhead ? 40 : Math.max(20, h - 18),
-    };
-  }
-  el.style.left = box.x + "px";
-  el.style.top = box.y + "px";
-  sprint.objs.push(box);
+  el.className = "spr3-obj " + (collect ? "spr3-collect" : "spr3-obstacle");
+  el.innerHTML = SPRINT_ICONS[data.icon];
+  sprint.scene.appendChild(el);
+  sprint.objs.push({
+    el,
+    z: 1, // 1 = far (at the FINISH), 0 = at the camera
+    lane: Math.floor(Math.random() * 3),
+    kind: collect ? "collect" : "obstacle",
+    data,
+  });
 }
 
 function sprintLoop() {
@@ -1917,18 +1938,31 @@ function sprintLoop() {
     sprintActive = false;
     return;
   }
-  // Freeze the run while a full-screen message is open (and keep the loop alive so
-  // it resumes cleanly). The player can't be hit by an obstacle while reading.
   if (overlayPaused) {
     sprintFrame = requestAnimationFrame(sprintLoop);
     return;
   }
   const stage = document.getElementById("sprint-stage");
-  const groundY = stage.clientHeight - 50; // top surface of the ground strip
 
+  // Same run-speed model as before (drives the finish progress + spawn rate).
+  sprint.speed = Math.min(6, 3 + sprint.dist / 4500);
+  sprint.dist += sprint.speed;
+  const fill = document.getElementById("sprint-fill");
+  if (fill) fill.style.width = Math.min(100, (sprint.dist / sprint.target) * 100) + "%";
+  if (sprint.dist >= sprint.target) {
+    finishSprint();
+    return;
+  }
+
+  if (--sprint.spawnGap <= 0) {
+    spawnSprintObj();
+    sprint.spawnGap = 34 + Math.random() * 26;
+  }
+
+  // Jump / slide physics (updated every frame).
   if (sprint.jumping) {
     sprint.jumpOffset += sprint.vjump;
-    sprint.vjump -= 0.85; // gravity (lower = higher, longer hang)
+    sprint.vjump -= 1.4; // gravity
     if (sprint.jumpOffset <= 0) {
       sprint.jumpOffset = 0;
       sprint.vjump = 0;
@@ -1938,61 +1972,52 @@ function sprintLoop() {
   if (sprint.sliding && --sprint.slideT <= 0) sprint.sliding = false;
   if (sprint.hitT > 0) sprint.hitT--;
 
-  sprint.speed = Math.min(6, 3 + sprint.dist / 4500); // slower + gentle ramp, capped so it stays readable
-  sprint.dist += sprint.speed;
-  const fill = document.getElementById("sprint-fill");
-  if (fill) fill.style.width = Math.min(100, (sprint.dist / sprint.target) * 100) + "%";
-  if (sprint.dist >= sprint.target) {
-    finishSprint();
-    return;
-  }
-
-  sprint.spawnGap -= sprint.speed;
-  if (sprint.spawnGap <= 0) {
-    spawnSprintObj(stage, groundY);
-    sprint.spawnGap = 230 + Math.random() * 170;
-  }
-
-  // Player collision box. Ducking makes it much shorter (22 vs 68) so overhead
-  // obstacles clear consistently; it's narrow so only a real overlap counts.
-  const ph = sprint.sliding ? 15 : 68;
-  const pBox = { x: 58, y: groundY - ph - sprint.jumpOffset, w: 30, h: ph };
-
+  // Move each object toward the camera (z: 1 -> 0), projecting it down the corridor.
+  const dz = sprint.speed * 0.0018; // approach rate tied to the run speed
   sprint.objs = sprint.objs.filter((o) => {
-    o.x -= sprint.speed;
-    o.el.style.left = o.x + "px";
-    if (o.x < -o.w - 20) {
+    o.z -= dz;
+    // Resolve the encounter as the object reaches the runner's plane.
+    if (!o.done && o.z <= 0.05) {
+      o.done = true;
+      resolveSprintEncounter(o, stage);
+    }
+    if (o.z <= -0.06) {
       o.el.remove();
       return false;
     }
-    // Use the fair inset hitbox (o.hx/hy/hw/hh), not the full visible chip.
-    const hitBox = { x: o.x + o.hx, y: o.y + o.hy, w: o.hw, h: o.hh };
-    if (!o.done && overlap(pBox, hitBox)) {
-      o.done = true; // one event per object — never re-fires every frame
-      sprintHit(o);
-      if (o.kind === "collect") {
-        o.el.remove();
-        return false;
-      }
-    }
+    const p = sprProject(stage, SPR3.lanes[o.lane], o.z);
+    o.el.style.left = p.x + "px";
+    o.el.style.top = p.y + "px";
+    o.el.style.transform = `translate(-50%, -100%) scale(${(SPR3.baseSize * p.scale) / 48})`;
+    o.el.style.zIndex = 20 + Math.round((1 - Math.max(0, o.z)) * 60);
     return true;
   });
 
-  const runner = stage.querySelector(".sprint-runner");
-  if (runner) {
-    // Duck visual matches the shorter hitbox (squash lower from the feet).
-    runner.style.transform = `translateY(${-sprint.jumpOffset}px) scale(0.6) scaleY(${
-      sprint.sliding ? 0.36 : 1
-    })`;
-  }
-
+  positionRunner(stage);
   sprintFrame = requestAnimationFrame(sprintLoop);
 }
 
-function sprintHit(o) {
-  const r = document.getElementById("sprint-stage").getBoundingClientRect();
-  const cx = r.left + o.x + o.w / 2,
-    cy = r.top + o.y + o.h / 2;
+// Decide what happens when an object reaches the runner's plane.
+// Same lane? A collect is grabbed; a low obstacle must be jumped, a high
+// (overhead) obstacle must be ducked, or it's a hit. Other lanes are safe.
+function resolveSprintEncounter(o, stage) {
+  if (o.lane !== sprint.lane) return; // dodged by being in another lane
+  if (o.kind === "collect") {
+    sprintHit(o, stage);
+    return;
+  }
+  const cleared = o.data.overhead
+    ? sprint.sliding // duck under high barriers
+    : sprint.jumping && sprint.jumpOffset > 34; // jump over low obstacles
+  if (!cleared) sprintHit(o, stage);
+}
+
+function sprintHit(o, stage) {
+  stage = stage || document.getElementById("sprint-stage");
+  const r = stage.getBoundingClientRect();
+  const p = sprProject(stage, SPR3.lanes[o.lane], Math.max(0, o.z));
+  const cx = r.left + p.x,
+    cy = r.top + p.y - 24;
   if (o.kind === "collect") {
     sprint.score += o.data.score;
     addScore(o.data.score);
@@ -2778,7 +2803,9 @@ function setupCustomizeControls() {
     const idx = Number(btn.dataset.preset);
     if (idx === character.preset) btn.classList.add("active");
     btn.addEventListener("click", () => {
-      document.querySelectorAll("#char-gallery .char-pick").forEach((x) => x.classList.remove("active"));
+      document
+        .querySelectorAll("#char-gallery .char-pick")
+        .forEach((x) => x.classList.remove("active"));
       btn.classList.add("active");
       character.preset = idx;
       buildCharacter(document.getElementById("preview-character"));
@@ -2804,8 +2831,14 @@ function setupControls() {
       keys.down = true;
       sprintSlide(); // slide in Hospital Sprint (no-op elsewhere)
     }
-    if (["arrowleft", "a"].includes(k)) keys.left = true;
-    if (["arrowright", "d"].includes(k)) keys.right = true;
+    if (["arrowleft", "a"].includes(k)) {
+      keys.left = true;
+      sprintMove(-1); // change lane in Hospital Sprint (no-op elsewhere)
+    }
+    if (["arrowright", "d"].includes(k)) {
+      keys.right = true;
+      sprintMove(1);
+    }
     if (k === " " || k === "spacebar") {
       e.preventDefault();
       sprintJump();

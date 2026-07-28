@@ -3720,7 +3720,9 @@ img {
   top: -6px;
   font: 900 20px monospace;
   color: #00e5ff;
-  text-shadow: 0 0 3px #000, 0 0 3px #000;
+  text-shadow:
+    0 0 3px #000,
+    0 0 3px #000;
 }
 
 /* =========================================================================
@@ -3790,10 +3792,10 @@ img {
 .char-back {
   display: none;
 }
-.maze-player[data-facing="back"] .char-front {
+[data-facing="back"] .char-front {
   display: none;
 }
-.maze-player[data-facing="back"] .char-back {
+[data-facing="back"] .char-back {
   display: block;
 }
 
@@ -3828,4 +3830,88 @@ img {
 .char-pick.active {
   border-color: var(--shn-blue, #1f6feb);
   box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.28);
+}
+
+/* =========================================================================
+   HOSPITAL SPRINT — perspective "into-the-screen" runner (Phase 1: the look)
+   ========================================================================= */
+.sprint3d {
+  /* Keep .mg-stage's absolute inset anchoring — only restyle the surface here.
+     (Setting position here would collapse the stage to zero height.) */
+  overflow: hidden;
+  background: #0b1c30;
+}
+.spr3-scene {
+  position: absolute;
+  inset: 0;
+  background: url("assets/minigames/sprint-bg.png?v=1") center / cover no-repeat;
+}
+/* Obstacles / pickups fly toward the camera; sized/positioned each frame in JS. */
+.spr3-obj {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  transform-origin: 50% 100%;
+  will-change: transform, left, top;
+  pointer-events: none;
+  filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.4));
+}
+.spr3-obj .spr-ico {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* Motion streaks radiating from the vanishing point for a sense of speed. */
+.spr3-speed {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+  background: repeating-conic-gradient(
+    from 0deg at 51% 36%,
+    rgba(255, 255, 255, 0.05) 0deg 1deg,
+    transparent 1deg 9deg
+  );
+  -webkit-mask-image: radial-gradient(circle at 51% 36%, transparent 22%, #000 68%);
+  mask-image: radial-gradient(circle at 51% 36%, transparent 22%, #000 68%);
+  animation: spr3-rush 0.7s linear infinite;
+  opacity: 0.55;
+}
+@keyframes spr3-rush {
+  from {
+    transform: scale(1);
+    opacity: 0.35;
+  }
+  to {
+    transform: scale(1.35);
+    opacity: 0.65;
+  }
+}
+/* Soft edge darkening for depth. */
+.spr3-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 16;
+  background: radial-gradient(circle at 51% 42%, transparent 45%, rgba(4, 14, 26, 0.55) 100%);
+}
+/* The player: the back-facing character standing at the near centre. */
+.spr3-runner {
+  position: absolute;
+  z-index: 90;
+  width: 90px;
+  height: 150px;
+  margin: 0;
+  transform-origin: bottom center;
+  pointer-events: none;
+  animation: spr3-bob 0.42s ease-in-out infinite;
+}
+@keyframes spr3-bob {
+  0%,
+  100% {
+    margin-top: 0;
+  }
+  50% {
+    margin-top: -5px;
+  }
 }

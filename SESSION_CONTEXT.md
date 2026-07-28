@@ -349,3 +349,34 @@
   **STILL OPEN:** germ + pickup icon swap (`assets/icons/` ready, delivered as one sprite
   sheet -> slice like the characters). Everything else (maze, home, character front+back) is in
   good shape.
+- 2026-07-27 (session 23 — Hospital Sprint rebuilt as a perspective "into-the-screen"
+  runner): Replaced the old side-scroll Sprint with a 3-lane, fake-3D endless runner
+  (Temple Run / Subway Surfers style) on the user's `assets/minigames/sprint-bg.png`
+  corridor (FINISH = vanishing point). Same speed model + same finish progress + the
+  exact SPRINT_COLLECT / SPRINT_OBSTACLES messages/scores as before. **How it works:**
+  `SPR3` geometry (vpx 0.51, vpy 0.36, nearY 0.9, lanes [0.4,0.5,0.6], depth 6,
+  baseSize 130) + `sprProject(stage,laneFrac,z)` returns screen x/y/scale for a point at
+  depth z (1 = far at the FINISH, 0 = at the camera). `beginSprintRound` builds
+  `.spr3-scene` (backdrop) + `.spr3-speed` (motion streaks) + `.spr3-vignette` + progress
+  bar + `.spr3-runner` (back-facing character via `buildCharacter`, `data-facing="back"`).
+  `spawnSprintObj` drops a `.spr3-obj` at z=1 in a random lane; `sprintLoop` advances
+  every obj toward the camera (dz = speed*0.0018), projects + scales it, and z-orders by
+  depth. **Controls (Phase 2):** ← / → (or swipe) change lane via `sprintMove(dir)`;
+  Space/↑/tap = `sprintJump` (physics: vjump 21, gravity 1.4, updated in the loop);
+  ↓/swipe-down = `sprintSlide` (slideT 55). Touch handled by `setupSprintTouch(stage)`.
+  **Collision (Phase 4):** `resolveSprintEncounter(o)` fires when `o.z <= 0.05` (once, via
+  `o.done`): different lane = safe; same-lane collect = grabbed; same-lane low obstacle
+  needs a jump (`jumpOffset > 34`); same-lane overhead needs a slide — else `sprintHit`
+  (−50 + warning). `sprintHit(o,stage)` now computes the burst/float position from the
+  projection (old x/y/w/h coords are gone). **Polish (Phase 5):** speed streaks
+  (repeating-conic-gradient from the vanishing point, animated), depth vignette, and a
+  running bob on the runner — all z-indexed BELOW the objects/runner so play stays clear.
+  **BUG FIXED this session:** Sprint stage rendered BLANK (timer showed but no game) —
+  `.sprint3d` set `position: relative`, overriding `.mg-stage`'s `position: absolute`
+  inset-anchoring (later in the file, equal specificity) so the stage collapsed to 0px
+  tall. Fix: `.sprint3d` no longer sets `position`. All lint/prettier clean, node --check OK.
+  **STILL OPEN (both waiting on the user):** (1) custom germ + pickup icons — deliver ONE
+  sprite sheet -> `assets/icons/icons.png`, slice like the characters, swap into Sprint +
+  maze; (2) the other 3 mini-games' visuals (Vaccine Darts, Flu Freeze, Memory) — same
+  method as Sprint: user supplies a background image, I build the look around it
+  (`darts-bg.png`, `freeze-bg.png`, `memory-bg.png`).
