@@ -2069,8 +2069,8 @@ function startFreeze() {
   showScreen("screen-freeze");
   showPopup(
     "Flu Freeze",
-    "Positive moments are flying by. Slice the things worth protecting and avoid flu disruptions before they take away your lives.\n\n" +
-      "• Swipe across positive items.\n• Avoid flu-related items.\n• You have 3 lives.\n• Read each item before you slice.",
+    "Flu misinformation is spreading through the ward. Read each virus, then zap ONLY the true statements to score.\n\n" +
+      "• Tap / click a virus to zap it.\n• Zap the TRUE statements for points.\n• Misconceptions cost a life — leave them and they clear on their own.\n• Read before you zap. You have 3 lives.",
     [
       {
         text: "Start Flu Freeze",
@@ -2084,6 +2084,18 @@ function startFreeze() {
   );
 }
 
+// Fixed, organised slots where virus bubbles appear (fractions of the stage,
+// kept in the upper hallway so they don't cover the nurse at the bottom).
+const FREEZE_SLOTS = [
+  { fx: 0.22, fy: 0.26 },
+  { fx: 0.5, fy: 0.21 },
+  { fx: 0.78, fy: 0.27 },
+  { fx: 0.32, fy: 0.55 },
+  { fx: 0.63, fy: 0.56 },
+  { fx: 0.85, fy: 0.53 },
+];
+const FREEZE_MAX_ONSCREEN = 4; // how many bubbles float at once
+
 function beginFreezeRound() {
   const stage = document.getElementById("freeze-stage");
   stage.innerHTML = "";
@@ -2092,19 +2104,17 @@ function beginFreezeRound() {
     lives: 3,
     time: 60,
     combo: 0,
-    items: [],
-    slicing: false,
-    lx: 0,
-    ly: 0,
+    bubbles: [],
     paused: false,
     corrT: null,
   };
   document.getElementById("freeze-score").textContent = 0;
   document.getElementById("freeze-lives").textContent = 3;
   document.getElementById("freeze-time").textContent = 60;
-  toast("Swipe the good items. Avoid flu disruptions.", 1800);
+  toast("Read each virus — zap only the TRUE ones.", 2200);
 
-  miniTimers.push(setInterval(spawnFreezeItem, 1200));
+  // Keep empty slots filling so the board cycles gently.
+  miniTimers.push(setInterval(freezeRefill, 650));
   miniTimers.push(
     setInterval(() => {
       if (freeze.paused) return; // don't lose time while reading a correction
@@ -2114,40 +2124,59 @@ function beginFreezeRound() {
     }, 1000),
   );
 
-  stage.onpointerdown = freezePointerDown;
-  stage.onpointermove = freezePointerMove;
-  stage.onpointerup = freezePointerUp;
-  stage.onpointerleave = freezePointerUp;
-
   freezeActive = true;
   cancelAnimationFrame(freezeFrame);
   freezeLoop();
+  freezeRefill(); // fill the board immediately
 }
 
-function spawnFreezeItem() {
+// Fill any empty slots (up to the on-screen cap) with fresh virus bubbles.
+function freezeRefill() {
   if (!freezeActive || freeze.paused) return;
+  const alive = freeze.bubbles.filter((b) => !b.dead);
+  if (alive.length >= FREEZE_MAX_ONSCREEN) return;
+  const used = new Set(alive.map((b) => b.slot));
+  const free = FREEZE_SLOTS.map((_, i) => i).filter((i) => !used.has(i));
+  if (!free.length) return;
+  spawnFreezeBubble(free[Math.floor(Math.random() * free.length)]);
+}
+
+// Create one virus bubble in the given slot. Positive and negative bubbles look
+// IDENTICAL (same neutral virus orb) — the player must READ the text to decide.
+function spawnFreezeBubble(slot) {
+  if (!freezeActive) return;
   const stage = document.getElementById("freeze-stage");
-  const positive = Math.random() < 0.55;
+  const positive = Math.random() < 0.5;
   const data = positive ? rand(FREEZE_POSITIVE) : rand(FREEZE_NEGATIVE);
+  const s = FREEZE_SLOTS[slot];
   const el = document.createElement("div");
-  el.className = "freeze-item"; // identical style for positive and negative
-  el.textContent = data.text;
+  el.className = "freeze-bubble";
+  el.style.left = s.fx * stage.clientWidth + "px";
+  el.style.top = s.fy * stage.clientHeight + "px";
+  const inner = document.createElement("div");
+  inner.className = "freeze-bubble-inner";
+  inner.textContent = data.text;
+  // Vary the gentle float so they don't bob in sync.
+  inner.style.animationDuration = (2.6 + Math.random() * 1.6).toFixed(2) + "s";
+  inner.style.animationDelay = (-Math.random() * 2).toFixed(2) + "s";
+  el.appendChild(inner);
   stage.appendChild(el);
-  const elapsed = 60 - freeze.time;
-  const item = {
+  const bubble = {
     el,
-    x: 50 + Math.random() * (stage.clientWidth - 100),
-    y: stage.clientHeight + 20,
-    vx: (Math.random() - 0.5) * 2.6,
-    vy: -(9.5 + Math.random() * 2 + elapsed / 35), // launch up; eases up over time
-    w: el.offsetWidth,
-    h: el.offsetHeight,
+    slot,
     positive,
     data,
+    dead: false,
+    removed: false,
+    age: 0,
+    // Facts linger a touch longer so there's time to read them.
+    life: positive ? 300 + Math.random() * 120 : 260 + Math.random() * 100,
   };
-  el.style.left = item.x + "px";
-  el.style.top = item.y + "px";
-  freeze.items.push(item);
+  el.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    zapFreezeBubble(bubble);
+  });
+  freeze.bubbles.push(bubble);
 }
 
 function freezeLoop() {
@@ -2157,78 +2186,68 @@ function freezeLoop() {
     return;
   }
   if (!freeze.paused) {
-    const H = document.getElementById("freeze-stage").clientHeight;
-    freeze.items = freeze.items.filter((it) => {
-      it.vy += 0.13; // gravity (lower = slower, floatier arc that's easy to read/slice)
-      it.x += it.vx;
-      it.y += it.vy;
-      it.el.style.left = it.x + "px";
-      it.el.style.top = it.y + "px";
-      if (it.y > H + 90) {
-        it.el.remove();
-        if (it.positive) freeze.combo = 0; // missed a good item — combo resets
-        return false;
-      }
-      return true;
-    });
+    for (const b of freeze.bubbles) {
+      if (b.dead) continue;
+      b.age++;
+      if (b.age > b.life) expireFreezeBubble(b); // fades out on its own → cycles
+    }
+    freeze.bubbles = freeze.bubbles.filter((b) => !b.removed);
   }
   freezeFrame = requestAnimationFrame(freezeLoop);
 }
 
-function freezeLocalXY(e, stage) {
+// A bubble left alone long enough quietly fades and frees its slot. Missing a
+// FACT resets the combo; ignoring a misconception is correct (no penalty).
+function expireFreezeBubble(b) {
+  if (b.dead) return;
+  b.dead = true;
+  if (b.positive) freeze.combo = 0;
+  b.el.classList.add("expire");
+  setTimeout(() => {
+    b.el.remove();
+    b.removed = true;
+  }, 480);
+}
+
+// Fire a quick laser beam from the nurse (bottom-left) to the bubble.
+function fireFreezeBeam(stage, tx, ty) {
+  const ox = 0.34 * stage.clientWidth,
+    oy = 0.9 * stage.clientHeight;
+  const dx = tx - ox,
+    dy = ty - oy;
+  const beam = document.createElement("div");
+  beam.className = "freeze-beam";
+  beam.style.left = ox + "px";
+  beam.style.top = oy + "px";
+  beam.style.width = Math.hypot(dx, dy) + "px";
+  beam.style.transform = `rotate(${(Math.atan2(dy, dx) * 180) / Math.PI}deg)`;
+  stage.appendChild(beam);
+  setTimeout(() => beam.remove(), 300);
+}
+
+// Player zapped a bubble: score a fact, penalise a misconception; either way it
+// pops and its slot re-fills with a new message.
+function zapFreezeBubble(b) {
+  if (!freezeActive || freeze.paused || b.dead) return;
+  b.dead = true;
+  const stage = document.getElementById("freeze-stage");
   const r = stage.getBoundingClientRect();
-  return { x: e.clientX - r.left, y: e.clientY - r.top };
-}
-function freezePointerDown(e) {
-  if (freeze.paused) return;
-  freeze.slicing = true;
-  const p = freezeLocalXY(e, document.getElementById("freeze-stage"));
-  freeze.lx = p.x;
-  freeze.ly = p.y;
-  freezeSliceAt(p.x, p.y);
-}
-function freezePointerMove(e) {
-  if (!freeze.slicing || freeze.paused) return;
-  const p = freezeLocalXY(e, document.getElementById("freeze-stage"));
-  freezeSliceAt(p.x, p.y);
-  freezeSliceAt((p.x + freeze.lx) / 2, (p.y + freeze.ly) / 2); // catch fast swipes
-  spawnSliceTrail(p.x, p.y);
-  freeze.lx = p.x;
-  freeze.ly = p.y;
-}
-function freezePointerUp() {
-  freeze.slicing = false;
-}
-function spawnSliceTrail(x, y) {
-  const d = document.createElement("div");
-  d.className = "slice-trail";
-  d.style.left = x + "px";
-  d.style.top = y + "px";
-  document.getElementById("freeze-stage").appendChild(d);
-  setTimeout(() => d.remove(), 350);
-}
-function freezeSliceAt(x, y) {
-  for (const it of freeze.items) {
-    // Item is centred on x,y via CSS translate(-50%, -50%).
-    if (x > it.x - it.w / 2 && x < it.x + it.w / 2 && y > it.y - it.h / 2 && y < it.y + it.h / 2) {
-      sliceFreezeItem(it);
-      return;
-    }
-  }
-}
-function sliceFreezeItem(item) {
-  freeze.items = freeze.items.filter((i) => i !== item);
-  const r = document.getElementById("freeze-stage").getBoundingClientRect();
-  const cx = r.left + item.x,
-    cy = r.top + item.y;
-  item.el.classList.add("sliced");
-  setTimeout(() => item.el.remove(), 250);
-  if (item.positive) {
+  const bx = parseFloat(b.el.style.left),
+    by = parseFloat(b.el.style.top);
+  fireFreezeBeam(stage, bx, by);
+  b.el.classList.add("zapped");
+  setTimeout(() => {
+    b.el.remove();
+    b.removed = true;
+  }, 300);
+  const cx = r.left + bx,
+    cy = r.top + by;
+  if (b.positive) {
     freeze.combo++;
-    freeze.score += item.data.score;
-    addScore(item.data.score);
-    floatText(`+${item.data.score}`, cx, cy, "#ffd34d");
-    burst(cx, cy, "#2bb3b3");
+    freeze.score += b.data.score;
+    addScore(b.data.score);
+    floatText(`+${b.data.score}`, cx, cy, "#ffd34d");
+    burst(cx, cy, "#7bd67b");
     playSound("success");
     if (freeze.combo >= 3) toast(`Combo x${freeze.combo}!`, 900);
   } else {
@@ -2236,10 +2255,11 @@ function sliceFreezeItem(item) {
     freeze.lives--;
     document.getElementById("freeze-lives").textContent = freeze.lives;
     floatText("−1 life", cx, cy, "#ff6b6b");
+    burst(cx, cy, "#b06be0");
     playSound("error");
     shake();
     // Big centered correction card — pauses the game so it can be read.
-    showFreezeCorrection(item, freeze.lives <= 0);
+    showFreezeCorrection(b, freeze.lives <= 0);
   }
   document.getElementById("freeze-score").textContent = freeze.score;
 }

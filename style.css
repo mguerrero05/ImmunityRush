@@ -2860,44 +2860,18 @@ body {
 #freeze-stage {
   overflow: hidden;
   background:
+    /* soft scrim so the white bubble text stays readable over the scene */
+    linear-gradient(180deg, rgba(6, 22, 40, 0.28), rgba(6, 22, 40, 0.42)),
+    /* the hallway backdrop (drop assets/minigames/freeze-bg.png) */
+    url("assets/minigames/freeze-bg.png?v=1") center / cover no-repeat,
+    /* fallback shown if the backdrop image is missing */
     radial-gradient(90% 55% at 50% 30%, rgba(255, 255, 255, 0.5), transparent 62%),
     linear-gradient(180deg, #d3ebf6 0%, #c1e1ef 52%, #9fc6db 52%, #86b4cc 100%);
-  box-shadow:
-    inset 70px 0 70px -46px rgba(15, 76, 129, 0.28),
-    inset -70px 0 70px -46px rgba(15, 76, 129, 0.28);
 }
-/* Ceiling strip with recessed light bars */
-#freeze-stage::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 30px;
-  z-index: 0;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 16px,
-      rgba(234, 250, 255, 0.92) 16px 58px,
-      transparent 58px 74px
-    ),
-    linear-gradient(180deg, #0c2a4a, #16406c);
-  box-shadow: 0 4px 12px rgba(12, 42, 74, 0.35);
-}
-/* Receding corridor floor (perspective) */
+/* The real hallway photo replaces the old drawn ceiling/floor decorations. */
+#freeze-stage::before,
 #freeze-stage::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 46%;
-  z-index: 0;
-  background:
-    repeating-linear-gradient(90deg, rgba(120, 160, 190, 0.16) 0 1px, transparent 1px 46px),
-    linear-gradient(180deg, #a6ccdf 0%, #7ba6be 100%);
-  clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%);
+  display: none;
 }
 
 /* ---- Floating items: frosty rounded cards (SAME for positive & negative) ---- */
@@ -2955,6 +2929,107 @@ body {
 /* ---- Correction card: give the tag the frost accent ---- */
 .mg-correction-card {
   border-top: 8px solid var(--shn-teal);
+}
+
+/* =========================================================================
+   FLU FREEZE — read-then-zap virus bubbles. Facts and misconceptions look
+   IDENTICAL (same neutral germ orb); the player must READ the text to decide.
+   Bubbles sit in fixed slots, bob gently, and pop + cycle when zapped/expired.
+   ========================================================================= */
+.freeze-bubble {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  cursor: pointer;
+  touch-action: none;
+}
+.freeze-bubble-inner {
+  width: 126px;
+  height: 126px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  box-sizing: border-box;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.22;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  /* one neutral germ colour for ALL bubbles (no fact/misconception tell) */
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), transparent 24%),
+    radial-gradient(circle at 68% 62%, rgba(0, 0, 0, 0.22), transparent 22%),
+    radial-gradient(circle at 44% 74%, rgba(0, 0, 0, 0.18), transparent 18%),
+    radial-gradient(circle at 72% 32%, rgba(0, 0, 0, 0.16), transparent 16%),
+    radial-gradient(circle at 38% 34%, #9a86df 0%, #6a4fb0 60%, #4a3391 100%);
+  box-shadow:
+    0 10px 22px rgba(20, 20, 55, 0.45),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.16),
+    inset -8px -10px 22px rgba(0, 0, 0, 0.28);
+  animation: freezeFloat 3s ease-in-out infinite;
+}
+@keyframes freezeFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.6deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(1.6deg);
+  }
+}
+/* Zapped: a quick pop. Expired: a quiet fade. Both free the slot to re-fill. */
+.freeze-bubble.zapped {
+  animation: freezeZap 0.3s ease forwards;
+}
+@keyframes freezeZap {
+  40% {
+    transform: translate(-50%, -50%) scale(1.18);
+    filter: brightness(1.7);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(0.18);
+    opacity: 0;
+  }
+}
+.freeze-bubble.expire {
+  animation: freezeFade 0.48s ease forwards;
+}
+@keyframes freezeFade {
+  to {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0;
+  }
+}
+/* Laser beam from the nurse to the zapped bubble. */
+.freeze-beam {
+  position: absolute;
+  height: 5px;
+  transform-origin: 0 50%;
+  z-index: 9;
+  border-radius: 5px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(120, 220, 255, 0.05),
+    rgba(150, 230, 255, 0.8) 55%,
+    #ffffff
+  );
+  box-shadow: 0 0 12px 3px rgba(120, 220, 255, 0.85);
+  animation: beamFade 0.3s ease forwards;
+}
+@keyframes beamFade {
+  0% {
+    opacity: 0.2;
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 /* =========================================================================

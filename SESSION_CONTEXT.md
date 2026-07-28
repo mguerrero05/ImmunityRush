@@ -403,3 +403,32 @@
   icons (`assets/icons/`, one sprite sheet -> slice); the other 2 mini-games' visuals
   (Vaccine Darts `darts-bg.png`, Flu Freeze `freeze-bg.png` — same method: user supplies
   a backdrop, I build around it); optional Memory card-back refresh to match the scene.
+- 2026-07-27 (session 25 — Flu Freeze rebuilt as read-then-zap virus bubbles):
+  Replaced the fruit-ninja fly-by slicing with the user's new concept: virus
+  bubbles sit in fixed slots on a hospital-hallway backdrop, bob gently, and you
+  laser/zap them — pop + cycle. **Design decisions (asked the user):** (1) bubbles
+  look IDENTICAL (one neutral violet germ orb for facts AND misconceptions) so the
+  player must READ — preserves the no-colour-tell learning rule (the mockup's
+  green/purple was NOT used); (2) misconceptions are AVOIDED — left alone they fade
+  and cycle out on their own (no penalty); zapping one = −1 life + the correction
+  card. **How it works:** `FREEZE_SLOTS` = 6 fixed positions (fractions, upper
+  hallway so they don't cover the nurse spot); `FREEZE_MAX_ONSCREEN = 4`. A 650ms
+  `freezeRefill` interval fills empty slots; each bubble ages in `freezeLoop`
+  (frame-count, pause-safe) and auto-expires (facts ~300–420f, misconceptions
+  ~260–360f). Each bubble = outer `.freeze-bubble` (centres + pop/expire anim) +
+  inner `.freeze-bubble-inner` (the orb + text + gentle `freezeFloat`, randomised
+  duration/delay). Tap/click a bubble → `zapFreezeBubble`: `fireFreezeBeam` draws a
+  laser from the nurse origin (0.34W, 0.9H) to the bubble, then score (fact) or
+  penalty+`showFreezeCorrection` (misconception). Same content (FREEZE_POSITIVE/
+  NEGATIVE/LIFE_LOST), lives, timer, correction cards. Removed the old slice funcs
+  (spawnFreezeItem, freezeLoop-gravity, pointer slice handlers, sliceFreezeItem,
+  freezeSliceAt, spawnSliceTrail) — no dangling refs. Updated the start popup +
+  `.mg-hint`. **Backdrop:** user supplied `assets/minigames/freeze-bg.png` (clean
+  hospital hallway, no bubbles/nurse baked in) wired into `#freeze-stage` as scrim +
+  cover image + gradient fallback (`?v=1`; bump when replaced); the old drawn
+  ceiling/floor `::before`/`::after` are now `display:none`. Old `.freeze-item`/
+  `.slice-trail` CSS left in place (unused, harmless). Lint/prettier/node --check
+  all clean. Preview helper: `scratchpad/preview-freeze.mjs`. **STILL OPEN:** custom
+  germ+pickup icons (`assets/icons/`, one sheet -> slice, swap into Sprint + maze);
+  Vaccine Darts visual (`darts-bg.png`, same method); optional Memory card-back
+  refresh; optional Flu Freeze tuning (bubble size/slots, beam origin, scrim, pace).
