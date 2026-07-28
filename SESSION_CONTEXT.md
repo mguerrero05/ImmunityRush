@@ -432,3 +432,38 @@
   germ+pickup icons (`assets/icons/`, one sheet -> slice, swap into Sprint + maze);
   Vaccine Darts visual (`darts-bg.png`, same method); optional Memory card-back
   refresh; optional Flu Freeze tuning (bubble size/slots, beam origin, scrim, pace).
+- 2026-07-28 (session 26 — Vaccine Darts rebuilt as "capture a truth per colour" + icons sliced):
+  **VACCINE DARTS fully reworked** to the user's vision on the new backdrop
+  `assets/minigames/darts-bg.png` (a clinic room with a 5-colour dartboard on the
+  wall; wired into `#darts-stage` as scrim+cover+fallback, `?v=1`; drawn
+  `::before/::after` decorations hidden). Old drift-and-throw myth/fact game is gone.
+  **New game:** one statement card rings each of the 5 board colours (green/red/
+  purple/orange/blue). Read each, then **tap a card to dart it = "I claim this is
+  TRUE."** A TRUE statement **locks** into that colour (dart flies from the thrower,
+  ✓ badge, +pts, stays); a MYTH clears with feedback. **Every pick reshuffles all
+  still-open (unlocked) sections** with new statements (`reshuffleUnlocked()`); locked
+  ones stay. **Win = all 5 colours locked** (goal pill "🎯 x / 5"). 60s timer. Combos
+  for consecutive locks; −25 for darting a myth. **Card placement:** projected onto
+  the REAL photo board via `dartBoardGeom()` (cover-crop math) + `dartSectionPos()`
+  (per-section centroid angle), clamped on-screen — verified all 5 land on their
+  colours in widescreen (portrait clamps the red card in). Key funcs: `DART_SECTIONS`
+  (ang per colour), `DART_IMG` (board pos in the photo: cx .514 cy .386 r .16),
+  `spawnDartCard`, `dartCard`→`fireDart`→`resolveDartCard`, `refreshDartCard`,
+  `pickDartStatement` (dedupe via `darts.used`). Content unchanged (DARTS_MYTHS/FACTS).
+  Updated start popup, `.mg-hint`, `finishDarts` (win/lose). CSS: `.dart-card`
+  (colour-tab = section via `--sec`), `.dart-card.locked` (ring + ✓), refresh flip,
+  `.darts-goal` pill. jsdom smoke test: 5 cards created OK.
+  **ICONS delivered + sliced (NOT yet wired):** user dropped ONE sheet
+  `assets/icons/icons.png` (1536×1024, RGBA, transparent bg confirmed; a rendered
+  gradient shows only in the colour channels). `assets/icons/slice-icons.mjs` decodes
+  it and segments 2 row-bands by alpha column-projection (avoids the text labels),
+  crops each to a padded square transparent PNG. Produced 11 icons — **top row
+  (pickups):** shield, syringe, heart, family, speed; **bottom row:** germ, barrier,
+  calendar, cloud, **star** (= the blue ORB — my inference for Wellness Star, confirm),
+  energy (= green battery). Re-run: `node assets/icons/slice-icons.mjs`.
+  **NEXT: WIRE THE ICONS IN** — replace the maze COLLECTIBLES `emoji` render + the
+  maze germ 🦠 with `<img>` of these; replace Hospital Sprint `SPRINT_ICONS` inline
+  SVGs with `<img>` for syringe/heart/family/star/energy + barrier/calendar/cloud.
+  Map: maze shield/speed/heart/family/wellness→star; sprint syringe/heart/family/
+  star/energy + barrier/calendar/cloud; germ→maze hazards. **STILL OPEN after that:**
+  optional Memory card-back refresh; playtest/tune Darts (reshuffle churn) + Freeze.

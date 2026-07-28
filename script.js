@@ -2337,239 +2337,235 @@ function startDarts() {
       },
     ],
   );
-  // Re-render the instruction text with MYTHS in red and FACTS in green. The moving
-  // targets themselves stay neutral — this only colours the pre-game instructions.
+  // Re-render the instruction text with MYTHS in red and FACTS in green. The
+  // statement cards themselves stay neutral — this only colours the instructions.
   document.getElementById("popup-text").innerHTML =
-    'Flu vaccine <b class="myth-word">MYTHS</b> and <b class="fact-word">FACTS</b> are moving ' +
-    'across the screen. Hit the <b class="myth-word">MYTHS</b> without striking the ' +
-    '<b class="fact-word">FACTS</b>.<br><br>' +
-    '• Hit statements that are <b class="myth-word">MYTHS</b>.<br>' +
-    '• Avoid statements that are <b class="fact-word">FACTS</b> (true).<br>' +
-    "• Drag from the thrower and release to shoot.<br>" +
-    "• Read carefully before you shoot.";
+    "One statement rings each colour section of the dartboard. Lock a " +
+    '<b class="fact-word">TRUE</b> statement into every colour.<br><br>' +
+    "• Tap a statement to dart it — you're saying it's <b class=\"fact-word\">TRUE</b>.<br>" +
+    '• A <b class="fact-word">TRUE</b> one locks into its colour. ✅<br>' +
+    '• A <b class="myth-word">MYTH</b> clears and a new statement appears there. 🔄<br>' +
+    "• Fill all five colours before time runs out. Read carefully!";
+}
+
+// The five colour sections of the wall dartboard. `ang` is each wedge's centroid
+// angle (degrees, 0 = east, 90 = down) — matched to the photo's colour layout so
+// each statement card lands on its own colour.
+const DART_SECTIONS = [
+  { key: "green", color: "#2e9e46", ang: -54 },
+  { key: "red", color: "#d23b34", ang: 18 },
+  { key: "purple", color: "#6a3fb0", ang: 90 },
+  { key: "orange", color: "#e08a1e", ang: 162 },
+  { key: "blue", color: "#2f6fd0", ang: 234 },
+];
+// Where the dartboard sits INSIDE darts-bg.png (fractions of the image) so we can
+// project each section onto the screen no matter how `cover` crops the photo.
+const DART_IMG = { w: 1536, h: 1024, cx: 0.514, cy: 0.386, r: 0.16 };
+function dartBoardGeom(stage) {
+  const W = stage.clientWidth,
+    H = stage.clientHeight;
+  const scale = Math.max(W / DART_IMG.w, H / DART_IMG.h); // cover
+  const dispW = DART_IMG.w * scale,
+    dispH = DART_IMG.h * scale;
+  return {
+    cx: (W - dispW) / 2 + DART_IMG.cx * dispW,
+    cy: (H - dispH) / 2 + DART_IMG.cy * dispH,
+    r: DART_IMG.r * dispW,
+  };
+}
+function dartSectionPos(geom, i) {
+  const a = (DART_SECTIONS[i].ang * Math.PI) / 180;
+  const rr = geom.r * 0.9; // sit on the outer part of the coloured wedge
+  return { x: geom.cx + rr * Math.cos(a), y: geom.cy + rr * Math.sin(a) };
 }
 
 function beginDartsRound() {
   const stage = document.getElementById("darts-stage");
-  stage.innerHTML =
-    '<div id="dart-aim"></div><div id="dart-thrower"></div>' +
-    '<p class="mg-hint">Drag from the thrower • release to throw • hit the myths</p>';
-  darts = { score: 0, time: 60, combo: 0, boards: [], shots: [], aiming: false };
+  stage.innerHTML = '<div id="dart-thrower"></div><div class="darts-goal" id="darts-goal"></div>';
+  darts = { score: 0, time: 60, combo: 0, locked: 0, cards: [], used: new Set() };
   document.getElementById("darts-score").textContent = 0;
   document.getElementById("darts-time").textContent = 60;
-  toast(
-    rand([
-      "Aim for the myths.",
-      "Read before you shoot.",
-      "Clear the misinformation.",
-      "Protect the facts.",
-    ]),
-    2000,
-  );
+  updateDartsGoal();
+  toast("Read each statement — dart the TRUE ones to lock every colour.", 2400);
 
   miniTimers.push(
     setInterval(() => {
+      if (overlayPaused) return; // don't lose time while reading feedback
       darts.time--;
       document.getElementById("darts-time").textContent = darts.time;
       if (darts.time <= 0) finishDarts();
     }, 1000),
   );
-  miniTimers.push(setInterval(spawnDartBoard, 2000));
-  spawnDartBoard();
-  spawnDartBoard();
-
-  // Aiming works with mouse and touch via pointer events (assignment avoids duplicates).
-  stage.onpointerdown = dartsPointerDown;
-  stage.onpointermove = dartsPointerMove;
-  stage.onpointerup = dartsPointerUp;
-  stage.onpointerleave = dartsPointerUp;
 
   dartsActive = true;
-  cancelAnimationFrame(dartsFrame);
-  dartsLoop();
+  DART_SECTIONS.forEach((_, i) => spawnDartCard(i));
 }
 
 function dartThrowerPos(stage) {
   return { x: stage.clientWidth / 2, y: stage.clientHeight - 34 };
 }
-function dartsLocalXY(e, stage) {
-  const r = stage.getBoundingClientRect();
-  return { x: e.clientX - r.left, y: e.clientY - r.top };
-}
-function dartsPointerDown(e) {
-  darts.aiming = true;
-  dartsPointerMove(e);
-}
-function dartsPointerMove(e) {
-  if (!darts.aiming) return;
-  const stage = document.getElementById("darts-stage");
-  const t = dartThrowerPos(stage);
-  const p = dartsLocalXY(e, stage);
-  const dist = Math.min(Math.hypot(p.x - t.x, p.y - t.y), 260);
-  const angle = Math.atan2(p.y - t.y, p.x - t.x);
-  const aim = document.getElementById("dart-aim");
-  aim.style.left = t.x + "px";
-  aim.style.top = t.y + "px";
-  aim.style.width = dist + "px";
-  aim.style.transform = `rotate(${angle}rad)`;
-  aim.style.opacity = "1";
-}
-function dartsPointerUp(e) {
-  if (!darts.aiming) return;
-  darts.aiming = false;
-  const stage = document.getElementById("darts-stage");
-  document.getElementById("dart-aim").style.opacity = "0";
-  const t = dartThrowerPos(stage);
-  const p = dartsLocalXY(e, stage);
-  const dx = p.x - t.x,
-    dy = p.y - t.y;
-  const dist = Math.hypot(dx, dy);
-  if (dist < 12) return; // ignore tiny taps
-  const speed = 7 + Math.min(dist, 260) / 16;
-  throwDart(t.x, t.y, (dx / dist) * speed, (dy / dist) * speed);
-  playSound("hit");
+
+function updateDartsGoal() {
+  const g = document.getElementById("darts-goal");
+  if (g) g.textContent = `🎯 ${darts.locked} / ${DART_SECTIONS.length} truths locked`;
 }
 
-function throwDart(x, y, vx, vy) {
-  const el = document.createElement("div");
-  el.className = "dart";
-  el.style.left = x + "px";
-  el.style.top = y + "px";
-  document.getElementById("darts-stage").appendChild(el);
-  darts.shots.push({ el, x, y, vx, vy });
+// Pick a random statement (fact or myth) whose text isn't already on the board.
+function pickDartStatement() {
+  for (let tries = 0; tries < 60; tries++) {
+    const isMyth = Math.random() < 0.5;
+    const data = isMyth ? rand(DARTS_MYTHS) : rand(DARTS_FACTS);
+    if (!darts.used.has(data.text)) return { isMyth, data };
+  }
+  const data = rand(DARTS_FACTS); // fallback (plenty of distinct statements exist)
+  return { isMyth: false, data };
 }
 
-function spawnDartBoard() {
+// Create the statement card ringing section i (colour tab = which section).
+// Myth and fact cards look IDENTICAL apart from the section colour — READ them.
+function spawnDartCard(i) {
   if (!dartsActive) return;
   const stage = document.getElementById("darts-stage");
-  const isMyth = Math.random() < 0.55;
-  const data = isMyth ? rand(DARTS_MYTHS) : rand(DARTS_FACTS);
+  const sec = DART_SECTIONS[i];
+  const pick = pickDartStatement();
+  darts.used.add(pick.data.text);
   const el = document.createElement("div");
-  el.className = "dart-board"; // identical style for myths and facts
-  el.textContent = data.text;
-  const w = 150;
-  el.style.width = w + "px";
-  const fromLeft = Math.random() < 0.5;
-  const elapsed = 60 - darts.time;
-  const spd = (0.75 + elapsed / 80) * (fromLeft ? 1 : -1); // slow enough to read; eases up over time
-  const board = {
-    el,
-    x: fromLeft ? -w : stage.clientWidth,
-    y: 24 + Math.random() * (stage.clientHeight * 0.45),
-    w,
-    h: 62,
-    vx: spd,
-    vy: (Math.random() - 0.5) * 1.2,
-    isMyth,
-    feedback: data.feedback,
-  };
-  el.style.left = board.x + "px";
-  el.style.top = board.y + "px";
+  el.className = "dart-card";
+  const pos = dartSectionPos(dartBoardGeom(stage), i);
+  // Keep the card fully on-screen (matters on the narrow portrait crop).
+  const halfW = 70,
+    halfH = 48;
+  pos.x = Math.max(halfW, Math.min(stage.clientWidth - halfW, pos.x));
+  pos.y = Math.max(halfH, Math.min(stage.clientHeight - halfH, pos.y));
+  el.style.left = pos.x + "px";
+  el.style.top = pos.y + "px";
+  el.style.setProperty("--sec", sec.color);
+  el.innerHTML = '<span class="dart-card-text"></span>';
+  el.querySelector(".dart-card-text").textContent = pick.data.text;
   stage.appendChild(el);
-  darts.boards.push(board);
+  const card = { el, i, sec, isMyth: pick.isMyth, data: pick.data, locked: false, busy: false };
+  el.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    dartCard(card);
+  });
+  darts.cards[i] = card;
 }
 
-function dartsLoop() {
-  const screen = document.getElementById("screen-darts");
-  if (!dartsActive || !screen.classList.contains("active")) {
-    dartsActive = false;
-    return;
-  }
-  // Freeze while a full-screen message is open; keep the loop alive to resume.
-  if (overlayPaused) {
-    dartsFrame = requestAnimationFrame(dartsLoop);
-    return;
-  }
+// Animate a dart flying from the thrower to a point, then run cb on arrival.
+function fireDart(stage, ox, oy, tx, ty, cb) {
+  const d = document.createElement("div");
+  d.className = "dart";
+  d.style.left = ox + "px";
+  d.style.top = oy + "px";
+  d.style.transform = `rotate(${Math.atan2(ty - oy, tx - ox)}rad)`;
+  stage.appendChild(d);
+  requestAnimationFrame(() => {
+    d.style.transition = "left .26s cubic-bezier(.4,.55,.5,1), top .26s cubic-bezier(.4,.55,.5,1)";
+    d.style.left = tx + "px";
+    d.style.top = ty + "px";
+  });
+  setTimeout(() => {
+    if (cb) cb();
+    setTimeout(() => d.remove(), 350);
+  }, 290);
+}
+
+// Player darts a card: they're claiming "this is TRUE".
+function dartCard(card) {
+  if (!dartsActive || overlayPaused || card.locked || card.busy) return;
+  card.busy = true;
   const stage = document.getElementById("darts-stage");
-  const W = stage.clientWidth,
-    H = stage.clientHeight;
-  // Move target boards (drift + bounce; remove off-screen).
-  darts.boards = darts.boards.filter((b) => {
-    b.x += b.vx;
-    b.y += b.vy;
-    if (b.y < 18 || b.y > H * 0.6) b.vy *= -1;
-    b.el.style.left = b.x + "px";
-    b.el.style.top = b.y + "px";
-    if (b.x < -b.w - 60 || b.x > W + 60) {
-      b.el.remove();
-      return false;
-    }
-    return true;
-  });
-  // Move darts (gravity) + collision with boards.
-  darts.shots = darts.shots.filter((s) => {
-    s.vy += 0.25;
-    s.x += s.vx;
-    s.y += s.vy;
-    s.el.style.left = s.x + "px";
-    s.el.style.top = s.y + "px";
-    s.el.style.transform = `rotate(${Math.atan2(s.vy, s.vx)}rad)`; // point along flight
-    const sBox = { x: s.x - 6, y: s.y - 6, w: 12, h: 12 };
-    for (const b of darts.boards) {
-      if (overlap(sBox, { x: b.x, y: b.y, w: b.w, h: b.h })) {
-        dartHitBoard(b);
-        s.el.remove();
-        return false;
-      }
-    }
-    if (s.y > H + 40 || s.x < -40 || s.x > W + 40) {
-      s.el.remove();
-      return false;
-    }
-    return true;
-  });
-  dartsFrame = requestAnimationFrame(dartsLoop);
+  const t = dartThrowerPos(stage);
+  const tx = parseFloat(card.el.style.left),
+    ty = parseFloat(card.el.style.top);
+  playSound("hit");
+  fireDart(stage, t.x, t.y, tx, ty, () => resolveDartCard(card));
 }
 
-function dartHitBoard(board) {
-  const r = document.getElementById("darts-stage").getBoundingClientRect();
-  const cx = r.left + board.x + board.w / 2;
-  const cy = r.top + board.y + board.h / 2;
-  if (board.isMyth) {
+function resolveDartCard(card) {
+  card.busy = false;
+  const stage = document.getElementById("darts-stage");
+  const r = stage.getBoundingClientRect();
+  const cx = r.left + parseFloat(card.el.style.left);
+  const cy = r.top + parseFloat(card.el.style.top);
+  if (!card.isMyth) {
+    // A true statement → LOCK it into this colour section.
+    card.locked = true;
+    darts.locked++;
     darts.combo++;
-    const pts = 100 + (darts.combo - 1) * 25; // combo bonus for consecutive myths
+    const pts = 100 + (darts.combo - 1) * 25;
     darts.score += pts;
     addScore(pts);
     floatText(`+${pts}`, cx, cy, "#ffd34d");
-    burst(cx, cy, "#ffd34d");
+    burst(cx, cy, card.sec.color);
     playSound("success");
-    // Correct (a myth) → GREEN result feedback (only shown after the hit).
-    bigMessage(board.feedback, {
+    card.el.classList.add("locked");
+    updateDartsGoal();
+    document.getElementById("darts-score").textContent = darts.score;
+    reshuffleUnlocked(); // every pick refreshes the sections still open
+    bigMessage(card.data.feedback, {
       icon: "✅",
-      title: `Correct!  +${pts}${darts.combo >= 2 ? `  ·  Combo x${darts.combo}` : ""}`,
+      title: `Locked!  +${pts}${darts.combo >= 2 ? `  ·  Combo x${darts.combo}` : ""}`,
       tone: "correct",
-      duration: 1800,
+      duration: 1600,
     });
-    board.el.remove();
-    darts.boards = darts.boards.filter((b) => b !== board);
+    if (darts.locked >= DART_SECTIONS.length) setTimeout(finishDarts, 400);
   } else {
+    // A myth → clear it; the open sections (this one included) refresh.
     darts.combo = 0;
-    darts.score = Math.max(0, darts.score - 50);
-    state.score = Math.max(0, state.score - 50);
+    darts.score = Math.max(0, darts.score - 25);
+    state.score = Math.max(0, state.score - 25);
     updateHUD();
-    floatText("-50", cx, cy, "#ff6b6b");
+    floatText("Myth!", cx, cy, "#ff6b6b");
     playSound("error");
     shake();
-    // Incorrect (a fact) → RED result feedback (only shown after the hit).
-    bigMessage(board.feedback, {
+    document.getElementById("darts-score").textContent = darts.score;
+    bigMessage(card.data.feedback, {
       icon: "❌",
-      title: "Not quite  −50",
+      title: "That was a myth — the open sections refresh",
       tone: "wrong",
-      duration: 2000,
+      duration: 1900,
     });
-    board.el.classList.add("dart-board-hit");
-    setTimeout(() => board.el.classList.remove("dart-board-hit"), 300);
+    reshuffleUnlocked();
   }
-  document.getElementById("darts-score").textContent = darts.score;
+}
+
+// Refresh every still-open (unlocked) section with a fresh statement. Locked
+// sections keep their captured truth.
+function reshuffleUnlocked() {
+  for (const card of darts.cards) {
+    if (!card || card.locked || card.busy) continue;
+    refreshDartCard(card);
+  }
+}
+
+// Swap one card for a fresh statement in the same section.
+function refreshDartCard(card) {
+  darts.used.delete(card.data.text);
+  const pick = pickDartStatement();
+  darts.used.add(pick.data.text);
+  card.isMyth = pick.isMyth;
+  card.data = pick.data;
+  card.el.querySelector(".dart-card-text").textContent = pick.data.text;
+  card.el.classList.add("dart-card-refresh");
+  setTimeout(() => card.el.classList.remove("dart-card-refresh"), 420);
+  card.busy = false;
 }
 
 function finishDarts() {
+  if (!dartsActive) return; // guard against the timer firing after a win
   dartsActive = false;
   cancelAnimationFrame(dartsFrame);
   clearMiniTimers();
+  const won = darts.locked >= DART_SECTIONS.length;
   showPopup(
-    "Vaccine Darts complete! You cleared the myths and protected the facts.",
-    `Vaccine Darts Score: ${darts.score}\n\nAccurate information is one more layer of protection.`,
+    won
+      ? "Every colour locked! You captured a truth in all five sections."
+      : `Time! You locked ${darts.locked} of ${DART_SECTIONS.length} sections.`,
+    `Vaccine Darts Score: ${darts.score}\n\n` +
+      (won
+        ? "Accurate information is one more layer of protection."
+        : "Read each statement and dart the true ones to fill every colour."),
     [
       {
         text: "Return to Maze",
