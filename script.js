@@ -428,8 +428,9 @@ const CHAR_PRESETS = ["woman-1", "woman-2", "woman-3", "man-1", "man-2", "man-3"
 let character = {
   preset: 0,
 };
-function characterSrc() {
-  return `assets/characters/${CHAR_PRESETS[character.preset] || CHAR_PRESETS[0]}.png`;
+function characterSrc(back) {
+  const n = CHAR_PRESETS[character.preset] || CHAR_PRESETS[0];
+  return `assets/characters/${n}${back ? "-back" : ""}.png`;
 }
 
 // Load a saved character if one exists.
@@ -638,7 +639,10 @@ function shake() {
 function buildCharacter(el) {
   if (!el) return;
   el.classList.add("char-photo");
-  el.innerHTML = `<img class="char-img" src="${characterSrc()}" alt="" draggable="false" />`;
+  // Front + back images stacked; CSS shows the back only when facing "back" (walking up).
+  el.innerHTML =
+    `<img class="char-img char-front" src="${characterSrc(false)}" alt="" draggable="false" />` +
+    `<img class="char-img char-back" src="${characterSrc(true)}" alt="" draggable="false" />`;
 }
 
 // Presets are finished images, so "applying" a change just re-draws the chosen one.
@@ -1089,8 +1093,8 @@ function buildImageMaze(worldEl) {
   // room (Darts/Freeze in their open alcoves; Memory/Sprint in the rooms opened
   // for them). The pad art (128×96) is centred on it.
   const IZONES = [
-    { key: "darts", short: "Vaccine Darts", cx: 645, cy: 210, color: "rgba(125,47,166,0.5)" },
-    { key: "freeze", short: "Flu Freeze", cx: 935, cy: 200, color: "rgba(43,179,179,0.45)" },
+    { key: "darts", short: "Vaccine Darts", cx: 645, cy: 170, color: "rgba(125,47,166,0.5)" },
+    { key: "freeze", short: "Flu Freeze", cx: 935, cy: 165, color: "rgba(43,179,179,0.45)" },
     { key: "sprint", short: "Hospital Sprint", cx: 304, cy: 532, color: "rgba(192,81,43,0.45)" },
     { key: "memory", short: "Memory Clinic", cx: 1030, cy: 438, color: "rgba(125,91,166,0.45)" },
   ];
@@ -1788,7 +1792,7 @@ function beginSprintRound() {
   const runnerEl = stage.querySelector(".sprint-runner");
   buildCharacter(runnerEl);
   runnerEl.classList.add("walking");
-  runnerEl.style.transform = "scale(0.45)"; // shrink the full-size character to runner size
+  runnerEl.style.transform = "scale(0.6)"; // shrink the full-size character to runner size
   sprint = {
     score: 0,
     time: 60,
@@ -1843,13 +1847,13 @@ function beginSprintRound() {
 function sprintJump() {
   if (!sprintActive || sprint.jumping || sprint.sliding) return;
   sprint.jumping = true;
-  sprint.vjump = 18; // higher launch so a good jump fully clears obstacles (was 15)
+  sprint.vjump = 21; // higher launch so a good jump fully clears obstacles
   playSound("collect");
 }
 function sprintSlide() {
   if (!sprintActive || sprint.sliding || sprint.jumping) return;
   sprint.sliding = true;
-  sprint.slideT = 40; // stay down a little longer so overhead obstacles fully pass (was 32)
+  sprint.slideT = 55; // stay down longer so overhead obstacles fully pass
 }
 
 function spawnSprintObj(stage, groundY) {
@@ -1924,7 +1928,7 @@ function sprintLoop() {
 
   if (sprint.jumping) {
     sprint.jumpOffset += sprint.vjump;
-    sprint.vjump -= 0.9; // gravity
+    sprint.vjump -= 0.85; // gravity (lower = higher, longer hang)
     if (sprint.jumpOffset <= 0) {
       sprint.jumpOffset = 0;
       sprint.vjump = 0;
@@ -1951,7 +1955,7 @@ function sprintLoop() {
 
   // Player collision box. Ducking makes it much shorter (22 vs 68) so overhead
   // obstacles clear consistently; it's narrow so only a real overlap counts.
-  const ph = sprint.sliding ? 22 : 68;
+  const ph = sprint.sliding ? 15 : 68;
   const pBox = { x: 58, y: groundY - ph - sprint.jumpOffset, w: 30, h: ph };
 
   sprint.objs = sprint.objs.filter((o) => {
@@ -1977,8 +1981,8 @@ function sprintLoop() {
   const runner = stage.querySelector(".sprint-runner");
   if (runner) {
     // Duck visual matches the shorter hitbox (squash lower from the feet).
-    runner.style.transform = `translateY(${-sprint.jumpOffset}px) scale(0.45) scaleY(${
-      sprint.sliding ? 0.42 : 1
+    runner.style.transform = `translateY(${-sprint.jumpOffset}px) scale(0.6) scaleY(${
+      sprint.sliding ? 0.36 : 1
     })`;
   }
 

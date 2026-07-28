@@ -333,3 +333,19 @@
   swap is still pending (`assets/icons/` ready). **NEXT (starting now):** Vaccine Darts + Flu
   Freeze trigger centres drifted a bit low — nudge them further INSIDE their rooms (they're
   `IZONES` cx/cy in `buildImageMaze`, script.js).
+- 2026-07-27 (session 22 — character back-views, size, Sprint tuning, clinic nudge):
+  **Darts/Freeze triggers** moved up INSIDE their rooms (IZONES cy: darts 210->170, freeze
+  200->165; verified still reachable). **Character BACK views done** — user re-supplied
+  `characters-back.png` resized to MATCH the front (now a clean 3x2, women top / men bottom).
+  Sliced it into 6 back PNGs (`woman-1-back.png`..`man-3-back.png`). `buildCharacter` now
+  renders BOTH `<img class="char-img char-front">` + `<img class="char-img char-back">`;
+  `characterSrc(back)` picks the file. CSS shows `.char-back` only when the maze player has
+  `data-facing="back"` (walking UP, set in loopMaze ~line 1346), so the character turns around
+  going up; front (mirrored for left) otherwise. Maze player **scale 2 -> 2.3** (a touch
+  bigger). **Hospital Sprint tuning:** runner **scale 0.45 -> 0.6** (bigger); **jump** launch
+  18->21 + gravity 0.9->0.85 (peak ~180->~259px, air ~40->49 frames = higher/longer); **duck**
+  crouch box 22->15 (lower, clears the overhead hitbox ~groundY-46 by ~31px), hold 40->55
+  frames (longer), visual scaleY 0.42->0.36 (crouches lower). All lint-clean, no errors.
+  **STILL OPEN:** germ + pickup icon swap (`assets/icons/` ready, delivered as one sprite
+  sheet -> slice like the characters). Everything else (maze, home, character front+back) is in
+  good shape.

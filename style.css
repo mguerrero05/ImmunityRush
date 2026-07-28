@@ -3643,10 +3643,10 @@ img {
 .img-mode .maze-player[data-facing="right"],
 .img-mode .maze-player[data-facing="front"],
 .img-mode .maze-player[data-facing="back"] {
-  transform: scale(2) !important; /* bottom-center origin keeps the feet planted */
+  transform: scale(2.3) !important; /* bottom-center origin keeps the feet planted */
 }
 .img-mode .maze-player[data-facing="left"] {
-  transform: scale(2) scaleX(-1) !important;
+  transform: scale(2.3) scaleX(-1) !important;
 }
 /* Bigger pickups/germs so they read on the large artwork. */
 .img-mode .collectible {
@@ -3785,6 +3785,16 @@ img {
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
+}
+/* Back view: shown only while the maze player is walking UP (facing "back"). */
+.char-back {
+  display: none;
+}
+.maze-player[data-facing="back"] .char-front {
+  display: none;
+}
+.maze-player[data-facing="back"] .char-back {
+  display: block;
 }
 
 /* Customize: gallery of finished characters to pick from */
