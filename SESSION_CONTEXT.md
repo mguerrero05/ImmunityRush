@@ -467,3 +467,29 @@
   Map: maze shield/speed/heart/family/wellness→star; sprint syringe/heart/family/
   star/energy + barrier/calendar/cloud; germ→maze hazards. **STILL OPEN after that:**
   optional Memory card-back refresh; playtest/tune Darts (reshuffle churn) + Freeze.
+- 2026-07-29 (session 27 — custom icons wired + far-right germ + VaxFacts+ link zone + LIVE share link):
+  **ICONS WIRED IN.** The 11 sliced icons (assets/icons/*.png) now render in-game as
+  `<img>`: **maze pickups** (COLLECTIBLES) via new `COLLECTIBLE_ICON` map (shield/speed/
+  heart/family, and wellness→star.png) in the collectible render (`d.innerHTML` img,
+  class `.collectible-img`); **maze germs** — both hazard render spots swapped 🦠 →
+  `<img class="hazard-img" src="assets/icons/germ.png">`; **Hospital Sprint** —
+  `SPRINT_ICONS` inline SVGs replaced with `<img class="spr-ico" src="assets/icons/
+  {syringe,heart,family,star,energy,barrier,calendar,cloud}.png">`. CSS added:
+  `.collectible-img`/`.hazard-img` (100%/contain + drop-shadow), `.spr-ico` gained
+  `object-fit:contain`. Popup header icons (bigMessage) left as emoji (bigMessage only
+  does textContent). Icon files use `?v=1` — bump if an icon is replaced (e.g. the blue
+  orb standing in for **star** — user may swap `assets/icons/star.png` later).
+  **FAR-RIGHT GERM added:** 4th patrolling hazard `{x:1185,y:400,min:340,max:560,vy:1.7}`
+  in the right vertical corridor (mask-verified walkable + reachable from START).
+  **VaxFacts+ WALK-IN LINK ZONE:** new `linkZones` array (global) built in buildImageMaze;
+  a `.zone.link-zone` pad at the VaxFacts+ clinic (x:1290 y:865, bottom-right, verified
+  reachable) — walking onto it fires `openLinkZonePopup()` → popup with "Visit VaxFacts+"
+  (opens https://www.shn.ca/vaxfacts/ in a new tab via window.open) + "Back to maze".
+  `checkZones` now also scans linkZones (shares zoneCooldown). Coord space in image-maze
+  mode = image pixels (1586×992); mask helper at assets/maze/wallmask.js.
+  **SHARE LINK LIVE:** repo is public, GitHub Pages already enabled (main/root) →
+  **https://mguerrero05.github.io/ImmunityRush/** serves the game (all paths relative, so
+  the /ImmunityRush/ subpath works). Auto-updates ~1–2 min after each push; latest code
+  confirmed deployed. `gh` CLI is NOT installed on this machine (checked repo via the
+  public GitHub API + curl). **STILL OPEN:** optional swap of the blue-orb star icon;
+  optional Memory card-back refresh; playtest/tune Darts (reshuffle) + Freeze.
