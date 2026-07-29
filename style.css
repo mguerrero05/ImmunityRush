@@ -1142,6 +1142,16 @@ body {
   width: 24px;
   height: 24px;
   display: block;
+  object-fit: contain;
+}
+/* Maze pickup + germ artwork (sliced from assets/icons/icons.png) fills its tile. */
+.collectible-img,
+.hazard-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
 }
 .spr-label {
   line-height: 1.2;

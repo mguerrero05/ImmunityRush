@@ -104,6 +104,15 @@ const COLLECTIBLES = [
     messages: ["Flu vaccination is especially important for older adults and pregnant people."],
   },
 ];
+// Maps each collectible to its sliced icon file in assets/icons/ (wellness uses
+// the star art). Bump ?v= in the render below if an icon file is replaced.
+const COLLECTIBLE_ICON = {
+  shield: "shield",
+  speed: "speed",
+  heart: "heart",
+  family: "family",
+  wellness: "star",
+};
 
 // The four mini-game zones in the maze. `short` shows on the door tile in the maze;
 // `label` is the full destination name shown in the entry pop-up.
@@ -210,24 +219,17 @@ const SPRINT_OBSTACLES = [
     overhead: true,
   },
 ];
-// Custom inline-SVG icons (self-contained, no image files) for the Sprint items.
+// Custom icon art for the Sprint items (sliced from assets/icons/icons.png).
 // Natural object colours — not a good/bad colour code.
 const SPRINT_ICONS = {
-  syringe:
-    '<svg viewBox="0 0 24 24" class="spr-ico"><g transform="rotate(-45 12 12)"><rect x="6.5" y="6.5" width="10" height="6" rx="2" fill="#cfe0fb" stroke="#1f6feb" stroke-width="1.6"/><line x1="16.5" y1="9.5" x2="21" y2="9.5" stroke="#1f6feb" stroke-width="1.6" stroke-linecap="round"/><line x1="3" y1="9.5" x2="6.5" y2="9.5" stroke="#1f6feb" stroke-width="1.6" stroke-linecap="round"/><line x1="10" y1="6.5" x2="10" y2="12.5" stroke="#1f6feb" stroke-width="1.2"/><line x1="13" y1="6.5" x2="13" y2="12.5" stroke="#1f6feb" stroke-width="1.2"/></g></svg>',
-  heart:
-    '<svg viewBox="0 0 24 24" class="spr-ico"><path d="M12 21s-7-4.6-9.3-9C1 8.5 2.6 5 6 5c2 0 3.2 1.2 4 2.3C10.8 6.2 12 5 14 5c3.4 0 5 3.5 3.3 7-2.3 4.4-9.3 9-9.3 9z" fill="#ff6b81"/></svg>',
-  family:
-    '<svg viewBox="0 0 24 24" class="spr-ico"><g fill="#3b7dd8"><circle cx="8" cy="7" r="3"/><path d="M3 20c0-3 2.2-5 5-5s5 2 5 5z"/><circle cx="16.5" cy="8.5" r="2.4"/><path d="M12.6 20c0-2.4 1.8-4.2 3.9-4.2s3.9 1.8 3.9 4.2z"/></g></svg>',
-  star: '<svg viewBox="0 0 24 24" class="spr-ico"><path d="M12 2l2.9 6 6.6.6-5 4.3 1.5 6.5L12 16.9 5.9 19.4 7.4 12.9l-5-4.3 6.6-.6z" fill="#ffc94d"/></svg>',
-  energy:
-    '<svg viewBox="0 0 24 24" class="spr-ico"><path d="M13 2L4 14h6l-1 8 9-12h-6z" fill="#f2a93b"/></svg>',
-  barrier:
-    '<svg viewBox="0 0 24 24" class="spr-ico"><rect x="2" y="9" width="20" height="6" rx="1.5" fill="#e0863a"/><g stroke="#fff" stroke-width="2"><line x1="6" y1="9" x2="3" y2="15"/><line x1="12" y1="9" x2="9" y2="15"/><line x1="18" y1="9" x2="15" y2="15"/></g><line x1="5" y1="9" x2="5" y2="22" stroke="#8a5a2a" stroke-width="2"/><line x1="19" y1="9" x2="19" y2="22" stroke="#8a5a2a" stroke-width="2"/></svg>',
-  calendar:
-    '<svg viewBox="0 0 24 24" class="spr-ico"><rect x="3" y="4" width="18" height="17" rx="2" fill="#e9edf2" stroke="#8899aa" stroke-width="1.6"/><rect x="3" y="4" width="18" height="4.5" fill="#8899aa"/><g stroke="#d24b3a" stroke-width="2.4" stroke-linecap="round"><line x1="8" y1="12" x2="16" y2="19"/><line x1="16" y1="12" x2="8" y2="19"/></g></svg>',
-  cloud:
-    '<svg viewBox="0 0 24 24" class="spr-ico"><path d="M7 18h10a4 4 0 0 0 .5-8 5 5 0 0 0-9.6-1A3.5 3.5 0 0 0 7 18z" fill="#9aa7b4"/></svg>',
+  syringe: '<img class="spr-ico" src="assets/icons/syringe.png?v=1" alt="">',
+  heart: '<img class="spr-ico" src="assets/icons/heart.png?v=1" alt="">',
+  family: '<img class="spr-ico" src="assets/icons/family.png?v=1" alt="">',
+  star: '<img class="spr-ico" src="assets/icons/star.png?v=1" alt="">',
+  energy: '<img class="spr-ico" src="assets/icons/energy.png?v=1" alt="">',
+  barrier: '<img class="spr-ico" src="assets/icons/barrier.png?v=1" alt="">',
+  calendar: '<img class="spr-ico" src="assets/icons/calendar.png?v=1" alt="">',
+  cloud: '<img class="spr-ico" src="assets/icons/cloud.png?v=1" alt="">',
 };
 
 // --- Flu Freeze items (Milestone F: swipe-to-slice, exact wording) ---
@@ -1114,6 +1116,31 @@ function buildImageMaze(worldEl) {
     }
   });
 
+  // Walk-in LINK zone: stepping onto the VaxFacts+ clinic (bottom-right) opens the
+  // real VaxFacts+ website in a new tab (no mini-game).
+  linkZones = [
+    {
+      key: "vaxfacts",
+      short: "VaxFacts+",
+      label: "VaxFacts+ Clinic",
+      url: "https://www.shn.ca/vaxfacts/",
+      x: 1290,
+      y: 865,
+      color: "rgba(31,111,235,0.42)",
+      icon: "🛡️",
+    },
+  ];
+  linkZones.forEach((z) => {
+    const d = document.createElement("div");
+    d.className = "zone link-zone";
+    d.dataset.key = z.key;
+    d.style.left = z.x - 64 + "px";
+    d.style.top = z.y - 48 + "px";
+    d.style.background = z.color;
+    d.innerHTML = `<div class="zone-icon">${z.icon}</div>${z.short}`;
+    worldEl.appendChild(d);
+  });
+
   // Boosters, each on a verified naturally-reachable floor spot (top-left = feet − 15).
   liveCollectibles = [];
   [
@@ -1137,12 +1164,13 @@ function buildImageMaze(worldEl) {
     { x: 700, y: 430, w: 46, h: 46, min: 360, max: 500, vy: 1.8 },
     { x: 950, y: 540, w: 46, h: 46, min: 460, max: 640, vy: -1.8 },
     { x: 560, y: 640, w: 46, h: 46, min: 560, max: 720, vy: 1.6 },
+    { x: 1185, y: 400, w: 46, h: 46, min: 340, max: 560, vy: 1.7 }, // far-right corridor
   ];
   hazardCooldown = 0;
   hazards.forEach((h) => {
     const d = document.createElement("div");
     d.className = "hazard";
-    d.textContent = "🦠";
+    d.innerHTML = '<img class="hazard-img" src="assets/icons/germ.png?v=1" alt="">';
     d.style.left = h.x + "px";
     d.style.top = h.y + "px";
     worldEl.appendChild(d);
@@ -1166,7 +1194,9 @@ function buildImageMaze(worldEl) {
 function spawnCollectible(worldEl, x, y, data) {
   const d = document.createElement("div");
   d.className = "collectible";
-  d.textContent = data.emoji;
+  d.innerHTML = `<img class="collectible-img" src="assets/icons/${
+    COLLECTIBLE_ICON[data.key] || data.key
+  }.png?v=1" alt="">`;
   d.style.left = x + "px";
   d.style.top = y + "px";
   worldEl.appendChild(d);
@@ -1528,7 +1558,7 @@ function spawnHazards(worldEl) {
   hazards.forEach((h) => {
     const d = document.createElement("div");
     d.className = "hazard";
-    d.textContent = "🦠";
+    d.innerHTML = '<img class="hazard-img" src="assets/icons/germ.png?v=1" alt="">';
     d.style.left = h.x + "px";
     d.style.top = h.y + "px";
     worldEl.appendChild(d);
@@ -1650,6 +1680,7 @@ function markClinicVisited(key) {
 
 // Detect when the player stands on a mini-game zone.
 let zoneCooldown = false;
+let linkZones = []; // walk-in website links (e.g. VaxFacts+), built in buildImageMaze
 const ZONE_HIT = 56; // trigger box (centred on z.x,z.y) — small, so it only fires inside the room
 function checkZones() {
   const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
@@ -1659,7 +1690,8 @@ function checkZones() {
     w: ZONE_HIT,
     h: ZONE_HIT,
   });
-  const onAnyZone = ZONES.some((z) => overlap(pBox, hitBox(z)));
+  const onAnyZone =
+    ZONES.some((z) => overlap(pBox, hitBox(z))) || linkZones.some((z) => overlap(pBox, hitBox(z)));
   // While cooled down (just declined a zone or just finished a mini-game), wait until
   // the player physically walks off the zone before it can trigger again. No teleport.
   if (zoneCooldown) {
@@ -1672,6 +1704,40 @@ function checkZones() {
       return;
     }
   }
+  for (const z of linkZones) {
+    if (overlap(pBox, hitBox(z))) {
+      openLinkZonePopup(z);
+      return;
+    }
+  }
+}
+
+// Pop-up for a walk-in website link (VaxFacts+): opens the site in a new tab.
+function openLinkZonePopup(z) {
+  zoneCooldown = true;
+  stopMazeLoop();
+  showPopup(
+    z.label,
+    "Have questions about the flu vaccine? VaxFacts+ offers free, judgement-free answers and clinic info.",
+    [
+      {
+        text: "Visit VaxFacts+",
+        primary: true,
+        action: () => {
+          window.open(z.url, "_blank", "noopener");
+          hidePopup();
+          resumeMazeAfterZone();
+        },
+      },
+      {
+        text: "Back to maze",
+        action: () => {
+          hidePopup();
+          resumeMazeAfterZone();
+        },
+      },
+    ],
+  );
 }
 
 // Pop-up asking the player to start a mini-game.
