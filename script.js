@@ -689,6 +689,17 @@ function init() {
 }
 
 // Home -> initials screen.
+// Show the How-to-Play screen. In pre-game mode (from "Start Game") it offers a
+// Continue button that leads to the initials entry; from the menu it just has Back.
+function showInstructions(preGame) {
+  const cont = document.getElementById("instr-continue");
+  const back = document.getElementById("instr-back");
+  if (cont) cont.style.display = preGame ? "" : "none";
+  // From the menu, Back is the primary action; before a game it's secondary.
+  if (back) back.classList.toggle("btn-primary", !preGame);
+  showScreen("screen-instructions");
+}
+
 function startInitials() {
   document.getElementById("initials-slogan").textContent = rand(SLOGANS);
   document.getElementById("initials-input").value = state.initials === "---" ? "" : state.initials;
@@ -920,13 +931,14 @@ function maskBlocked(imgX, imgY) {
 function feetBlocked(px, py) {
   const w = player.w,
     h = player.h;
-  // A compact footprint (~9px wide) so the character fits through tight hallways;
-  // in this angled view the wider body/shoes can pass in front of a wall.
+  // The footprint sits at the BOTTOM of the box — exactly where her feet are
+  // drawn — so she stops the instant her drawn feet meet a wall and never stands
+  // on top of one. Kept narrow (~9px) so she still fits through tight hallways.
   return (
-    maskBlocked(px + w * 0.5, py + h - 8) ||
-    maskBlocked(px + w * 0.4, py + h - 9) ||
-    maskBlocked(px + w * 0.6, py + h - 9) ||
-    maskBlocked(px + w * 0.5, py + h - 14)
+    maskBlocked(px + w * 0.5, py + h - 2) ||
+    maskBlocked(px + w * 0.42, py + h - 3) ||
+    maskBlocked(px + w * 0.58, py + h - 3) ||
+    maskBlocked(px + w * 0.5, py + h - 8)
   );
 }
 
@@ -2566,6 +2578,10 @@ function resolveDartCard(card) {
     burst(cx, cy, card.sec.color);
     playSound("success");
     card.el.classList.add("locked");
+    // Leave a dart stuck in the card so the lock reads as "pinned to the board".
+    const pin = document.createElement("div");
+    pin.className = "dart dart-pinned";
+    card.el.appendChild(pin);
     updateDartsGoal();
     document.getElementById("darts-score").textContent = darts.score;
     reshuffleUnlocked(); // every pick refreshes the sections still open

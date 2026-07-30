@@ -493,3 +493,30 @@
   confirmed deployed. `gh` CLI is NOT installed on this machine (checked repo via the
   public GitHub API + curl). **STILL OPEN:** optional swap of the blue-orb star icon;
   optional Memory card-back refresh; playtest/tune Darts (reshuffle) + Freeze.
+- 2026-07-29 (session 28 — Memory blur, lifelike pinned dart, pre-game instructions, FIX walking-on-walls):
+  **MEMORY MATCH:** the "back board" (clinic backdrop) is now BLURRED. Moved the image
+  off `#memory-stage`'s background onto `#memory-stage::before` (blur 8px, inset -14px +
+  scale 1.06 to hide soft edges); scrim on `::after`; `.mem-board` gets `position:relative;
+  z-index:2` so the tray + cards stay crisp on top. Fallback gradient stays on the stage.
+  **VACCINE DARTS:** the thrown dart is now a lifelike dart (metal barrel + tip + red
+  flights, `.dart` rewritten). On a correct LOCK a `.dart.dart-pinned` is appended to the
+  card so it looks pinned into the board (angled). Myths just clear.
+  **PRE-GAME INSTRUCTIONS:** pressing "Start Game" on home now calls `showInstructions(true)`
+  → the How-to-Play screen with a "Continue" button (`#instr-continue`) → `startInitials()`.
+  Menu "Instructions" button calls `showInstructions(false)` (Back only, primary). New
+  `showInstructions(preGame)` toggles the Continue button + Back's primary styling.
+  **WALLS FIX (the big one — "she walks on top of the walls / not in the hall"):** ROOT
+  CAUSE = the collision mask classifies floor purely by TEAL colour (`isFloor` in
+  build-collision.mjs), and the wall TOPS are the same teal; the old floor DILATION of r3
+  (~12px) bridged the floor UP over the thin wall faces onto those teal wall-tops, so the
+  game treated wall-tops as walkable and she stood on them. FIX = reduced the widening to
+  r2 (~8px) so it no longer climbs onto wall-tops (verified via a walkable/blocked overlay
+  render — wall-tops now blocked, floor intact). Also moved the game's `feetBlocked`
+  footprint DOWN to her drawn feet (py+68..74, was py+62..68) and matched the builder's
+  `feetB` to it, and reverted the maze-player scale back to 2.3 (user wants it big).
+  Re-ran `node assets/maze/build-collision.mjs` → all 4 clinics + bottom route PASS,
+  wallmask.js regenerated. **NOTE:** wallmask.js is a plain `<script>` (no cache-buster) —
+  users must HARD-refresh (Cmd+Shift+R) to pick up a rebuilt mask. Diagnostic overlay
+  scripts were temp (deleted). **STILL OPEN:** playtest the walls fix for any now-too-tight
+  spots (carve if needed); optional swap of the blue-orb star icon; optional Memory
+  card-back refresh; Darts reshuffle-churn + Freeze tuning.

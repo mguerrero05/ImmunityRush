@@ -1415,6 +1415,8 @@ body {
 /* The card tray: a soft glassy panel the 12 cards sit on, centred on the
    clinic scene so the layout is deliberate at any screen size. */
 .mem-board {
+  position: relative;
+  z-index: 2; /* above the blurred backdrop (::before) and scrim (::after) */
   padding: 14px;
   border-radius: 20px;
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
@@ -2852,28 +2854,54 @@ body {
 }
 
 /* ---- The dart: a steel arrow that points along its flight (JS rotates it) ---- */
+/* Lifelike dart: metal barrel + a sharp tip (right = flight direction) + red
+   flights (tail fins, left). fireDart rotates it along its path. */
 .dart {
-  width: 26px;
-  height: 12px;
-  margin: -6px 0 0 -13px;
-  border-radius: 0;
-  background: linear-gradient(180deg, #dfe8f0 0%, #9fb2c4 50%, #6f8398 100%);
-  clip-path: polygon(100% 50%, 66% 0, 66% 34%, 0 34%, 0 66%, 66% 66%, 66% 100%);
+  width: 30px;
+  height: 8px;
+  margin: -4px 0 0 -15px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #f2f6fa 0%, #aab8c6 52%, #798896 100%);
+  clip-path: none;
   box-shadow: none;
   transform-origin: center;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
+  overflow: visible;
 }
-/* red nose tip so the point reads */
 .dart::after {
+  /* sharp metal tip */
   content: "";
   position: absolute;
-  right: 0;
+  left: 100%;
   top: 50%;
-  width: 8px;
-  height: 8px;
-  transform: translate(2px, -50%) rotate(45deg);
-  background: #c0392b;
-  z-index: -1;
+  width: 0;
+  height: 0;
+  transform: translateY(-50%);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 10px solid #b5bfc9;
+}
+.dart::before {
+  /* red flights (tail fins) */
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform: translateY(-50%);
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 12px solid #d23b34;
+}
+/* A dart left stuck in a card after a correct lock — angled as if thrown in. */
+.dart-pinned {
+  left: 52%;
+  top: 30%;
+  margin: 0;
+  transform: translate(-50%, -50%) rotate(34deg);
+  z-index: 4;
+  pointer-events: none;
 }
 
 /* ---- Launcher the player drags from ---- */
@@ -3240,12 +3268,8 @@ body {
 
 /* ---- Clinic backdrop behind the card board ---- */
 #memory-stage {
+  /* fallback shown only if the backdrop image is missing */
   background:
-    /* soft scrim so the white/blue cards stay readable over the scene */
-    linear-gradient(180deg, rgba(9, 32, 56, 0.28), rgba(9, 32, 56, 0.42)),
-    /* the clinic backdrop (drop assets/minigames/memory-bg.png) */
-    url("assets/minigames/memory-bg.png?v=3") center / cover no-repeat,
-    /* fallback shown if the backdrop image is missing */
     radial-gradient(90% 55% at 50% 8%, rgba(255, 255, 255, 0.6), transparent 60%),
     linear-gradient(180deg, #e7f1f8 0%, #dbe9f4 55%, #cadcea 100%);
   /* Centre the card tray on the scene (the tray holds the grid now). */
@@ -3253,6 +3277,25 @@ body {
   align-items: center;
   justify-content: center;
   padding: 12px;
+}
+/* Blurred clinic backdrop (the "back board") behind the cards. Overscans + scales
+   so the blur has no soft gaps at the edges. */
+#memory-stage::before {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  z-index: 0;
+  background: url("assets/minigames/memory-bg.png?v=3") center / cover no-repeat;
+  filter: blur(8px);
+  transform: scale(1.06);
+}
+/* Scrim over the blurred backdrop so the cards stay readable. */
+#memory-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(9, 32, 56, 0.3), rgba(9, 32, 56, 0.45));
 }
 
 /* ---- Card back: SHN-blue medallion, not a bare "+" ---- */
@@ -3814,7 +3857,8 @@ img {
 .img-mode .maze-player[data-facing="right"],
 .img-mode .maze-player[data-facing="front"],
 .img-mode .maze-player[data-facing="back"] {
-  transform: scale(2.3) !important; /* bottom-center origin keeps the feet planted */
+  /* Character size (bottom-centre origin keeps the feet planted). */
+  transform: scale(2.3) !important;
 }
 .img-mode .maze-player[data-facing="left"] {
   transform: scale(2.3) scaleX(-1) !important;
