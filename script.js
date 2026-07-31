@@ -916,7 +916,7 @@ const IMG_W = 1586,
 // THE START: player top-left position at the "WELCOME TO SHN" reception (top-left).
 // Used for BOTH the run start and the respawn-after-flu, so they can't drift apart.
 const START_X = 300,
-  START_Y = 230;
+  START_Y = 180;
 
 // Collision mask baked from the maze artwork (assets/maze/wallmask.js): one bit
 // per maskF-pixel cell, 1 = wall/blocked. This lets the player walk exactly on
@@ -949,12 +949,12 @@ function maskBlocked(imgX, imgY) {
 function feetBlocked(px, py) {
   const w = player.w,
     h = player.h;
-  // A compact footprint (~9px wide) tuned for smooth movement through the wider
-  // hallways. (User chose smooth movement over keeping her fully off wall tops.)
+  // A slim footprint (~5.5px) so she still threads the tight doorways with the
+  // strict (wall-blocking) mask. (User chose blocking walls over smoothness.)
   return (
     maskBlocked(px + w * 0.5, py + h - 8) ||
-    maskBlocked(px + w * 0.4, py + h - 9) ||
-    maskBlocked(px + w * 0.6, py + h - 9) ||
+    maskBlocked(px + w * 0.44, py + h - 9) ||
+    maskBlocked(px + w * 0.56, py + h - 9) ||
     maskBlocked(px + w * 0.5, py + h - 14)
   );
 }
@@ -1170,6 +1170,15 @@ function buildImageMaze(worldEl) {
     worldEl.appendChild(d);
   });
 
+  // Decorative CLOSED door over the Pharmacy opening. The Pharmacy is not a
+  // playable room (you can't enter it), so this stops players trying to go in.
+  const pharmDoor = document.createElement("div");
+  pharmDoor.className = "closed-door";
+  pharmDoor.style.left = 1300 + "px"; // pharmacy entrance (image px) — easy to nudge
+  pharmDoor.style.top = 585 + "px";
+  pharmDoor.innerHTML = '<span class="closed-door-lock">🔒</span>';
+  worldEl.appendChild(pharmDoor);
+
   // Boosters, each on a verified naturally-reachable floor spot (top-left = feet − 15).
   liveCollectibles = [];
   [
@@ -1193,7 +1202,7 @@ function buildImageMaze(worldEl) {
     { x: 700, y: 430, w: 46, h: 46, min: 360, max: 500, vy: 1.8 },
     { x: 950, y: 540, w: 46, h: 46, min: 460, max: 640, vy: -1.8 },
     { x: 560, y: 640, w: 46, h: 46, min: 560, max: 720, vy: 1.6 },
-    { x: 1185, y: 400, w: 46, h: 46, min: 340, max: 560, vy: 1.7 }, // far-right corridor
+    { x: 1205, y: 400, w: 46, h: 46, min: 340, max: 560, vy: 1.7 }, // far-right corridor (kept right so you can pass on the left)
   ];
   hazardCooldown = 0;
   hazards.forEach((h) => {
@@ -1627,11 +1636,12 @@ function hitByHazard() {
     tone: "warn",
     duration: 1500,
   });
-  // Small knockback — but ONLY if the spot is clear. Previously this shoved the
-  // player left unconditionally, which could push them INTO a serpentine wall and
-  // trap them there (the "freeze after the virus pushes you aside" bug).
-  const back = { x: Math.max(20, player.x - 40), y: player.y, w: player.w, h: player.h };
-  if (!walls.some((w) => overlap(back, w))) player.x = back.x;
+  // Small knockback — but ONLY if the destination is clear floor. Uses the pixel
+  // mask (playerInWall), because in image-maze mode the `walls` array is empty, so
+  // the old `walls.some(...)` check always passed and shoved the player straight
+  // into a wall in tight corridors (the "stuck on the wall after a germ" bug).
+  const backX = Math.max(20, player.x - 40);
+  if (!playerInWall(backX, player.y)) player.x = backX;
   unstickPlayer(); // final safety net — never leave the player inside a wall
   if (state.health <= 0) {
     state.health = 3;

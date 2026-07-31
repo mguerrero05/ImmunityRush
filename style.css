@@ -1153,6 +1153,37 @@ body {
   display: block;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
 }
+/* Closed door over the Pharmacy opening (decorative — the room isn't playable). */
+.closed-door {
+  position: absolute;
+  width: 116px;
+  height: 88px;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #4a86cc 0%, #3568a4 55%, #274f7e 100%);
+  border: 3px solid #1c3c5c;
+  box-shadow:
+    0 7px 16px rgba(12, 42, 74, 0.5),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.16);
+  display: grid;
+  place-items: center;
+}
+/* vertical seam of the double door */
+.closed-door::before {
+  content: "";
+  position: absolute;
+  top: 9%;
+  bottom: 9%;
+  left: 50%;
+  width: 3px;
+  transform: translateX(-50%);
+  background: rgba(12, 42, 74, 0.55);
+}
+.closed-door-lock {
+  font-size: 30px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
 .spr-label {
   line-height: 1.2;
 }

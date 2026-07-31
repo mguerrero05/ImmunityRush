@@ -132,10 +132,10 @@ const morph = (src, r, m) => {
     }
   return ds;
 };
-// Widen every hallway by ~12px each side for smooth movement. (This also lets
-// the floor climb slightly onto the teal wall tops, but the user prefers smooth
-// movement over the stricter r2 mask, which made corridors too tight.)
-floor = morph(floor, 3, "d");
+// Strict mask (user chose "block the walls, accept some tight spots"): only a
+// small ~8px widening so the walkable area does NOT climb onto the teal wall
+// tops. Tight doorways are then carved wider by the hand-tuned openings below.
+floor = morph(floor, 2, "d");
 
 // ---- Opening helpers (carve floor) ----
 const oPt = (ix, iy, rc) => {
@@ -154,12 +154,12 @@ const oLine = (x0, y0, x1, y1, rc) => {
 };
 
 // ---- Player footprint + body-reachability (matches the game's feetBlocked) ----
-const SPAWN = [300, 230]; // player top-left — the SHN reception START (matches script.js START_X/Y)
+const SPAWN = [300, 180]; // player top-left — the SHN reception START (matches script.js START_X/Y)
 const feetB = (px, py, B) =>
   [
     [px + 23, py + 68],
-    [px + 18.4, py + 67],
-    [px + 27.6, py + 67],
+    [px + 20.24, py + 67],
+    [px + 25.76, py + 67],
     [px + 23, py + 62],
   ].some(([x, y]) => {
     if (x < 0 || y < 0 || x >= W || y >= H) return 1;
@@ -265,6 +265,13 @@ markDirty();
 // 6. Open the thick wall block that trapped the lower-left corridor (by Hospital
 //    Sprint / Information) — a direct east-west passage so you don't backtrack.
 oLine(258, 760, 362, 760, 8);
+markDirty();
+// 7. Widen the TIGHT corridor just after the Darts room heading toward Hospital
+//    Sprint (players kept snagging here — it was only ~10px wide).
+oLine(595, 328, 467, 300, 7);
+oLine(467, 300, 347, 312, 7);
+oLine(347, 312, 300, 372, 7);
+oLine(300, 372, 300, 500, 7); // continue down toward the Sprint room
 markDirty();
 
 // ---- Verify + write ----

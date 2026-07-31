@@ -564,3 +564,25 @@
   `…/ImmunityRush/assets/qr/`. **STILL OPEN:** optional SHN-logo/name tweaks to the poster, an
   in-game "Share" QR button, the star-icon swap, Memory card-back refresh, Freeze phone-width
   crowding check.
+- 2026-07-31 (session 31 — strict-walls maze, germ knockback fix, higher spawn, pharmacy door):
+  **MAZE COLLISION — user chose "BLOCK THE WALLS, accept some tight spots"** over the smooth
+  (walk-through) version. So: `build-collision.mjs` dilation set to `morph(floor, 2, "d")` (~8px,
+  keeps the walkable area OFF the teal wall tops), game `feetBlocked` + builder `feetB` slimmed
+  to ~5.5px (w*0.44/0.56 at py+62..68) so she still threads tight doorways. Kept the darts→sprint
+  corridor carve (opening #7). NOTE the root cause is permanent: the maze art paints wall TOPS the
+  same teal as the floor, so a colour mask can't perfectly separate them — smooth needs wide
+  corridors (which climb wall tops), strict blocks them (tighter). Tried an auto wall-top detector
+  (teal with a cream wall-FACE below) — worked visually but clipped real floor + broke connectivity,
+  so REVERTED. A future clean fix = maze art with wall tops a DIFFERENT colour from the floor.
+  **GERM KNOCKBACK BUG FIXED:** `hitByHazard()` knockback used `walls.some(...)` which is EMPTY in
+  image-maze mode, so it always shoved the player 40px left — into the wall in the tight far-right
+  corridor ("reloads stuck on the wall"). Now uses `playerInWall(backX, player.y)` (pixel-mask
+  aware) + `unstickPlayer()`. **Far-right germ moved right** x1185 -> x1205 (pass on the left).
+  **SPAWN MOVED UP:** START_Y 230 -> 180 (and builder SPAWN [300,180]); the old spot was walled-in
+  on the left so it felt trapped — the new spot has clear right/down/left egress. Regenerated mask;
+  all 4 clinics + bottom route PASS from the new spawn. **PHARMACY CLOSED DOOR:** the Pharmacy is
+  NOT reachable (sealed) but looks enterable, confusing players — added a decorative `.closed-door`
+  element (teal double-door + 🔒) at the opening (image px ~1300,585, easy to nudge; built in
+  buildImageMaze after linkZones). No collision change (already blocked). **REMINDER:** wallmask.js
+  is a plain <script> — HARD-refresh to pick up mask changes. **STILL OPEN:** nudge the pharmacy
+  door position if off; optional star-icon swap; Memory card-back; Freeze phone-width crowding.
