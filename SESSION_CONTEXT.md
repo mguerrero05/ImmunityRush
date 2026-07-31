@@ -586,3 +586,9 @@
   buildImageMaze after linkZones). No collision change (already blocked). **REMINDER:** wallmask.js
   is a plain <script> — HARD-refresh to pick up mask changes. **STILL OPEN:** nudge the pharmacy
   door position if off; optional star-icon swap; Memory card-back; Freeze phone-width crowding.
+- 2026-07-31 (session 31b — pharmacy door removed, awaiting custom image): Simplified the
+  pharmacy closed-door to a plain rectangle, then REMOVED it entirely (both the `.closed-door`
+  element in buildImageMaze and its CSS) at the user's request. Plan: user will drop a custom
+  door image at `assets/maze/pharmacy-door.png` (transparent PNG) and I'll place it on the
+  pharmacy opening (image px ~1300,585) as an `<img>` and fine-tune position/size. The Pharmacy
+  is already sealed (not reachable), so this is purely a visual "don't try to enter" cue.

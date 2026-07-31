@@ -1170,15 +1170,6 @@ function buildImageMaze(worldEl) {
     worldEl.appendChild(d);
   });
 
-  // Decorative CLOSED door over the Pharmacy opening. The Pharmacy is not a
-  // playable room (you can't enter it), so this stops players trying to go in.
-  const pharmDoor = document.createElement("div");
-  pharmDoor.className = "closed-door";
-  pharmDoor.style.left = 1300 + "px"; // pharmacy entrance (image px) — easy to nudge
-  pharmDoor.style.top = 585 + "px";
-  pharmDoor.innerHTML = '<span class="closed-door-lock">🔒</span>';
-  worldEl.appendChild(pharmDoor);
-
   // Boosters, each on a verified naturally-reachable floor spot (top-left = feet − 15).
   liveCollectibles = [];
   [
