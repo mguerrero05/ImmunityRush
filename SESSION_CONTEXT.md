@@ -544,3 +544,23 @@
   stays at scale 2.3. **STILL OPEN:** playtest maze for any remaining tight/stuck spots (carve
   with oLine/oPt if found); check Freeze bubbles aren't crowded on phone widths (could drop to
   3 on screen); optional star-icon swap / Memory card-back refresh.
+- 2026-07-31 (session 30 — reverted to wider/smoother maze, added scannable QR code):
+  **MAZE COLLISION — REVERTED THE r2 WALLS FIX.** The user kept getting stuck with the r2
+  (~8px) widening + slim footprint, and explicitly chose SMOOTH MOVEMENT over keeping her
+  fully off the wall tops. So: `build-collision.mjs` dilation back to `morph(floor, 3, "d")`
+  (~12px, the long-smooth setting), and the footprint (game `feetBlocked` + builder `feetB`)
+  back to the ORIGINAL ~9px at py+62..68. Re-ran `node assets/maze/build-collision.mjs` — all
+  4 clinics + bottom route PASS. Net: movement is smooth/no-stuck, but her body/feet overlap
+  the walls a bit (accepted trade-off; the teal wall-tops can't be told from floor by the
+  colour mask, so wider = smoother-but-climbs-walls, narrower = strict-but-sticks). maze-player
+  stays scale 2.3. If revisited later, a smarter fix = detect wall-TOP teal (cream wall-face
+  directly south of a teal cell) rather than trading global dilation.
+  **QR CODE for sharing the live link** (https://mguerrero05.github.io/ImmunityRush/): generated
+  with `npx --yes qrcode -e H` (high error correction; no permanent dependency added) into
+  `assets/qr/` — `immunity-rush-qr.png` (640²) + `immunity-rush-qr.svg` (vector for print).
+  Also wrote `assets/qr/poster.html`: a printable flyer (Immunity Rush title, blue-framed QR,
+  "Scan to play", the URL) — open it + Cmd+P. Verified the PNG renders as a valid QR. To
+  regenerate if the URL changes, re-run the npx qrcode commands. Once pushed it's also live at
+  `…/ImmunityRush/assets/qr/`. **STILL OPEN:** optional SHN-logo/name tweaks to the poster, an
+  in-game "Share" QR button, the star-icon swap, Memory card-back refresh, Freeze phone-width
+  crowding check.

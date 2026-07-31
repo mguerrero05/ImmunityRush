@@ -949,9 +949,8 @@ function maskBlocked(imgX, imgY) {
 function feetBlocked(px, py) {
   const w = player.w,
     h = player.h;
-  // A compact footprint (~9px wide) tuned for smooth movement through the
-  // hallways. Wall TOPS are blocked in the mask now, so she can't stand on walls
-  // without needing the footprint pushed all the way to her drawn shoes.
+  // A compact footprint (~9px wide) tuned for smooth movement through the wider
+  // hallways. (User chose smooth movement over keeping her fully off wall tops.)
   return (
     maskBlocked(px + w * 0.5, py + h - 8) ||
     maskBlocked(px + w * 0.4, py + h - 9) ||
