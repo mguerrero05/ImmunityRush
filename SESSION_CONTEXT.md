@@ -520,3 +520,27 @@
   scripts were temp (deleted). **STILL OPEN:** playtest the walls fix for any now-too-tight
   spots (carve if needed); optional swap of the blue-orb star icon; optional Memory
   card-back refresh; Darts reshuffle-churn + Freeze tuning.
+- 2026-07-31 (session 29 — How-to-Play polish, Flu Freeze content + bigger frost bubbles, collision footprint revert):
+  **HOW-TO-PLAY (pre-game) SCREEN:** rewritten copy (user-supplied) as 4 separate
+  paragraphs: "Use the arrow keys or WASD to move." / "Enter mini-game zones to begin each
+  challenge." / "Collect shields, hearts, speed boosts, and family tokens while avoiding flu
+  obstacles." / "Make your way safely to the clinic to get your flu shot!" Made the screen
+  bigger + centred: scoped CSS `#screen-instructions` (justify-content:center, title 30px,
+  card font 18px/max-width 384/padding 24, paragraph spacing).
+  **FLU FREEZE INSTRUCTIONS popup:** trimmed to just the 4 bullets (removed the intro line).
+  **FLU FREEZE CONTENT REPLACED** (user list): FREEZE_POSITIVE now 17 TRUE facts (score 100
+  each), FREEZE_NEGATIVE now 10 FALSE misconceptions (each with a written correction/feedback).
+  **BUBBLES BIGGER + READABLE:** `.freeze-bubble-inner` 126 -> 168px, font 11 -> 13.5px,
+  padding 20. Lifespan roughly doubled (`life` positive 560+rand200 / negative 500+rand160
+  frames) and refill slowed 650 -> 950ms so statements linger long enough to read.
+  **FREEZE-OFF ZAP EFFECT (matches the game name):** on zap the bubble ices over (a white-blue
+  frost `::after` overlay on `.freeze-bubble-inner`), a ❄ snowflake bursts (`.zapped::before`
+  snowPop), icy particles (`burst` colours -> #bfefff / #cfe8ff), then it shatters
+  (`bubbleShatter`). Zap removal timeout 300 -> 520ms so the animation finishes.
+  **COLLISION FOOTPRINT REVERTED:** user reported getting stuck after the r2 walls fix, so the
+  game `feetBlocked` + builder `feetB` were put back to the ORIGINAL smoother footprint
+  (py+62..68, was py+68..74 this session); kept the r2 (~8px) wall-widening fix. Re-ran
+  `node assets/maze/build-collision.mjs` — all 4 clinics + bottom route PASS. maze-player
+  stays at scale 2.3. **STILL OPEN:** playtest maze for any remaining tight/stuck spots (carve
+  with oLine/oPt if found); check Freeze bubbles aren't crowded on phone widths (could drop to
+  3 on screen); optional star-icon swap / Memory card-back refresh.

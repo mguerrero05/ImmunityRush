@@ -1729,6 +1729,37 @@ body {
 .card ul {
   margin: 10px 0 0 18px;
 }
+
+/* How-to-Play (shown after Start Game): larger, easy-to-read, centred vertically. */
+#screen-instructions {
+  justify-content: center;
+}
+#screen-instructions .screen-title {
+  font-size: 30px;
+}
+#screen-instructions .card {
+  max-width: 384px;
+  padding: 24px 26px;
+  font-size: 18px;
+  line-height: 1.65;
+}
+#screen-instructions .card p {
+  margin: 0 0 14px;
+}
+#screen-instructions .card p:last-child {
+  margin-bottom: 0;
+}
+#screen-instructions .card ul {
+  margin-top: 14px;
+  padding-left: 6px;
+}
+#screen-instructions .card li {
+  margin: 9px 0;
+}
+#screen-instructions .menu {
+  margin-top: 16px;
+}
+
 .card.small-print {
   font-size: 13px;
   color: #456;
@@ -3045,19 +3076,20 @@ body {
   touch-action: none;
 }
 .freeze-bubble-inner {
-  width: 126px;
-  height: 126px;
+  position: relative;
+  width: 168px;
+  height: 168px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 16px;
+  padding: 20px;
   box-sizing: border-box;
   color: #fff;
-  font-size: 11px;
+  font-size: 13.5px;
   font-weight: 700;
-  line-height: 1.22;
+  line-height: 1.28;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   /* one neutral germ colour for ALL bubbles (no fact/misconception tell) */
   background:
@@ -3081,18 +3113,70 @@ body {
     transform: translateY(-6px) rotate(1.6deg);
   }
 }
-/* Zapped: a quick pop. Expired: a quiet fade. Both free the slot to re-fill. */
-.freeze-bubble.zapped {
-  animation: freezeZap 0.3s ease forwards;
+/* Frost overlay that ices over the bubble when it's zapped (hidden otherwise). */
+.freeze-bubble-inner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.9), transparent 30%),
+    radial-gradient(circle at 22% 60%, rgba(255, 255, 255, 0.6), transparent 26%),
+    radial-gradient(circle at 78% 66%, rgba(255, 255, 255, 0.6), transparent 26%),
+    radial-gradient(circle at 40% 36%, #ffffff 0%, #d6f2ff 48%, #93d3f0 100%);
+  box-shadow:
+    inset 0 0 0 3px rgba(230, 248, 255, 0.95),
+    0 0 20px 5px rgba(150, 220, 255, 0.85);
 }
-@keyframes freezeZap {
-  40% {
-    transform: translate(-50%, -50%) scale(1.18);
-    filter: brightness(1.7);
+/* Zapped = the virus FREEZES over, then shatters. Expired = a quiet fade. */
+.freeze-bubble.zapped .freeze-bubble-inner {
+  animation: bubbleShatter 0.5s ease forwards;
+}
+.freeze-bubble.zapped .freeze-bubble-inner::after {
+  opacity: 0.95;
+  transition: opacity 0.12s ease-out; /* quick freeze-over */
+}
+@keyframes bubbleShatter {
+  0% {
+    transform: scale(1);
   }
-  to {
-    transform: translate(-50%, -50%) scale(0.18);
+  34% {
+    transform: scale(1.09);
+  }
+  100% {
+    transform: scale(0.2) rotate(11deg);
     opacity: 0;
+  }
+}
+/* A burst of frost/snowflake as it freezes. */
+.freeze-bubble.zapped::before {
+  content: "❄";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  font-size: 48px;
+  color: #f0fbff;
+  text-shadow:
+    0 0 10px #9fe0ff,
+    0 0 4px #fff;
+  pointer-events: none;
+  animation: snowPop 0.55s ease forwards;
+}
+@keyframes snowPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+  }
+  45% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1) rotate(45deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.7) rotate(90deg);
   }
 }
 .freeze-bubble.expire {

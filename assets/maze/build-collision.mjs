@@ -141,10 +141,10 @@ const oLine = (x0, y0, x1, y1, rc) => {
 const SPAWN = [300, 230]; // player top-left — the SHN reception START (matches script.js START_X/Y)
 const feetB = (px, py, B) =>
   [
-    [px + 23, py + 74],
-    [px + 19.32, py + 73],
-    [px + 26.68, py + 73],
     [px + 23, py + 68],
+    [px + 18.4, py + 67],
+    [px + 27.6, py + 67],
+    [px + 23, py + 62],
   ].some(([x, y]) => {
     if (x < 0 || y < 0 || x >= W || y >= H) return 1;
     const i = cell(x, y);

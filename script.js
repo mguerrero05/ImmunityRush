@@ -232,57 +232,75 @@ const SPRINT_ICONS = {
   cloud: '<img class="spr-ico" src="assets/icons/cloud.png?v=1" alt="">',
 };
 
-// --- Flu Freeze items (Milestone F: swipe-to-slice, exact wording) ---
-// Positive items to slice. "Gold" items just award more points — they are NOT
-// visually distinguished, so the player must read each item.
+// --- Flu Freeze items: read-then-zap virus bubbles ---
+// TRUE statements — zapping one scores points. All bubbles look identical, so
+// the player must READ before zapping.
 const FREEZE_POSITIVE = [
-  { text: "Flu Vaccine", score: 150 },
-  { text: "Patient Protection", score: 150 },
-  { text: "Protected Shift", score: 100 },
-  { text: "Family Protection", score: 125 },
-  { text: "Annual Vaccination", score: 125 },
-  { text: "Lower Risk of Severe Illness", score: 150 },
-  { text: "High-Risk Patient Protected", score: 300 },
-  { text: "Outbreak Prevented", score: 300 },
-  { text: "Vaccinated Before Flu Season", score: 250 },
+  { text: "Flu can lead to hospitalization in older adults.", score: 100 },
+  { text: "Vaccination helps protect elderly family members.", score: 100 },
+  { text: "Flu can worsen existing heart or lung conditions.", score: 100 },
+  { text: "Flu can trigger serious complications, including pneumonia.", score: 100 },
+  { text: "Vaccination can make flu illness less severe.", score: 100 },
+  { text: "Healthy adults can still get influenza.", score: 100 },
+  { text: "The flu shot cannot give you influenza.", score: 100 },
+  { text: "Flu is not the same as a common cold.", score: 100 },
+  { text: "People need a new flu shot every year.", score: 100 },
+  {
+    text: "Babies under 6 months cannot receive the flu vaccine, they need adults to.",
+    score: 100,
+  },
+  { text: "Pregnant people can receive the flu vaccine.", score: 100 },
+  { text: "Flu vaccination is recommended while breastfeeding.", score: 100 },
+  { text: "People can spread flu before realizing they are sick.", score: 100 },
+  { text: "Antibiotics do not treat influenza viruses.", score: 100 },
+  { text: "Getting vaccinated before flu season gives protection time to build.", score: 100 },
+  { text: "The vaccine can reduce serious flu-related complications.", score: 100 },
+  { text: "You can get the flu even if you rarely feel sick.", score: 100 },
 ];
-// Negative items — slicing one costs a life and shows its correction.
+// FALSE statements (misconceptions) — zapping one costs a life and shows its
+// correction. Leaving it alone is correct; it clears on its own.
 const FREEZE_NEGATIVE = [
   {
-    text: "Going to Work With Flu Symptoms",
+    text: "Older adults do not need yearly vaccination.",
     feedback:
-      "Stay home when you are sick. Working while symptomatic can expose patients and coworkers.",
+      "Older adults are at higher risk from flu and are recommended to get vaccinated every season.",
   },
   {
-    text: "Skipping This Year's Vaccine",
-    feedback: "Flu viruses change over time, so vaccination is recommended every flu season.",
+    text: "The flu shot can give you influenza.",
+    feedback: "The flu vaccine cannot give you influenza — it does not contain live flu virus.",
   },
   {
-    text: "Treating Flu With Antibiotics",
+    text: "Flu is only dangerous for young children.",
     feedback:
-      "Antibiotics treat bacterial infections. They do not treat influenza, which is caused by a virus.",
+      "Flu can be serious for everyone, especially older adults and people with health conditions.",
   },
   {
-    text: "Visiting Vulnerable Patients While Sick",
-    feedback:
-      "Influenza can cause serious complications in older adults and people with underlying conditions.",
+    text: "Last year's flu shot protects you forever.",
+    feedback: "Flu viruses change over time, so a new vaccine is recommended each season.",
   },
   {
-    text: "Ignoring Early Symptoms",
-    feedback:
-      "Flu symptoms can begin suddenly. Recognizing them early helps reduce further exposure.",
+    text: "Pregnancy means you cannot get vaccinated.",
+    feedback: "The flu vaccine is recommended in pregnancy and helps protect both parent and baby.",
   },
   {
-    text: "Sharing Personal Equipment",
-    feedback: "Shared equipment can carry germs. Clean and disinfect it between users.",
+    text: "Breastfeeding means you cannot get vaccinated.",
+    feedback: "The flu vaccine is safe and recommended while breastfeeding.",
   },
   {
-    text: "Assuming Mild Symptoms Are Not Contagious",
-    feedback: "A person may spread influenza before symptoms become severe or obvious.",
+    text: "A strong immune system guarantees protection.",
+    feedback: "Even healthy people with strong immune systems can catch and spread the flu.",
   },
   {
-    text: "Attending a Family Event While Sick",
-    feedback: "Staying home while sick helps prevent spreading influenza to family and friends.",
+    text: "No fever means you do not have the flu.",
+    feedback: "Flu does not always cause a fever — you can be infected and contagious without one.",
+  },
+  {
+    text: "The flu is just a bad cold.",
+    feedback: "Influenza is more serious than a cold and can lead to complications like pneumonia.",
+  },
+  {
+    text: "Vaccination only protects the person receiving it.",
+    feedback: "Getting vaccinated also helps protect the people around you by reducing spread.",
   },
 ];
 const FREEZE_LIFE_LOST = [
@@ -931,14 +949,14 @@ function maskBlocked(imgX, imgY) {
 function feetBlocked(px, py) {
   const w = player.w,
     h = player.h;
-  // The footprint sits at the BOTTOM of the box — exactly where her feet are
-  // drawn — so she stops the instant her drawn feet meet a wall and never stands
-  // on top of one. Kept narrow (~9px) so she still fits through tight hallways.
+  // A compact footprint (~9px wide) tuned for smooth movement through the
+  // hallways. Wall TOPS are blocked in the mask now, so she can't stand on walls
+  // without needing the footprint pushed all the way to her drawn shoes.
   return (
-    maskBlocked(px + w * 0.5, py + h - 2) ||
-    maskBlocked(px + w * 0.42, py + h - 3) ||
-    maskBlocked(px + w * 0.58, py + h - 3) ||
-    maskBlocked(px + w * 0.5, py + h - 8)
+    maskBlocked(px + w * 0.5, py + h - 8) ||
+    maskBlocked(px + w * 0.4, py + h - 9) ||
+    maskBlocked(px + w * 0.6, py + h - 9) ||
+    maskBlocked(px + w * 0.5, py + h - 14)
   );
 }
 
@@ -2147,8 +2165,7 @@ function startFreeze() {
   showScreen("screen-freeze");
   showPopup(
     "Flu Freeze",
-    "Flu misinformation is spreading through the ward. Read each virus, then zap ONLY the true statements to score.\n\n" +
-      "• Tap / click a virus to zap it.\n• Zap the TRUE statements for points.\n• Misconceptions cost a life — leave them and they clear on their own.\n• Read before you zap. You have 3 lives.",
+    "• Tap / click a virus to zap it.\n• Zap the TRUE statements for points.\n• Misconceptions cost a life — leave them and they clear on their own.\n• Read before you zap. You have 3 lives.",
     [
       {
         text: "Start Flu Freeze",
@@ -2192,7 +2209,7 @@ function beginFreezeRound() {
   toast("Read each virus — zap only the TRUE ones.", 2200);
 
   // Keep empty slots filling so the board cycles gently.
-  miniTimers.push(setInterval(freezeRefill, 650));
+  miniTimers.push(setInterval(freezeRefill, 950));
   miniTimers.push(
     setInterval(() => {
       if (freeze.paused) return; // don't lose time while reading a correction
@@ -2247,8 +2264,8 @@ function spawnFreezeBubble(slot) {
     dead: false,
     removed: false,
     age: 0,
-    // Facts linger a touch longer so there's time to read them.
-    life: positive ? 300 + Math.random() * 120 : 260 + Math.random() * 100,
+    // Stay on screen long enough to read (facts linger a touch longer).
+    life: positive ? 560 + Math.random() * 200 : 500 + Math.random() * 160,
   };
   el.addEventListener("pointerdown", (e) => {
     e.preventDefault();
@@ -2317,7 +2334,7 @@ function zapFreezeBubble(b) {
   setTimeout(() => {
     b.el.remove();
     b.removed = true;
-  }, 300);
+  }, 520); // let the freeze-over + shatter finish
   const cx = r.left + bx,
     cy = r.top + by;
   if (b.positive) {
@@ -2325,7 +2342,7 @@ function zapFreezeBubble(b) {
     freeze.score += b.data.score;
     addScore(b.data.score);
     floatText(`+${b.data.score}`, cx, cy, "#ffd34d");
-    burst(cx, cy, "#7bd67b");
+    burst(cx, cy, "#bfefff"); // icy frost particles
     playSound("success");
     if (freeze.combo >= 3) toast(`Combo x${freeze.combo}!`, 900);
   } else {
@@ -2333,7 +2350,7 @@ function zapFreezeBubble(b) {
     freeze.lives--;
     document.getElementById("freeze-lives").textContent = freeze.lives;
     floatText("−1 life", cx, cy, "#ff6b6b");
-    burst(cx, cy, "#b06be0");
+    burst(cx, cy, "#cfe8ff"); // icy frost particles
     playSound("error");
     shake();
     // Big centered correction card — pauses the game so it can be read.
