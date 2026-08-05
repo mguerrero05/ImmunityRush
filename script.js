@@ -444,9 +444,18 @@ let state = {
 // Character look. Defaults match the CSS defaults.
 // The player is now chosen from a gallery of finished character images
 // (assets/characters/*.png). `preset` is the index into CHAR_PRESETS below.
-const CHAR_PRESETS = ["woman-1", "woman-2", "woman-3", "man-1", "man-2", "man-3"];
+const CHAR_PRESETS = [
+  "woman-1",
+  "woman-2",
+  "woman-3",
+  "man-1",
+  "man-2",
+  "man-3",
+  "woman-4",
+  "man-4",
+];
 let character = {
-  preset: 0,
+  preset: 1, // default = "Character 1" (woman-2) after the Customize reorder
 };
 function characterSrc(back) {
   const n = CHAR_PRESETS[character.preset] || CHAR_PRESETS[0];
@@ -656,9 +665,32 @@ function shake() {
 // Build the CSS-shape character inside a given container element.
 // Render the selected character IMAGE into a stage element. The maze player, the
 // HUD portrait, the Sprint runner and the Customize preview all use this.
+// Presets that have a 4x4 walk sprite sheet (rows: down/right/left/up, 4 frames
+// each) in assets/characters/<preset>-walk.png. Add each as its sheet is made.
+const WALK_SHEETS = new Set([
+  "woman-1",
+  "woman-2",
+  "woman-3",
+  "man-1",
+  "man-2",
+  "man-3",
+  "woman-4",
+  "man-4",
+]);
+
 function buildCharacter(el) {
   if (!el) return;
   el.classList.add("char-photo");
+  const preset = CHAR_PRESETS[character.preset] || CHAR_PRESETS[0];
+  // The maze player uses the animated walk sheet when one exists; everything else
+  // (HUD, customize, Sprint runner) keeps the still image for now.
+  const mover = el.id === "player";
+  if (mover && WALK_SHEETS.has(preset)) {
+    el.classList.add("has-walk");
+    el.innerHTML = `<div class="walk-sprite" style="background-image:url('assets/characters/${preset}-walk.png')"></div>`;
+    return;
+  }
+  el.classList.remove("has-walk");
   // Front + back images stacked; CSS shows the back only when facing "back" (walking up).
   el.innerHTML =
     `<img class="char-img char-front" src="${characterSrc(false)}" alt="" draggable="false" />` +
@@ -769,6 +801,7 @@ function beginGame() {
   toast(rand(SLOGANS), 2200);
   updateRunTime();
   startRunTimer();
+  keys.up = keys.down = keys.left = keys.right = false; // clear any stale key state
   startMazeLoop();
 }
 
@@ -915,7 +948,7 @@ const IMG_W = 1586,
   IMG_H = 992;
 // THE START: player top-left position at the "WELCOME TO SHN" reception (top-left).
 // Used for BOTH the run start and the respawn-after-flu, so they can't drift apart.
-const START_X = 300,
+const START_X = 328,
   START_Y = 180;
 
 // Collision mask baked from the maze artwork (assets/maze/wallmask.js): one bit
@@ -949,12 +982,12 @@ function maskBlocked(imgX, imgY) {
 function feetBlocked(px, py) {
   const w = player.w,
     h = player.h;
-  // A slim footprint (~5.5px) so she still threads the tight doorways with the
-  // strict (wall-blocking) mask. (User chose blocking walls over smoothness.)
+  // Compact ~9px footprint for the wide, OPEN-ed mask (wall tops blocked, so she
+  // can't stand on walls; corner-assist in stepAxisMask keeps corners smooth).
   return (
     maskBlocked(px + w * 0.5, py + h - 8) ||
-    maskBlocked(px + w * 0.44, py + h - 9) ||
-    maskBlocked(px + w * 0.56, py + h - 9) ||
+    maskBlocked(px + w * 0.4, py + h - 9) ||
+    maskBlocked(px + w * 0.6, py + h - 9) ||
     maskBlocked(px + w * 0.5, py + h - 14)
   );
 }
@@ -1312,17 +1345,37 @@ function moverPlayer(dx, dy) {
   }
 }
 
-// Step the player along one axis, one pixel at a time, up to `steps` pixels,
-// stopping the instant the feet would enter a wall. If the feet already start
-// inside a wall (e.g. a knockback), movement is allowed so we can never trap.
+// Step the player along one axis, one pixel at a time, up to `steps` pixels.
+// If a step is blocked, CORNER ASSIST kicks in: nudge a few px sideways to slip
+// into the opening (doorway/corridor) instead of catching on the wall — this is
+// what makes the tight hallways feel smooth. If the feet already start inside a
+// wall (e.g. a knockback), movement is allowed so we can never trap.
 function stepAxisMask(sgnX, sgnY, steps) {
   if ((sgnX === 0 && sgnY === 0) || steps <= 0) return;
+  const clampX = (v) => Math.max(0, Math.min(worldW - player.w, v));
+  const clampY = (v) => Math.max(0, Math.min(worldH - player.h, v));
   const stuck = feetBlocked(player.x, player.y);
+  // Perpendicular offsets to try when blocked (small = gentle auto-slide).
+  const ASSIST = [3, -3, 6, -6, 9, -9];
   for (let i = 0; i < steps; i++) {
-    const nx = Math.max(0, Math.min(worldW - player.w, player.x + sgnX));
-    const ny = Math.max(0, Math.min(worldH - player.h, player.y + sgnY));
+    let nx = clampX(player.x + sgnX),
+      ny = clampY(player.y + sgnY);
     if (nx === player.x && ny === player.y) break; // hit world edge
-    if (!stuck && feetBlocked(nx, ny)) break; // flush against a wall
+    if (!stuck && feetBlocked(nx, ny)) {
+      let slid = false;
+      for (const d of ASSIST) {
+        // Moving horizontally → nudge Y; moving vertically → nudge X.
+        const tx = sgnX !== 0 ? nx : clampX(nx + d);
+        const ty = sgnX !== 0 ? clampY(ny + d) : ny;
+        if (!feetBlocked(tx, ty)) {
+          nx = tx;
+          ny = ty;
+          slid = true;
+          break;
+        }
+      }
+      if (!slid) break; // truly walled in on this axis
+    }
     player.x = nx;
     player.y = ny;
   }
@@ -2494,6 +2547,7 @@ function beginDartsRound() {
 
   dartsActive = true;
   DART_SECTIONS.forEach((_, i) => spawnDartCard(i));
+  ensureOpenFact(); // never start a round with zero true statements to dart
 }
 
 function dartThrowerPos(stage) {
@@ -2636,6 +2690,22 @@ function reshuffleUnlocked() {
     if (!card || card.locked || card.busy) continue;
     refreshDartCard(card);
   }
+  ensureOpenFact();
+}
+
+// Guarantee at least one OPEN (unlocked) section shows a TRUE fact, so the player
+// can always progress by darting a truth — never forced to hit a myth just to
+// trigger a reshuffle. (Bug: the open sections could all roll myths at once.)
+function ensureOpenFact() {
+  const open = darts.cards.filter((c) => c && !c.locked && !c.busy);
+  if (!open.length || open.some((c) => !c.isMyth)) return;
+  const card = open[Math.floor(Math.random() * open.length)];
+  darts.used.delete(card.data.text);
+  const fact = DARTS_FACTS.find((f) => !darts.used.has(f.text)) || rand(DARTS_FACTS);
+  darts.used.add(fact.text);
+  card.isMyth = false;
+  card.data = fact;
+  card.el.querySelector(".dart-card-text").textContent = fact.text;
 }
 
 // Swap one card for a fresh statement in the same section.

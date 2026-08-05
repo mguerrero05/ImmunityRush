@@ -592,3 +592,45 @@
   door image at `assets/maze/pharmacy-door.png` (transparent PNG) and I'll place it on the
   pharmacy opening (image px ~1300,585) as an `<img>` and fine-tune position/size. The Pharmacy
   is already sealed (not reachable), so this is purely a visual "don't try to enter" cue.
+- 2026-08-04 (session 32 — BIG: hand-drawn collision, walk animations for all chars, new 4th character, many fixes):
+  **MAZE COLLISION — now HAND-DRAWN.** User painted the walkable hallways in MAGENTA on a copy
+  of the maze (`assets/maze/maze-paths.jpg`, also .png). `build-collision.mjs` was REWRITTEN to
+  build wallmask.js from that drawing: sips-converts the jpg, auto-detects the maze bbox in the
+  canvas (maze sits at offset, uniform scale), maps magenta→floor, dilates ~12px (r3) to smooth
+  the freehand + widen entrances. Walkable = painted, wall = everything else (finally accurate —
+  no more wall-climbing/teal-wall-top guessing). To update: repaint magenta, drop in
+  maze-paths.jpg, re-run `node assets/maze/build-collision.mjs`. **Movement:** added CORNER
+  ASSIST to `stepAxisMask` (nudges sideways to slip into doorways). **Spawn** moved to START
+  (328,180) — open + connected. All 4 clinics reachable.
+  **START-GLITCH:** zoom-in animation 1.2s→0.5s; clear stale keys on maze start.
+  **GERM knockback bug fixed** (used empty walls[] → shoved into wall; now mask-aware). Far-right
+  germ x1185→1205.
+  **VACCINE DARTS:** `ensureOpenFact()` guarantees ≥1 true statement among open sections (on deal
+  + after every pick) — fixes the "no truth left, must dart a myth" glitch.
+  **HOSPITAL SPRINT:** raised text overlays above the runner (toast 200 / big-msg 210 / popup 220,
+  mg-hud+hint 100) so the character never covers the title/instructions/fact text (runner z 90).
+  **QR CODE:** `assets/qr/` — immunity-rush-qr.png/.svg + poster.html for the live link.
+  **WALK ANIMATIONS (all characters):** each has a 4x4 walk sheet `<name>-walk.png` (rows
+  front/right/left/up, 4 frames). `WALK_SHEETS` set; `buildCharacter` renders a `.walk-sprite`
+  CSS-sprite for the maze player (#player) when a sheet exists (row=facing, columns animate on
+  `.walking`); HUD/customize keep the still image. Sheets were REPROCESSED (script pattern
+  `_fix-walk.mjs`, backups in /tmp/walk-backup): keep only the main character blob per frame (no
+  bleed/white-bubble), normalize row order to front/right/left/back (man-1 was the odd one), lock
+  TORSO horizontally + seat planted foot on baseline (no side-to-side wobble). KNOWN LIMITATION:
+  the AI side-view frames don't alternate legs (only arms) — looks like sliding; needs the sheets
+  regenerated with a real side step cycle (can't synthesize from images).
+  **NEW 4th CHARACTER** (more ethnicity): woman-4 + man-4 appended to CHAR_PRESETS (idx 6,7) and
+  WALK_SHEETS; added to Customize. Standing front/back sliced from their images/walk sheets.
+  **CUSTOMIZE REORDER** (per user): Female & Male rows now show Char1=old#2 (default, preset 1),
+  Char2=#4, Char3=#3, Char4=#1 (buttons carry data-preset; files keep original names — never
+  renumber files). Default `character.preset` = 1.
+  **CUSTOMIZE UI:** preview enlarged (.character-stage.big 230x380); `.char-pick` restyled from
+  image-boxes to real pill buttons (👤 + gradient + hover/active).
+  **CHARACTER ART UPDATES:** user replaced woman-1/2/3 + man-1/2/3 fronts (normalized/trimmed;
+  backs rebuilt from walk sheets — user said backs don't matter, use the sheets). woman-3 front
+  came out GREEN-skinned → rebuilt from her (correct) walk sheet, then user re-supplied a proper
+  hi-res one. man-4/woman-4 replaced with newer standing art (trimmed). NOTE: man-4/woman-4 WALK
+  sheets weren't re-supplied — if their maze walk looks like a different character than the new
+  standing, the walk sheets need replacing too.
+  **STILL OPEN:** side-walk leg alternation (regenerate sheets); star pickup icon is the blue orb;
+  QR/live link; optional Memory card-back.

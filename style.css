@@ -257,9 +257,10 @@ body {
   filter: drop-shadow(0 10px 8px rgba(15, 76, 129, 0.25));
 }
 .character-stage.big {
-  width: 120px;
-  height: 200px;
-  transform: scale(1.1);
+  width: 230px;
+  height: 380px;
+  margin: 4px auto 12px;
+  transform: none;
 }
 
 /* =========================================================
@@ -851,7 +852,7 @@ body {
   }
 }
 #maze-world.zooming {
-  animation: zoomOut 1.2s ease-out;
+  animation: zoomOut 0.5s ease-out; /* short so you can move freely right away */
 }
 
 .wall {
@@ -1067,7 +1068,7 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 20;
+  z-index: 100; /* above the Sprint runner (90) so the HUD/title stays visible */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1094,6 +1095,7 @@ body {
   bottom: 6px;
   left: 0;
   right: 0;
+  z-index: 100; /* keep the control hint above the Sprint runner */
   text-align: center;
   font-size: 12px;
   color: var(--shn-blue);
@@ -1533,7 +1535,7 @@ body {
   font-size: 14px;
   text-align: center;
   max-width: 90%;
-  z-index: 60;
+  z-index: 200;
   opacity: 0;
   pointer-events: none;
   transition:
@@ -1551,7 +1553,7 @@ body {
 .big-msg {
   position: absolute;
   inset: 0;
-  z-index: 65;
+  z-index: 210; /* above the Sprint runner (90) so fact text is always readable */
   display: none;
   align-items: center;
   justify-content: center;
@@ -1687,7 +1689,7 @@ body {
 .popup-overlay {
   position: absolute;
   inset: 0;
-  z-index: 70;
+  z-index: 220; /* above the Sprint runner (90) so titles/instructions are readable */
   background: rgba(15, 76, 129, 0.35);
   display: none;
   align-items: center;
@@ -4098,6 +4100,60 @@ img {
   display: block;
 }
 
+/* ===== Animated walk sprite (4x4 sheet: rows down/right/left/up, 4 frames) ===== */
+.walk-sprite {
+  position: absolute;
+  left: 50%;
+  bottom: -4px; /* nudge so the drawn feet sit on the collision line */
+  width: 72px;
+  height: 72px;
+  transform: translateX(-50%);
+  background-repeat: no-repeat;
+  background-size: 400% 400%; /* one of 4x4 frames */
+  background-position-x: 0%;
+  background-position-y: 0%;
+  pointer-events: none;
+}
+/* Direction = which row (facing set by the game on the parent). */
+[data-facing="front"] .walk-sprite {
+  background-position-y: 0%;
+}
+[data-facing="right"] .walk-sprite {
+  background-position-y: 33.333%;
+}
+[data-facing="left"] .walk-sprite {
+  background-position-y: 66.667%;
+}
+[data-facing="back"] .walk-sprite {
+  background-position-y: 100%;
+}
+/* Step through the 4 walk frames only while actually moving. */
+@keyframes charWalk {
+  0%,
+  24.99% {
+    background-position-x: 0%;
+  }
+  25%,
+  49.99% {
+    background-position-x: 33.333%;
+  }
+  50%,
+  74.99% {
+    background-position-x: 66.667%;
+  }
+  75%,
+  99.99% {
+    background-position-x: 100%;
+  }
+}
+.walking .walk-sprite {
+  animation: charWalk 0.55s infinite;
+}
+/* The sheet already has real left/right rows, so DON'T mirror the left facing. */
+.img-mode .maze-player.has-walk[data-facing="left"] {
+  transform: scale(2.3) !important;
+}
+
 /* Customize: gallery of finished characters to pick from */
 .char-gallery {
   display: grid;
@@ -4105,30 +4161,52 @@ img {
   gap: 10px;
   margin-top: 8px;
 }
+/* Character-pick buttons — proper pill buttons, not image boxes. */
 .char-pick {
-  background: linear-gradient(180deg, #eef5fc, #d6e6f5);
-  border: 2px solid transparent;
+  aspect-ratio: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 84px;
+  padding: 11px 18px;
+  border: 2px solid #cfe0f2;
   border-radius: 14px;
-  padding: 6px;
+  background: linear-gradient(180deg, #ffffff 0%, #e9f2fc 100%);
+  color: var(--shn-blue, #1f6feb);
+  font-weight: 700;
+  font-size: 15px;
   cursor: pointer;
-  aspect-ratio: 3 / 4;
-  display: grid;
-  place-items: end center;
-  overflow: hidden;
+  box-shadow: 0 3px 6px rgba(15, 76, 129, 0.14);
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
-.char-pick img {
-  height: 94%;
-  width: auto;
-  max-width: none;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 4px rgba(15, 76, 129, 0.25));
+.char-pick::before {
+  content: "👤";
+  font-size: 15px;
+  opacity: 0.85;
 }
 .char-pick:hover {
-  border-color: rgba(31, 111, 235, 0.5);
+  background: linear-gradient(180deg, #ffffff 0%, #dcebfb 100%);
+  border-color: rgba(31, 111, 235, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(15, 76, 129, 0.22);
+}
+.char-pick:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(15, 76, 129, 0.2);
 }
 .char-pick.active {
-  border-color: var(--shn-blue, #1f6feb);
-  box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.28);
+  background: linear-gradient(180deg, #3f8cf0 0%, #1f6feb 100%);
+  color: #fff;
+  border-color: #1f6feb;
+  box-shadow: 0 5px 12px rgba(31, 111, 235, 0.4);
+}
+.char-pick.active::before {
+  opacity: 1;
 }
 
 /* =========================================================================
