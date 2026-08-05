@@ -1799,32 +1799,56 @@ function checkZones() {
   }
 }
 
-// Pop-up for a walk-in website link (VaxFacts+): opens the site in a new tab.
+// Walk-in VaxFacts+ clinic: a celebratory "you made it!" overlay (confetti) that
+// then links out to the real SHN VaxFacts page.
 function openLinkZonePopup(z) {
   zoneCooldown = true;
   stopMazeLoop();
-  showPopup(
-    z.label,
-    "Have questions about the flu vaccine? VaxFacts+ offers free, judgement-free answers and clinic info.",
-    [
-      {
-        text: "Visit VaxFacts+",
-        primary: true,
-        action: () => {
-          window.open(z.url, "_blank", "noopener");
-          hidePopup();
-          resumeMazeAfterZone();
-        },
-      },
-      {
-        text: "Back to maze",
-        action: () => {
-          hidePopup();
-          resumeMazeAfterZone();
-        },
-      },
-    ],
-  );
+  let ov = document.getElementById("vax-congrats");
+  if (!ov) {
+    ov = document.createElement("div");
+    ov.id = "vax-congrats";
+    document.getElementById("game").appendChild(ov);
+  }
+  // Confetti pieces (colourful, random fall).
+  const colors = ["#ff5e7e", "#ffd34d", "#4fd1c5", "#5b8cff", "#a06bff", "#57d38c", "#ff9e6d"];
+  let confetti = "";
+  for (let i = 0; i < 70; i++) {
+    const c = colors[i % colors.length];
+    confetti +=
+      `<span class="vc-piece" style="left:${(Math.random() * 100).toFixed(1)}%;` +
+      `background:${c};animation-delay:${(Math.random() * 2.5).toFixed(2)}s;` +
+      `animation-duration:${(2.6 + Math.random() * 2.4).toFixed(2)}s;` +
+      `width:${6 + Math.floor(Math.random() * 6)}px"></span>`;
+  }
+  ov.innerHTML =
+    `<div class="vc-confetti">${confetti}</div>` +
+    '<div class="vc-card">' +
+    '<div class="vc-emoji">🎉</div>' +
+    '<h2 class="vc-title">Congratulations!</h2>' +
+    '<p class="vc-sub">You made it to the VaxFacts Clinic!</p>' +
+    "<p class=\"vc-text\">You've completed the maze and learned how vaccines help protect you and your community. Now you're ready to take the next step: <b>consider getting your flu shot!</b></p>" +
+    '<p class="vc-text">Have questions or want to learn more? Visit <b>SHN VaxFacts</b>. You can also contact them or book an appointment, and the team will help you get started.</p>' +
+    '<div class="vc-btns">' +
+    '<button class="btn btn-primary vc-visit" type="button">Visit SHN VaxFacts</button>' +
+    '<button class="btn vc-back" type="button">Back to maze</button>' +
+    "</div>" +
+    "</div>";
+  ov.classList.add("show");
+  playSound("success");
+  const r = ov.getBoundingClientRect();
+  burst(r.left + r.width * 0.3, r.top + r.height * 0.32, "#ffd34d", 16);
+  burst(r.left + r.width * 0.7, r.top + r.height * 0.32, "#ff5e7e", 16);
+  const close = () => {
+    ov.classList.remove("show");
+    ov.innerHTML = "";
+    resumeMazeAfterZone();
+  };
+  ov.querySelector(".vc-visit").onclick = () => {
+    window.open(z.url, "_blank", "noopener");
+    close();
+  };
+  ov.querySelector(".vc-back").onclick = close;
 }
 
 // Pop-up asking the player to start a mini-game.

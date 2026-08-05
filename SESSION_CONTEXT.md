@@ -644,3 +644,10 @@
   left/right — fixed by swapping her two middle rows back. All 10 characters (5F+5M) now select,
   preview, and walk-animate with correct facing. Same known limitation: AI side-view legs don't
   fully alternate. Reprocess helpers were one-off scripts (removed). Backups in /tmp/walk-backup.
+- 2026-08-05 (session 34 — VaxFacts "you made it!" congrats overlay): Replaced the plain VaxFacts+
+  walk-in popup (`openLinkZonePopup`) with a celebratory overlay: falling confetti (70 coloured
+  `.vc-piece`s), a bright card with a bouncing 🎉, rainbow gradient "Congratulations!" title,
+  "You made it to the VaxFacts Clinic!", the message (You've completed the maze… consider your
+  flu shot… visit/contact/book SHN VaxFacts), success sound + particle bursts. Buttons: "Visit
+  SHN VaxFacts" (opens https://www.shn.ca/vaxfacts/ new tab) + "Back to maze". Built dynamically
+  as `#vax-congrats` (z-index 260); CSS added (vcPop/vcBounce/vcFall, reduced-motion aware).
