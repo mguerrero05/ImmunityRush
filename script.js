@@ -453,6 +453,8 @@ const CHAR_PRESETS = [
   "man-3",
   "woman-4",
   "man-4",
+  "woman-5",
+  "man-5",
 ];
 let character = {
   preset: 1, // default = "Character 1" (woman-2) after the Customize reorder
@@ -676,6 +678,8 @@ const WALK_SHEETS = new Set([
   "man-3",
   "woman-4",
   "man-4",
+  "woman-5",
+  "man-5",
 ]);
 
 function buildCharacter(el) {

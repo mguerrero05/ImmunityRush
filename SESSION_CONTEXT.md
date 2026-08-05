@@ -634,3 +634,13 @@
   standing, the walk sheets need replacing too.
   **STILL OPEN:** side-walk leg alternation (regenerate sheets); star pickup icon is the blue orb;
   QR/live link; optional Memory card-back.
+- 2026-08-05 (session 33 — 5th character added (woman-5 + man-5)): User added a 5th woman and man.
+  Trimmed their front standing images (woman-5.png/man-5.png) to consistent crops; reprocessed
+  their walk sheets with the same pipeline (clean bleed, normalize rows to front/right/left/back,
+  torso-stabilize) and derived matching backs from the sheets. Appended "woman-5","man-5" to
+  CHAR_PRESETS (idx 8,9) and WALK_SHEETS; added "Character 5" buttons to both Customize rows
+  (Female data-preset 8, Male data-preset 9). NOTE: woman-5's source rows were the OPPOSITE order
+  from the majority (already front/right/left/back), so the blanket middle-row swap flipped her
+  left/right — fixed by swapping her two middle rows back. All 10 characters (5F+5M) now select,
+  preview, and walk-animate with correct facing. Same known limitation: AI side-view legs don't
+  fully alternate. Reprocess helpers were one-off scripts (removed). Backups in /tmp/walk-backup.
