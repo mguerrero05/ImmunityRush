@@ -691,8 +691,8 @@ const WALK_SHEETS = new Set([
 // Some walk sheets were drawn with the two SIDE rows swapped: their row order is
 // front/LEFT/RIGHT/back instead of the canonical front/RIGHT/LEFT/back. For these
 // the player gets a `rev-walk` class so the CSS reads the correct side row per
-// facing (verified by eye from each sheet). The other sheets are canonical.
-const REVERSED_WALK = new Set(["woman-2", "woman-3", "woman-4", "woman-5", "man-3"]);
+// facing. This list is confirmed by on-device testing (not eyeballing the sheets).
+const REVERSED_WALK = new Set(["woman-2", "woman-5", "man-3"]);
 
 function buildCharacter(el) {
   if (!el) return;
