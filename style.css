@@ -122,12 +122,30 @@ body {
   overflow: hidden;
 }
 
-/* Phone-like frame, centered. On small screens it fills the viewport. */
+/* Letterbox stage: pinned to the REAL (dynamic) viewport so the mobile URL bar
+   can't push content off-screen, and centers the phone frame. The gradient
+   shows as the letterbox border around the scaled frame. */
+body {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Phone-like frame. Authored at a FIXED reference size (430x860) and uniformly
+   scaled to fit the device via --fit (set by fitGame() in script.js). This keeps
+   the whole layout + every mini-game's pixel math identical to the design — we
+   just shrink/grow the finished frame. On desktop widescreen (media query below)
+   --fit stays 1 and the frame switches to its own fluid sizing instead. */
 #game {
+  --fit: 1;
   position: relative;
-  width: min(430px, 100vw);
-  height: min(860px, 100vh);
-  margin: 0 auto;
+  width: 430px;
+  height: 860px;
+  flex: none;
+  transform: scale(var(--fit));
+  transform-origin: center center;
   background: var(--grey);
   overflow: hidden;
   box-shadow: var(--shadow);
@@ -1977,22 +1995,25 @@ body {
 .shaking {
   animation: frameShake 0.4s ease;
 }
+/* Keep the current fit-scale during the shake (scale THEN translate), otherwise
+   the frame would briefly jump to full size mid-shake. At --fit:1 (desktop) this
+   is identical to the original translateX-only shake. */
 @keyframes frameShake {
   0%,
   100% {
-    transform: translateX(0);
+    transform: scale(var(--fit, 1)) translateX(0);
   }
   20% {
-    transform: translateX(-6px);
+    transform: scale(var(--fit, 1)) translateX(-6px);
   }
   40% {
-    transform: translateX(6px);
+    transform: scale(var(--fit, 1)) translateX(6px);
   }
   60% {
-    transform: translateX(-4px);
+    transform: scale(var(--fit, 1)) translateX(-4px);
   }
   80% {
-    transform: translateX(4px);
+    transform: scale(var(--fit, 1)) translateX(4px);
   }
 }
 
@@ -3483,19 +3504,17 @@ body {
 #memory-stage::before {
   content: "";
   position: absolute;
-  inset: -14px;
+  inset: 0;
   z-index: 0;
   background: url("assets/minigames/memory-bg.png?v=3") center / cover no-repeat;
-  filter: blur(8px);
-  transform: scale(1.06);
 }
-/* Scrim over the blurred backdrop so the cards stay readable. */
+/* Light scrim so the cards stay readable while the backdrop shows clearly. */
 #memory-stage::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(180deg, rgba(9, 32, 56, 0.3), rgba(9, 32, 56, 0.45));
+  background: linear-gradient(180deg, rgba(9, 32, 56, 0.16), rgba(9, 32, 56, 0.28));
 }
 
 /* ---- Card back: SHN-blue medallion, not a bare "+" ---- */
@@ -3813,6 +3832,8 @@ img {
   #game {
     width: min(1280px, 98vw);
     height: min(800px, 96vh);
+    /* Desktop uses its own fluid sizing — never the phone scale-to-fit. */
+    transform: none;
   }
   /* Whole maze visible + centred (no camera follow); disable the zoom-in anim. */
   #maze-world,

@@ -651,3 +651,29 @@
   flu shot… visit/contact/book SHN VaxFacts), success sound + particle bursts. Buttons: "Visit
   SHN VaxFacts" (opens https://www.shn.ca/vaxfacts/ new tab) + "Back to maze". Built dynamically
   as `#vax-congrats` (z-index 260); CSS added (vcPop/vcBounce/vcFall, reduced-motion aware).
+- 2026-08-06 (session 35 — mobile responsiveness (scale-to-fit) + fullscreen on Start;
+  text-inventory & game-reference docs): The game was effectively desktop-only — it's authored in
+  a FIXED 430x860 phone frame, so real phones (different dimensions) plus the mobile URL-bar
+  `100vh` bug pushed the D-pad/HUD off-screen. **FIX — uniform scale-to-fit:** `body` is now a
+  fixed, dynamic-viewport letterbox (`position:fixed; inset:0; flex-center`); `#game` stays the
+  fixed 430x860 reference frame and is scaled by a CSS var `--fit` so the whole layout AND every
+  mini-game's pixel math stay identical — only the finished frame resizes (gradient shows as the
+  letterbox). `fitGame()` (bottom of script.js) sets `--fit = min(vw/430, vh/860)` from
+  `visualViewport` and re-runs on resize/orientationchange/fullscreenchange. **Desktop widescreen
+  is provably untouched:** the existing `@media (min-aspect-ratio:1/1) and (min-width:760px)` still
+  drives the 1280x800 fluid layout — there `#game{transform:none}` and JS `FIT=1`. Global `let FIT`
+  mirrors the scale; the 3 mini-game effect bursts that mix a stage rect with LOGICAL px (sprint
+  ~2196, freeze ~2419, darts ~2666) now multiply the logical offset by `FIT` (a no-op at FIT=1 →
+  desktop identical). `frameShake` keyframes fold in `scale(var(--fit,1))` so a shake keeps the
+  scale. Aiming was already scale-safe (mini-games resolve taps by clicking the actual card/bubble
+  element, not coordinate math). **FULLSCREEN ON START:** the Start Game button now calls
+  `goFullscreen()` (requests fullscreen on `document.documentElement`) before How-to-Play — works
+  on desktop + Android; iPhone Safari has no Fullscreen API so it fails silently (scale-to-fit
+  still fills the screen). User confirmed both work. **DOCS (not game code):** added
+  `GAME_REFERENCE.md` (factual reference for building slides) and
+  `Immunity-Rush-Complete-Text-Inventory.md` (every player-facing string verbatim + file/line refs
+  + flags for duplicate/inconsistent wording, dynamic-assembly, and image-baked text). PDF copies
+  of both live on the Desktop (large binaries, kept out of git). **OPEN:** if the portrait maze
+  feels cramped on a real phone, loosen the maze camera zoom rather than force landscape
+  (force-landscape was discussed and declined — web can't truly force rotation; it would gate play
+  behind a rotate prompt and route phones into the less-tested widescreen layout).

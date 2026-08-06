@@ -431,6 +431,13 @@ const MEMORY_WRONG = [
    2. GAME STATE
    ========================================================= */
 
+// Uniform scale applied to the whole phone frame to fit the device screen (see
+// fitGame() at the bottom of this file). 1 on desktop widescreen and whenever the
+// frame is shown at its authored size. Effects that mix a stage's on-screen rect
+// with logical pixel offsets multiply those offsets by FIT so they land correctly
+// under scaling. On desktop FIT === 1, so this changes nothing there.
+let FIT = 1;
+
 let state = {
   initials: "---",
   score: 0,
@@ -2193,8 +2200,8 @@ function sprintHit(o, stage) {
   stage = stage || document.getElementById("sprint-stage");
   const r = stage.getBoundingClientRect();
   const p = sprProject(stage, SPR3.lanes[o.lane], Math.max(0, o.z));
-  const cx = r.left + p.x,
-    cy = r.top + p.y - 24;
+  const cx = r.left + p.x * FIT,
+    cy = r.top + (p.y - 24) * FIT;
   if (o.kind === "collect") {
     sprint.score += o.data.score;
     addScore(o.data.score);
@@ -2416,8 +2423,8 @@ function zapFreezeBubble(b) {
     b.el.remove();
     b.removed = true;
   }, 520); // let the freeze-over + shatter finish
-  const cx = r.left + bx,
-    cy = r.top + by;
+  const cx = r.left + bx * FIT,
+    cy = r.top + by * FIT;
   if (b.positive) {
     freeze.combo++;
     freeze.score += b.data.score;
@@ -2663,8 +2670,8 @@ function resolveDartCard(card) {
   card.busy = false;
   const stage = document.getElementById("darts-stage");
   const r = stage.getBoundingClientRect();
-  const cx = r.left + parseFloat(card.el.style.left);
-  const cy = r.top + parseFloat(card.el.style.top);
+  const cx = r.left + parseFloat(card.el.style.left) * FIT;
+  const cy = r.top + parseFloat(card.el.style.top) * FIT;
   if (!card.isMyth) {
     // A true statement → LOCK it into this colour section.
     card.locked = true;
@@ -3093,6 +3100,65 @@ function setupControls() {
 }
 
 /* =========================================================
+   RESPONSIVE FIT — scale the fixed 430x860 phone frame to the device
+   ---------------------------------------------------------
+   The whole game is authored at a fixed reference size and scaled uniformly to
+   fit the screen, so the layout and every mini-game's pixel math stay identical
+   to the design on any device — we only resize the finished frame (letterboxed
+   by the body's background). Reads the DYNAMIC viewport (visualViewport) so the
+   mobile address bar collapsing/expanding never pushes the D-pad or HUD
+   off-screen. On desktop widescreen the CSS media query drives the layout, so we
+   leave FIT at 1 and clear the inline scale.
+   ========================================================= */
+const REF_W = 430,
+  REF_H = 860;
+const isDesktopWide = () =>
+  window.matchMedia("(min-aspect-ratio: 1/1) and (min-width: 760px)").matches;
+
+function fitGame() {
+  const g = document.getElementById("game");
+  if (!g) return;
+  if (isDesktopWide()) {
+    // Desktop: the media query sets #game's fluid size + transform:none. Keep the
+    // scale factor at 1 so effect positions and shake are exactly as before.
+    FIT = 1;
+    g.style.removeProperty("--fit");
+    return;
+  }
+  const vv = window.visualViewport;
+  const vw = vv ? vv.width : window.innerWidth;
+  const vh = vv ? vv.height : window.innerHeight;
+  FIT = Math.min(vw / REF_W, vh / REF_H);
+  g.style.setProperty("--fit", FIT);
+}
+
+window.addEventListener("resize", fitGame);
+window.addEventListener("orientationchange", fitGame);
+window.addEventListener("fullscreenchange", fitGame);
+if (window.visualViewport) window.visualViewport.addEventListener("resize", fitGame);
+
+// Go fullscreen when the player starts (must be called from a user gesture — the
+// Start button's click). Fills the screen and hides the browser chrome so the
+// scale-to-fit frame gets the whole display. Fails silently where it isn't
+// allowed (e.g. iPhone Safari, which has no Fullscreen API) — the game still fits
+// fine via scale-to-fit, so this is a pure enhancement.
+function goFullscreen() {
+  if (document.fullscreenElement) return;
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  if (!req) return;
+  try {
+    const p = req.call(el);
+    if (p && p.catch) p.catch(() => {});
+  } catch (e) {
+    /* fullscreen blocked — scale-to-fit still handles sizing */
+  }
+}
+
+/* =========================================================
    BOOT
    ========================================================= */
-window.addEventListener("load", init);
+window.addEventListener("load", () => {
+  init();
+  fitGame();
+});
