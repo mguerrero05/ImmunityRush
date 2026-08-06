@@ -2706,9 +2706,9 @@ body {
 /* ---- FIX (from Stage 2): keep the maze player's billboard + scale when it
    faces left/right. The generic .character-stage[data-facing] rules must not
    wipe out the player's rotateX()/scale(). These win by coming later. ---- */
-.maze-player[data-facing="left"] {
-  transform: rotateX(calc(-1 * var(--tilt))) scale(0.5) scaleX(-1);
-}
+/* No horizontal mirror — the walk sheets carry real left AND right rows (reversed
+   sheets are handled by .rev-walk), so all facings share the same transform. */
+.maze-player[data-facing="left"],
 .maze-player[data-facing="right"],
 .maze-player[data-facing="front"],
 .maze-player[data-facing="back"] {
@@ -4077,12 +4077,11 @@ img {
 .img-mode .maze-player,
 .img-mode .maze-player[data-facing="right"],
 .img-mode .maze-player[data-facing="front"],
-.img-mode .maze-player[data-facing="back"] {
-  /* Character size (bottom-centre origin keeps the feet planted). */
-  transform: scale(2.3) !important;
-}
+.img-mode .maze-player[data-facing="back"],
 .img-mode .maze-player[data-facing="left"] {
-  transform: scale(2.3) scaleX(-1) !important;
+  /* Character size (bottom-centre origin keeps the feet planted). No scaleX(-1):
+     left/right come from the sheet's real rows, not mirroring. */
+  transform: scale(2.3) !important;
 }
 /* Bigger pickups/germs so they read on the large artwork. */
 .img-mode .collectible {
@@ -4261,6 +4260,14 @@ img {
 }
 [data-facing="back"] .walk-sprite {
   background-position-y: 100%;
+}
+/* Reversed sheets (front/LEFT/RIGHT/back): swap which side row each facing uses
+   so the drawn direction matches the movement direction. */
+.rev-walk[data-facing="right"] .walk-sprite {
+  background-position-y: 66.667%;
+}
+.rev-walk[data-facing="left"] .walk-sprite {
+  background-position-y: 33.333%;
 }
 /* Step through the 4 walk frames only while actually moving. */
 @keyframes charWalk {
