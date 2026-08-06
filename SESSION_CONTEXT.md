@@ -677,3 +677,28 @@
   feels cramped on a real phone, loosen the maze camera zoom rather than force landscape
   (force-landscape was discussed and declined — web can't truly force rotation; it would gate play
   behind a rotate prompt and route phones into the less-tested widescreen layout).
+- 2026-08-06 (session 36 — fixed maze player left/right walk facing): The character faced the
+  WRONG way when walking sideways (e.g. walk right → drawn facing left). TWO stacked causes:
+  (1) a vestigial `scaleX(-1)` mirror on the left-facing maze player (leftover from the old
+  CSS-drawn character, which had ONE side view mirrored for both directions). The characters now
+  use 4x4 walk sprite sheets that carry REAL left AND right rows, so that mirror double-flipped
+  them. Removed it from both facing rules — `.maze-player[data-facing="left"]` (non-img) and
+  `.img-mode .maze-player[data-facing="left"]` (the one that actually applies; maze is always
+  img-mode) — so all four facings share one transform, no mirror. (2) Some walk sheets are DRAWN
+  with the two side rows swapped: row order `front/LEFT/RIGHT/back` instead of the canonical
+  `front/RIGHT/LEFT/back` the CSS assumes (right→33.333%, left→66.667%). For those, `buildCharacter`
+  adds a `rev-walk` class to `#player` and CSS `.rev-walk[data-facing="right"|"left"] .walk-sprite`
+  swaps which side row each facing reads. The reversed list `REVERSED_WALK` (script.js) = **woman-2,
+  woman-5, man-3** — CONFIRMED BY ON-DEVICE TESTING, not by eyeballing the sheets (my initial
+  eyeball read wrongly included woman-3 + woman-4; user tested all 10 live and only Female Char 2 +
+  Char 3 were wrong, so those two came back off the list). Anchor that proves the reversed sheets
+  are real: the original woman-2 "walk right → faces left" bug is only possible if that sheet's
+  row-2 is drawn left-facing. Customize preset map (buttons carry data-preset; files never
+  renumbered): Female Char1=woman-2(preset1), Char2=woman-4(6), Char3=woman-3(2), Char4=woman-1(0),
+  Char5=woman-5(8); Male Char1=man-2(4), Char2=man-4(7), Char3=man-3(5), Char4=man-1(3),
+  Char5=man-5(9). All 10 now face correctly on desktop + phone (verified). To flip any future
+  character, add/remove its `<name>` in `REVERSED_WALK` — a one-line change. **NEXT (user chose it):
+  rotate-to-play LANDSCAPE for phones** — show a "turn your phone sideways" nudge in portrait, play
+  full landscape (whole-maze widescreen layout) while KEEPING the touch D-pad (the widescreen media
+  query at `@media (min-aspect-ratio:1/1) and (min-width:760px)` currently hides `#dpad`/
+  `#direction-arrows` — must re-enable on touch/coarse-pointer devices or phones have no controls).
