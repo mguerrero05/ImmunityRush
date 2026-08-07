@@ -2117,10 +2117,13 @@ body {
   background-image: url("assets/backgrounds/instructions-bg.png?v=1");
 }
 #screen-leaderboard {
-  background-image: url("assets/backgrounds/leaderboard-bg.png?v=1");
+  background-image: url("assets/backgrounds/leaderboard-bg.png?v=2");
+  /* Trophy-frame art (logos in the corners, clear middle): fill exactly so
+     nothing crops and the center stays open for the score list. */
+  background-size: 100% 100%;
 }
 #screen-customize {
-  background-image: url("assets/backgrounds/customize-bg.png?v=1");
+  background-image: url("assets/backgrounds/customize-bg.png?v=2");
   /* Fill the frame exactly so the corner logo boxes sit right in the corners
      with nothing cut off and no letterbox strips (a slight stretch, barely
      noticeable on a room scene, keeps the true blue colors). */
@@ -2131,6 +2134,29 @@ body {
 #screen-leaderboard .screen-title,
 #screen-customize .screen-title {
   text-shadow: 0 1px 10px rgba(255, 255, 255, 0.9);
+}
+
+/* --- Customize screen: bolder title, pose the character on the floor, and
+   balance the character + options as a centered pair. --- */
+#screen-customize .screen-title {
+  margin-top: 30px;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #0b4a6f;
+}
+#screen-customize .customize-layout {
+  margin-top: 34px; /* push the whole character + options block down */
+  gap: 22px;
+  align-items: flex-start;
+}
+#screen-customize #preview-character {
+  transform: translateY(26px); /* drop the character so it stands on the floor */
+}
+#screen-customize .controls {
+  max-width: 280px;
+  transform: translateX(-14px); /* nudge the options left to center the pair */
 }
 
 .leaderboard {
