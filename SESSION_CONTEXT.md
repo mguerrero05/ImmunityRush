@@ -793,7 +793,8 @@
   (`.end-top-wrap`/`#end-top`) with a `.end-feedback` block: note "still in its feedback stage", a
   "📝 Share your feedback" button → the Google Form
   (`https://docs.google.com/forms/d/e/1FAIpQLSc4v8B97LUiHQFwfUY4NuxP0A0WugGn0MSicrn_ef7JHiLpUw/viewform?pli=1`,
-  new tab), and a `mailto:michelleguemo22@gmail.com` "Email Michelle Guerrero" contact line. Removed
+  new tab), and a contact line "Email me — michelleguemo22@gmail.com" where the email address itself
+  is the tappable `mailto:` link (shown in full so it's readable even if not obviously a link). Removed
   the `showEndTop()` call in endGame (function left as harmless dead code). The full Leaderboard
   screen is unchanged. NOTE for future:
   the How-to-Play Continue/Back reorder (Continue on top) was already correct + deployed — a user
