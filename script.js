@@ -938,7 +938,6 @@ function endGame() {
     "Keep your plans. Not the flu.",
   ]);
   showScreen("screen-end");
-  showEndTop(); // live top-4 preview
 }
 
 /* =========================================================

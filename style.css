@@ -2086,18 +2086,37 @@ body {
   box-shadow: 0 6px 16px rgba(31, 111, 235, 0.34);
 }
 /* Live top-4 preview under the buttons */
-.end-top-wrap {
+/* Feedback block on the Run Complete screen (game is in its feedback stage). */
+.end-feedback {
   width: 100%;
-  max-width: 300px;
+  max-width: 340px;
   margin: 18px auto 4px;
   text-align: center;
 }
-.end-top-title {
+.end-feedback-note {
   font-size: 14px;
+  font-weight: 700;
+  color: #12507e;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.95);
+}
+.end-feedback-btn {
+  display: inline-block;
+  width: auto;
+  padding: 12px 24px;
+  text-decoration: none;
+}
+.end-feedback-contact {
+  font-size: 13px;
+  font-weight: 600;
+  color: #12507e;
+  margin-top: 12px;
+  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.95);
+}
+.end-feedback-contact a {
+  color: var(--shn-blue-2);
   font-weight: 800;
-  letter-spacing: 0.3px;
-  color: var(--shn-blue);
-  margin-bottom: 8px;
 }
 .leaderboard.mini {
   max-width: 300px;
