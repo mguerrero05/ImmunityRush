@@ -2011,7 +2011,11 @@ const SPR3 = {
 function sprProject(stage, laneFrac, z) {
   const W = stage.clientWidth || 800,
     H = stage.clientHeight || 450;
-  const a = 1 / (1 + Math.max(0, z) * SPR3.depth); // apparent scale (1 = at the camera, ~0 = far)
+  // Apparent scale (1 = at the camera, ~0 = far). Do NOT clamp z at 0 — letting z
+  // go slightly negative makes objects keep gliding PAST the camera (a > 1, growing
+  // and sliding off the bottom) instead of freezing next to the runner. The
+  // Math.max on the denominator just guards against a blow-up very close to the eye.
+  const a = 1 / Math.max(0.3, 1 + z * SPR3.depth);
   const vx = SPR3.vpx * W,
     vy = SPR3.vpy * H,
     ny = SPR3.nearY * H;
