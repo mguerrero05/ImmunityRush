@@ -753,3 +753,11 @@
   58px; transform:translateX(-40px)}`; `.controls{align-self:flex-end; transform:translate(-286px,
   0)}` (options far left, on the floor line); option chips relabeled 1–5 and made glassier
   (`background:rgba(255,255,255,0.34)` + `backdrop-filter:blur(4px)`, gold-ring active state).
+- 2026-08-06 (session 39 — final check-in tweaks): Check-in (initials) block nudged lower
+  (`#screen-initials{padding-top:9vh}`) and the message restyled for legibility on the artwork
+  (`#screen-initials .slogan`: Baloo 2, non-italic, bold, `#0b4a6f`, white glow). NOTE for future:
+  the How-to-Play Continue/Back reorder (Continue on top) was already correct + deployed — a user
+  "not switched" report was a STALE CACHED index.html (single-page app: navigating screens doesn't
+  re-fetch the HTML, so a full page reload / incognito is needed to see HTML-only changes). Verified
+  live via curl. Reminder: `showInstructions(preGame)` hides Continue + makes Back primary when the
+  page is opened from the home "Instructions" button (viewing mode) vs the Start-Game flow.
