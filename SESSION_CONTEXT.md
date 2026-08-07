@@ -775,7 +775,15 @@
   for a chrome-free "Add to Home Screen" launch: `manifest.webmanifest` (`display:fullscreen`,
   `orientation:landscape`, theme/bg colors, 192/512 icons) + apple-mobile-web-app meta tags +
   `apple-touch-icon`. App icons `assets/app-icon-{180,192,512}.png` generated from a center-crop of
-  home-bg.png. On Android the tap-fullscreen works in-browser; on iPhone use the home-screen icon. NOTE for future:
+  home-bg.png. On Android the tap-fullscreen works in-browser; on iPhone use the home-screen icon.
+- 2026-08-07 (session 43 — desktop fills the screen): The desktop widescreen layout was capped at a
+  centered 1280x800 box (big letterbox). Now the fixed 1280x800 frame is SCALED UP to fill via the
+  same `--fit` mechanism as the portrait frame: CSS desktop `#game` set to fixed `1280px×800px` (the
+  base `transform:scale(var(--fit))` applies — removed the old `transform:none`); `fitGame` reworked
+  into 3 cases — `isPhoneLandscape` (coarse, #game fills viewport via CSS, FIT=1), `isDesktopWide`
+  (fine+wide → `FIT=min(vw/1280, vh/800)`), else portrait `min(vw/430, vh/860)`. Effect-burst `*FIT`
+  and `frameShake scale(var(--fit))` stay consistent since FIT now = the real desktop scale. Thin
+  side strips can remain on 16:9 (game aspect 1.6); art may soften a bit when enlarged on 4K. NOTE for future:
   the How-to-Play Continue/Back reorder (Continue on top) was already correct + deployed — a user
   "not switched" report was a STALE CACHED index.html (single-page app: navigating screens doesn't
   re-fetch the HTML, so a full page reload / incognito is needed to see HTML-only changes). Verified
