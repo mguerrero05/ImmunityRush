@@ -2286,12 +2286,27 @@ body {
 #screen-instructions .menu {
   margin-top: 18px;
 }
-/* Check-in (initials): dead-center the whole block instead of top-anchored. */
+/* Check-in (initials): center the whole block, nudged a little lower. */
 #screen-initials {
   justify-content: center;
+  padding-top: 9vh;
 }
 #screen-initials .menu {
   margin-top: 16px;
+}
+/* Make the check-in message clearly readable on the artwork. */
+#screen-initials .slogan {
+  font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+  font-style: normal;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0b4a6f;
+  max-width: 320px;
+  margin: 10px auto 0;
+  line-height: 1.35;
+  text-shadow:
+    0 1px 8px rgba(255, 255, 255, 0.98),
+    0 0 2px rgba(255, 255, 255, 0.95);
 }
 
 .leaderboard {
