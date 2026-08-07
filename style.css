@@ -2123,7 +2123,7 @@ body {
   background-size: 100% 100%;
 }
 #screen-customize {
-  background-image: url("assets/backgrounds/customize-bg.png?v=2");
+  background-image: url("assets/backgrounds/customize-bg.png?v=3");
   /* Fill the frame exactly so the corner logo boxes sit right in the corners
      with nothing cut off and no letterbox strips (a slight stretch, barely
      noticeable on a room scene, keeps the true blue colors). */
@@ -2136,27 +2136,118 @@ body {
   text-shadow: 0 1px 10px rgba(255, 255, 255, 0.9);
 }
 
-/* --- Customize screen: bolder title, pose the character on the floor, and
-   balance the character + options as a centered pair. --- */
+/* --- Customize screen: game-style animated title, chunky option buttons, and
+   the character posed lower so it stands on the floor. --- */
 #screen-customize .screen-title {
-  margin-top: 30px;
-  font-size: 30px;
-  font-weight: 900;
+  font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+  margin-top: 46px;
+  font-size: 36px;
+  font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #0b4a6f;
+  text-shadow: none;
+  background: linear-gradient(90deg, #1f6feb, #2bb3b3, #5b8cff, #1f6feb);
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 0 rgba(255, 255, 255, 0.95))
+    drop-shadow(0 4px 8px rgba(11, 74, 111, 0.28));
+  animation:
+    titleShimmer 5s linear infinite,
+    titleBob 2.8s ease-in-out infinite;
+}
+@keyframes titleShimmer {
+  to {
+    background-position: 250% center;
+  }
+}
+@keyframes titleBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 #screen-customize .customize-layout {
-  margin-top: 34px; /* push the whole character + options block down */
-  gap: 22px;
+  margin-top: 28px;
+  gap: 26px;
   align-items: flex-start;
 }
 #screen-customize #preview-character {
-  transform: translateY(26px); /* drop the character so it stands on the floor */
+  margin-top: 104px; /* drop the character lower so it stands on the floor */
 }
 #screen-customize .controls {
-  max-width: 280px;
-  transform: translateX(-14px); /* nudge the options left to center the pair */
+  max-width: 260px;
+  gap: 16px;
+  align-self: center; /* center the options vertically against the tall character */
+}
+/* Section labels (Female / Male) */
+#screen-customize .controls label {
+  font-family: "Baloo 2", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0b4a6f;
+  text-shadow: 0 1px 6px rgba(255, 255, 255, 0.95);
+  align-items: center;
+}
+#screen-customize .pill-group {
+  justify-content: center;
+  gap: 10px;
+}
+/* Chunky, pushable game buttons */
+#screen-customize .char-pick {
+  font-family: "Baloo 2", system-ui, sans-serif;
+  min-width: 76px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0b4a6f;
+  background: linear-gradient(180deg, #ffffff, #e6f0fb);
+  box-shadow:
+    0 4px 0 #b3cae4,
+    0 7px 14px rgba(11, 74, 111, 0.2);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.15s ease;
+}
+#screen-customize .char-pick::before {
+  content: "👤";
+  opacity: 0.9;
+}
+#screen-customize .char-pick:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 0 #b3cae4,
+    0 10px 18px rgba(11, 74, 111, 0.24);
+}
+#screen-customize .char-pick:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #b3cae4,
+    0 2px 6px rgba(11, 74, 111, 0.2);
+}
+#screen-customize .char-pick.active {
+  color: #fff;
+  background: linear-gradient(180deg, #34a0e0, #1f6feb);
+  box-shadow:
+    0 4px 0 #1552b0,
+    0 9px 20px rgba(31, 111, 235, 0.5);
+}
+#screen-customize .char-pick.active::before {
+  content: "⭐";
+  opacity: 1;
+}
+
+/* Instructions: don't pin the buttons to the very bottom (they were covering the
+   "Love, Scarborough" art). Group the card + buttons in the upper area instead. */
+#screen-instructions .menu {
+  margin-top: 22px;
 }
 
 .leaderboard {
