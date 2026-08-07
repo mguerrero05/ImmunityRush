@@ -914,6 +914,7 @@ function endGame() {
   stopMazeLoop();
   clearMiniTimers();
   const rank = saveScore(state.initials, state.score);
+  submitOnlineScore(state.initials, state.score); // add to the shared live board
   document.getElementById("end-score").textContent = state.score;
   document.getElementById("end-rank").textContent =
     rank <= 10
@@ -2989,20 +2990,164 @@ function saveScore(initials, score) {
   return rank;
 }
 
-function renderLeaderboard() {
+// Render a list of {initials, score} rows into the leaderboard. Uses textContent
+// (never innerHTML) so tampered online initials can't inject markup.
+function paintLeaderboard(scores, loading) {
   const list = document.getElementById("leaderboard-list");
-  const scores = getScores();
   list.innerHTML = "";
-  if (scores.length === 0) {
+  if (loading) {
+    list.innerHTML = `<li class="empty">Loading today's board…</li>`;
+    return;
+  }
+  if (!scores.length) {
     list.innerHTML = `<li class="empty">No scores yet — be the first!</li>`;
     return;
   }
   scores.forEach((s) => {
     const li = document.createElement("li");
     if (s.initials === state.initials) li.classList.add("me");
-    li.innerHTML = `<span>${s.initials}</span><span>${s.score}</span>`;
+    const a = document.createElement("span");
+    a.textContent = s.initials;
+    const b = document.createElement("span");
+    b.textContent = s.score;
+    li.append(a, b);
     list.appendChild(li);
   });
+}
+
+function renderLeaderboard() {
+  // Prefer the live shared board; fall back to the on-device one if Firebase
+  // isn't available (SDK blocked / offline).
+  unsubscribeOnlineBoard();
+  if (subscribeOnlineBoard()) {
+    paintLeaderboard([], true); // show "Loading…" until the first snapshot lands
+  } else {
+    paintLeaderboard(getScores(), false);
+  }
+  maybeShowAdminReset();
+}
+
+/* =========================================================
+   7b. ONLINE SHARED LEADERBOARD (Firebase Realtime Database)
+   One live board shared by every device on the same link. Scores are scoped to
+   today's date so the board is fresh each day. Everything here is best-effort:
+   if the SDK didn't load or the network is down, the game silently uses the
+   on-device board instead.
+   ========================================================= */
+/* global firebase */ // provided by the Firebase compat scripts in index.html
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBEtitR3Pp1655ecnBS8T7_UYYA0G_BNgo",
+  authDomain: "immunity-rush.firebaseapp.com",
+  databaseURL: "https://immunity-rush-default-rtdb.firebaseio.com",
+  projectId: "immunity-rush",
+  storageBucket: "immunity-rush.firebasestorage.app",
+  messagingSenderId: "825318083098",
+  appId: "1:825318083098:web:324e935fcb969959eedfa3",
+};
+let fbDB = null;
+let boardRef = null;
+
+function initFirebase() {
+  try {
+    if (typeof firebase === "undefined" || !firebase.initializeApp) return;
+    firebase.initializeApp(FIREBASE_CONFIG);
+    fbDB = firebase.database();
+  } catch (e) {
+    fbDB = null; // stay on the local board
+  }
+}
+
+// Today's board path, e.g. "scores/2026-08-06" (local date).
+function boardPath() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `scores/${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+// Push this run's score to the shared board (best-effort).
+function submitOnlineScore(initials, score) {
+  if (!fbDB) return;
+  try {
+    fbDB.ref(boardPath()).push({
+      initials: String(initials).slice(0, 3),
+      score: Number(score) || 0,
+      ts: firebase.database.ServerValue.TIMESTAMP,
+    });
+  } catch (e) {
+    /* offline — the on-device board still recorded it */
+  }
+}
+
+// Live-subscribe the Leaderboard screen. Returns true if online is available.
+function subscribeOnlineBoard() {
+  if (!fbDB) return false;
+  boardRef = fbDB.ref(boardPath());
+  boardRef.on(
+    "value",
+    (snap) => {
+      const rows = [];
+      snap.forEach((c) => {
+        const v = c.val() || {};
+        if (v.initials != null)
+          rows.push({ initials: String(v.initials).slice(0, 3), score: Number(v.score) || 0 });
+      });
+      rows.sort((a, b) => b.score - a.score);
+      paintLeaderboard(rows.slice(0, 20), false);
+    },
+    () => paintLeaderboard(getScores(), false), // error -> fall back to local
+  );
+  return true;
+}
+function unsubscribeOnlineBoard() {
+  if (boardRef) {
+    boardRef.off();
+    boardRef = null;
+  }
+}
+
+// Admin-only reset: add ?admin=1 to the URL to reveal a "Clear board" button on
+// the Leaderboard screen (so you can wipe today's board before the competition).
+function isAdmin() {
+  try {
+    return new URLSearchParams(location.search).get("admin") === "1";
+  } catch (e) {
+    return false;
+  }
+}
+function maybeShowAdminReset() {
+  if (!isAdmin() || document.getElementById("lb-clear")) return;
+  const menu = document.querySelector("#screen-leaderboard .menu");
+  if (!menu) return;
+  const btn = document.createElement("button");
+  btn.id = "lb-clear";
+  btn.className = "btn";
+  btn.textContent = "Clear board (today)";
+  btn.onclick = () => {
+    if (!fbDB) {
+      toast("Online board not connected.");
+      return;
+    }
+    showPopup(
+      "Clear today's shared board?",
+      "This removes every score for today. This cannot be undone.",
+      [
+        {
+          text: "Clear it",
+          primary: true,
+          action: () => {
+            fbDB
+              .ref(boardPath())
+              .remove()
+              .then(() => toast("Shared board cleared."))
+              .catch(() => toast("Couldn't clear the board."));
+            hidePopup();
+          },
+        },
+        { text: "Cancel", action: hidePopup },
+      ],
+    );
+  };
+  menu.appendChild(btn);
 }
 
 /* =========================================================
@@ -3167,6 +3312,7 @@ function goFullscreen() {
    BOOT
    ========================================================= */
 window.addEventListener("load", () => {
+  initFirebase();
   init();
   fitGame();
 });

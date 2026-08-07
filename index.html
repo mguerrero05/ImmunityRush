@@ -338,6 +338,12 @@
       </div>
     </div>
 
+    <!-- Firebase (shared live leaderboard). Compat build so it works with the
+         plain classic script below. If these fail to load, the game falls back
+         to the on-device leaderboard automatically. -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
     <!-- Collision map auto-generated from the maze artwork (see assets/maze/). -->
     <script src="assets/maze/wallmask.js"></script>
     <script src="script.js"></script>
