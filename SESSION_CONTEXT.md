@@ -766,7 +766,16 @@
 - 2026-08-06 (session 41 — end-screen backdrop): Added `assets/backgrounds/end-bg.png` wired to
   `#screen-end` (`background-size:100% 100%` corner-to-corner, replacing the old radial gradient);
   added a white text-shadow to `#screen-end .rank`/`.slogan` for legibility. All backdrops now:
-  instructions (cover), leaderboard/customize/initials/end (100% 100% fill). NOTE for future:
+  instructions (cover), leaderboard/customize/initials/end (100% 100% fill).
+- 2026-08-06 (session 42 — fullscreen everywhere it's allowed + PWA install): Fullscreen now fires on
+  the FIRST tap/click/keypress anywhere (`firstGestureFullscreen`, one-shot window listener) — as
+  close to instant as browsers permit (a gesture is REQUIRED; can't fire on load or on rotate). The
+  rotate nudge copy now says "Tap, then turn sideways / Tap the screen for fullscreen, then rotate".
+  Still `goFullscreen()` on Start too. **iPhone Safari has NO Fullscreen API** — so added a PWA setup
+  for a chrome-free "Add to Home Screen" launch: `manifest.webmanifest` (`display:fullscreen`,
+  `orientation:landscape`, theme/bg colors, 192/512 icons) + apple-mobile-web-app meta tags +
+  `apple-touch-icon`. App icons `assets/app-icon-{180,192,512}.png` generated from a center-crop of
+  home-bg.png. On Android the tap-fullscreen works in-browser; on iPhone use the home-screen icon. NOTE for future:
   the How-to-Play Continue/Back reorder (Continue on top) was already correct + deployed — a user
   "not switched" report was a STALE CACHED index.html (single-page app: navigating screens doesn't
   re-fetch the HTML, so a full page reload / incognito is needed to see HTML-only changes). Verified
