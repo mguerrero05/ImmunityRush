@@ -3391,6 +3391,21 @@ function goFullscreen() {
   }
 }
 
+// Enter fullscreen on the FIRST tap/click/keypress anywhere — as close to
+// "instant" as browsers allow (a real gesture is required; it can't fire on page
+// load or on rotate alone). Runs once. Silently no-ops on iPhone Safari, which
+// has no Fullscreen API — use "Add to Home Screen" there for a chrome-free launch.
+let _fsArmed = true;
+function firstGestureFullscreen() {
+  if (!_fsArmed) return;
+  _fsArmed = false;
+  window.removeEventListener("pointerdown", firstGestureFullscreen);
+  window.removeEventListener("keydown", firstGestureFullscreen);
+  goFullscreen();
+}
+window.addEventListener("pointerdown", firstGestureFullscreen);
+window.addEventListener("keydown", firstGestureFullscreen);
+
 /* =========================================================
    BOOT
    ========================================================= */

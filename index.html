@@ -6,6 +6,16 @@
          touch-action:none, so zoom won't interfere with in-game swipes/drags. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Immunity Rush</title>
+    <!-- Install / fullscreen support. Launched from the home screen it opens with
+         NO browser chrome (fullscreen on Android, standalone on iPhone) — the only
+         way to get true fullscreen on iPhone Safari. -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="theme-color" content="#0f4c81" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Immunity Rush" />
+    <link rel="apple-touch-icon" href="assets/app-icon-180.png" />
     <!-- Playful display font for game-like headings/buttons (falls back to the
          system font if offline). -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
