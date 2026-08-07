@@ -2213,7 +2213,7 @@ body {
   max-width: 320px;
   gap: 14px;
   align-self: flex-end; /* drop the options down to the floor level */
-  transform: translate(-184px, 16px); /* far left + onto the floor */
+  transform: translate(-224px, 16px); /* far left + onto the floor */
 }
 /* Numbered chips fit in a single row per gender (no wrap → nothing cut off). */
 #screen-customize .pill-group {
