@@ -2206,14 +2206,14 @@ body {
   align-items: flex-start;
 }
 #screen-customize #preview-character {
-  margin-top: 78px; /* stand on the floor (a little higher than before) */
+  margin-top: 58px; /* stand on the floor (a little higher than before) */
   transform: translateX(-40px); /* nudge the character left */
 }
 #screen-customize .controls {
   max-width: 320px;
   gap: 14px;
   align-self: flex-end; /* drop the options down to the floor level */
-  transform: translate(-224px, 16px); /* far left + onto the floor */
+  transform: translate(-262px, -12px); /* further left + a little higher */
 }
 /* Numbered chips fit in a single row per gender (no wrap → nothing cut off). */
 #screen-customize .pill-group {
