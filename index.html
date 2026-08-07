@@ -138,9 +138,7 @@
          SCREEN 3: PLAYER INITIALS
          ===================================================== -->
       <section id="screen-initials" class="screen">
-        <div class="logo small">SHN</div>
-        <h2 class="screen-title">Time to check in!</h2>
-        <p class="checkin-note">Add your initials so the leaderboard knows you're here! 🏆</p>
+        <h2 class="screen-title">Enter your initials to check in!</h2>
         <input
           id="initials-input"
           class="initials-input"
@@ -148,7 +146,9 @@
           placeholder="ABC"
           oninput="this.value = this.value.toUpperCase()"
         />
-        <p class="slogan" id="initials-slogan">Keep your plans. Not the flu.</p>
+        <p class="slogan" id="initials-slogan">
+          Time to let the leaderboard know you're here to play! 🏆
+        </p>
         <div class="menu row">
           <button class="btn" onclick="showScreen('screen-home')">Back</button>
           <button class="btn btn-primary" onclick="beginGame()">Let's Go</button>

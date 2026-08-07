@@ -2161,7 +2161,8 @@ body {
 /* --- Customize screen: game-style animated title, chunky option buttons, and
    the character posed lower so it stands on the floor. --- */
 #screen-customize .screen-title,
-#screen-instructions .screen-title {
+#screen-instructions .screen-title,
+#screen-leaderboard .screen-title {
   font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
   font-size: 36px;
   font-weight: 800;
@@ -2205,14 +2206,14 @@ body {
   align-items: flex-start;
 }
 #screen-customize #preview-character {
-  margin-top: 104px; /* drop the character lower so it stands on the floor */
+  margin-top: 78px; /* stand on the floor (a little higher than before) */
   transform: translateX(-40px); /* nudge the character left */
 }
 #screen-customize .controls {
   max-width: 320px;
   gap: 14px;
   align-self: flex-end; /* drop the options down to the floor level */
-  transform: translate(-92px, 16px); /* far left + onto the floor */
+  transform: translate(-140px, 16px); /* far left + onto the floor */
 }
 /* Numbered chips fit in a single row per gender (no wrap → nothing cut off). */
 #screen-customize .pill-group {

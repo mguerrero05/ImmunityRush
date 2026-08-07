@@ -775,7 +775,7 @@ function showInstructions(preGame) {
 }
 
 function startInitials() {
-  document.getElementById("initials-slogan").textContent = rand(SLOGANS);
+  // Keep the check-in line fixed (no alternating slogans on this screen).
   document.getElementById("initials-input").value = state.initials === "---" ? "" : state.initials;
   showScreen("screen-initials");
 }
