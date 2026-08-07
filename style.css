@@ -2121,10 +2121,10 @@ body {
 }
 #screen-customize {
   background-image: url("assets/backgrounds/customize-bg.png?v=1");
-  /* Wide scene with logos in the corners — show the WHOLE image (no zoom/crop).
-     The thin letterbox area uses a light fill that blends with the floor/walls. */
-  background-size: contain;
-  background-color: #e7edee;
+  /* Fill the frame exactly so the corner logo boxes sit right in the corners
+     with nothing cut off and no letterbox strips (a slight stretch, barely
+     noticeable on a room scene, keeps the true blue colors). */
+  background-size: 100% 100%;
 }
 /* Keep the page titles crisp on top of the artwork. */
 #screen-instructions .screen-title,
