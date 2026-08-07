@@ -740,3 +740,16 @@
   (`core.ignorecase=true`) so the live Pages URL resolves `customize-bg.png` fine. **OPEN/BY-FEEL:**
   Customize character-on-floor + options positions and the phone-landscape maze scale are tuned by
   eye and may need per-device nudging — adjust the `translate()`/`margin`/`scale()` numbers.
+- 2026-08-06 (session 38 — feedback polish; user APPROVED these positions, do NOT move unless asked):
+  **CHECK-IN (initials) screen finalized:** removed the `<div class="logo small">SHN</div>` (the SHN
+  logo is on the backdrop now); title = "Enter your initials to check in!"; the message is a FIXED
+  line "Time to let the leaderboard know you're here to play! 🏆" — `startInitials()` no longer
+  randomizes `#initials-slogan` (removed the `rand(SLOGANS)` assignment). **LEADERBOARD title** now
+  also uses the animated Baloo game title (added to the shared title selector). **INSTRUCTIONS:**
+  Continue (blue, primary) button now sits ABOVE Back (reordered in the HTML); the how-to card +
+  buttons are placed upper-middle via `justify-content:center` + `padding-bottom:22vh` so they clear
+  the "Love, Scarborough" art at the bottom of instructions-bg. **CUSTOMIZE final tuned numbers
+  (approved):** `#screen-customize .screen-title{margin-top:112px}`; `#preview-character{margin-top:
+  58px; transform:translateX(-40px)}`; `.controls{align-self:flex-end; transform:translate(-286px,
+  0)}` (options far left, on the floor line); option chips relabeled 1–5 and made glassier
+  (`background:rgba(255,255,255,0.34)` + `backdrop-filter:blur(4px)`, gold-ring active state).
