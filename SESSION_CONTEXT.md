@@ -753,8 +753,9 @@
   58px; transform:translateX(-40px)}`; `.controls{align-self:flex-end; transform:translate(-286px,
   0)}` (options far left, on the floor line); option chips relabeled 1–5 and made glassier
   (`background:rgba(255,255,255,0.34)` + `backdrop-filter:blur(4px)`, gold-ring active state).
-- 2026-08-06 (session 39 — final check-in tweaks): Check-in (initials) block nudged lower
-  (`#screen-initials{padding-top:9vh}`) and the message restyled for legibility on the artwork
+- 2026-08-06 (session 39 — final check-in tweaks): Check-in (initials) block is dead-centered
+  (`#screen-initials{justify-content:center}` — tried `padding-top:9vh` to lower it but user wanted
+  it centered, so reverted) and the message restyled for legibility on the artwork
   (`#screen-initials .slogan`: Baloo 2, non-italic, bold, `#0b4a6f`, white glow). NOTE for future:
   the How-to-Play Continue/Back reorder (Continue on top) was already correct + deployed — a user
   "not switched" report was a STALE CACHED index.html (single-page app: navigating screens doesn't
