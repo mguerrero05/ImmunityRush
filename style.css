@@ -2210,10 +2210,13 @@ body {
   transform: translateX(-40px); /* nudge the character left */
 }
 #screen-customize .controls {
-  max-width: 320px;
+  /* Pin the options to the lower-LEFT of the screen (robust on any width, unlike
+     a fixed pixel shift which barely moves on wide screens). */
+  position: absolute;
+  left: 4%;
+  bottom: 12%;
+  max-width: 300px;
   gap: 14px;
-  align-self: flex-end; /* drop the options down to the floor level */
-  transform: translate(-184px, 16px); /* far left + onto the floor */
 }
 /* Numbered chips fit in a single row per gender (no wrap → nothing cut off). */
 #screen-customize .pill-group {
