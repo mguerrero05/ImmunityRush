@@ -176,26 +176,31 @@ const SPRINT_COLLECT = [
     text: "Vaccine Booster",
     icon: "syringe",
     score: 100,
-    msg: "Flu vaccination is free through Ontario's publicly funded flu vaccine program.",
+    msg: "Vaccine grabbed! A flu shot keeps you protected all season long.",
   },
-  { text: "Heart", icon: "heart", score: 50, msg: "Protect the people waiting for you at home." },
+  {
+    text: "Heart",
+    icon: "heart",
+    score: 50,
+    msg: "Nice! You're protecting the people waiting for you at home.",
+  },
   {
     text: "Family Token",
     icon: "family",
     score: 200,
-    msg: "Protect the moments waiting for you after your shift.",
+    msg: "You made it to the family gathering — everyone stays protected! 🎉",
   },
   {
     text: "Wellness Boost",
     icon: "star",
     score: 100,
-    msg: "Stay protected for the people who need extra care.",
+    msg: "Great grab! You're staying healthy for the people who need extra care.",
   },
   {
     text: "Energy Icon",
     icon: "energy",
     score: 75,
-    msg: "Long shifts are hard enough without flu slowing you down.",
+    msg: "Energized! The flu won't slow you down today.",
   },
 ];
 // `overhead` obstacles must be slid under; the rest are jumped over.
@@ -203,19 +208,19 @@ const SPRINT_OBSTACLES = [
   {
     text: "Sick-Day Barrier",
     icon: "barrier",
-    msg: "Sick days can interrupt more than just your shift.",
+    msg: "A sick day! The flu can cost you more than a shift — a flu shot lowers the risk.",
     overhead: false,
   },
   {
     text: "Cancelled Plans",
     icon: "calendar",
-    msg: "Don't let flu season cancel what matters.",
+    msg: "Plans cancelled! The flu ruins them — get your flu shot and keep your plans.",
     overhead: false,
   },
   {
     text: "Low-Energy Cloud",
     icon: "cloud",
-    msg: "Low energy can take you out of the game.",
+    msg: "Wiped out! The flu drains your energy — vaccination helps you bounce back.",
     overhead: true,
   },
 ];
@@ -1973,8 +1978,10 @@ function startSprint() {
   showScreen("screen-sprint");
   showPopup(
     "Hospital Sprint",
-    "Your shift is moving fast. Move between lanes to grab boosts and dodge flu obstacles rushing toward you.\n\n" +
-      "• ← / → (or swipe) to switch lanes.\n• Space / Up / tap to jump over low obstacles.\n• Down (or swipe down) to duck under high barriers.\n• Run into boosts to collect them. Reach the finish before time runs out.",
+    "Your shift is moving fast! Two kinds of things rush toward you down the 3 lanes:\n\n" +
+      "✅ GRAB the good items — 💉 vaccine, ❤️ heart, 👪 family token, ⭐ wellness, ⚡ energy. Line up your lane and run into them for points.\n\n" +
+      "🚫 AVOID the flu obstacles — 🚧 sick-day barrier, 📅 cancelled plans, ☁️ low-energy cloud. Hitting one costs points.\n\n" +
+      "How to move:\n• ← / → (or swipe) to switch lanes\n• Space / Up / tap to JUMP over the low obstacles (barrier, calendar)\n• Down (or swipe down) to DUCK under the high cloud\n\nReach the finish before time runs out!",
     [
       {
         text: "Start Sprint",
@@ -2176,12 +2183,36 @@ function sprintLoop() {
   const dz = sprint.speed * 0.0018; // approach rate tied to the run speed
   sprint.objs = sprint.objs.filter((o) => {
     o.z -= dz;
-    // Resolve the encounter as the object reaches the runner's plane.
-    if (!o.done && o.z <= 0.05) {
-      o.done = true;
-      resolveSprintEncounter(o, stage);
+
+    // Resolve over a whole APPROACH ZONE, not a single frame — this fixes the
+    // "it passed right in front of me but nothing happened" bug. As long as you
+    // line up with a collectible anywhere in the zone, you grab it.
+    if (!o.done) {
+      const inZone = o.z <= 0.16 && o.z > -0.04;
+      const sameLane = o.lane === sprint.lane;
+      if (o.kind === "collect") {
+        if (inZone && sameLane) {
+          o.done = true;
+          sprintHit(o, stage); // grabbed
+        } else if (o.z <= -0.04) {
+          o.done = true; // passed by uncollected (wrong lane the whole time)
+        }
+      } else {
+        // Obstacle: clearing it (jump low / slide under high) anywhere in the
+        // zone counts as a clean dodge; otherwise it hits when it reaches you.
+        const cleared = o.data.overhead ? sprint.sliding : sprint.jumping && sprint.jumpOffset > 34;
+        if (inZone && sameLane && cleared) {
+          o.done = true; // dodged by clearing it
+        } else if (inZone && sameLane && o.z <= 0.05) {
+          o.done = true;
+          sprintHit(o, stage); // reached you in-lane without clearing -> hit
+        } else if (o.z <= -0.04) {
+          o.done = true; // passed safely (different lane / cleared)
+        }
+      }
     }
-    if (o.z <= -0.06) {
+
+    if (o.z <= -0.1) {
       o.el.remove();
       return false;
     }
@@ -2190,26 +2221,13 @@ function sprintLoop() {
     o.el.style.top = p.y + "px";
     o.el.style.transform = `translate(-50%, -100%) scale(${(SPR3.baseSize * p.scale) / 48})`;
     o.el.style.zIndex = 20 + Math.round((1 - Math.max(0, o.z)) * 60);
+    // Fade collectibles you already grabbed so the pickup reads clearly.
+    o.el.style.opacity = o.done && o.kind === "collect" ? "0" : "1";
     return true;
   });
 
   positionRunner(stage);
   sprintFrame = requestAnimationFrame(sprintLoop);
-}
-
-// Decide what happens when an object reaches the runner's plane.
-// Same lane? A collect is grabbed; a low obstacle must be jumped, a high
-// (overhead) obstacle must be ducked, or it's a hit. Other lanes are safe.
-function resolveSprintEncounter(o, stage) {
-  if (o.lane !== sprint.lane) return; // dodged by being in another lane
-  if (o.kind === "collect") {
-    sprintHit(o, stage);
-    return;
-  }
-  const cleared = o.data.overhead
-    ? sprint.sliding // duck under high barriers
-    : sprint.jumping && sprint.jumpOffset > 34; // jump over low obstacles
-  if (!cleared) sprintHit(o, stage);
 }
 
 function sprintHit(o, stage) {
@@ -2224,7 +2242,7 @@ function sprintHit(o, stage) {
     floatText(`+${o.data.score}`, cx, cy, "#ffd34d");
     burst(cx, cy, "#ffd34d");
     playSound("success");
-    bigMessage(o.data.msg, { title: `+${o.data.score}`, tone: "good", duration: 1300 });
+    bigMessage(o.data.msg, { icon: "🎉", title: `+${o.data.score}`, tone: "good", duration: 1500 });
   } else {
     if (sprint.hitT > 0) return; // brief grace so one stumble isn't punished twice
     sprint.hitT = 45;
