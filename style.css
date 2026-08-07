@@ -4322,6 +4322,17 @@ img {
     max-width: 300px;
     line-height: 1.5;
   }
+  #rotate-nudge .rn-hint {
+    margin-top: 16px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    max-width: 300px;
+    opacity: 0.8;
+  }
+  #rotate-nudge .rn-hint b {
+    color: #ffd34d;
+    font-weight: 800;
+  }
 }
 @keyframes rnRock {
   0%,

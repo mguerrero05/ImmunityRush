@@ -783,7 +783,12 @@
   into 3 cases — `isPhoneLandscape` (coarse, #game fills viewport via CSS, FIT=1), `isDesktopWide`
   (fine+wide → `FIT=min(vw/1280, vh/800)`), else portrait `min(vw/430, vh/860)`. Effect-burst `*FIT`
   and `frameShake scale(var(--fit))` stay consistent since FIT now = the real desktop scale. Thin
-  side strips can remain on 16:9 (game aspect 1.6); art may soften a bit when enlarged on 4K. NOTE for future:
+  side strips can remain on 16:9 (game aspect 1.6); art may soften a bit when enlarged on 4K.
+- 2026-08-07 (session 44 — iPhone fullscreen hint): iPhone Safari has NO web fullscreen (confirmed
+  unavoidable — no API/tap/meta works; only Add-to-Home-Screen standalone does). Added a small
+  `.rn-hint` line on the rotate nudge: "On iPhone? If tapping doesn't go fullscreen, tap Share → Add
+  to Home Screen → Add, then open the icon." (phone-only, since the nudge is portrait+coarse). PWA
+  install (manifest + apple meta + icons) verified live. Desktop/Android fullscreen work in-browser. NOTE for future:
   the How-to-Play Continue/Back reorder (Continue on top) was already correct + deployed — a user
   "not switched" report was a STALE CACHED index.html (single-page app: navigating screens doesn't
   re-fetch the HTML, so a full page reload / incognito is needed to see HTML-only changes). Verified
