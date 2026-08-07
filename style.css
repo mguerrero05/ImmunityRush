@@ -1918,7 +1918,17 @@ body {
    ========================================================= */
 #screen-end {
   justify-content: center;
-  background: radial-gradient(125% 90% at 50% 0%, #eef7ff 0%, #dcefff 45%, #cbe4fb 100%);
+  background-image: url("assets/backgrounds/end-bg.png?v=1");
+  background-size: 100% 100%; /* fill corner-to-corner like the other backdrops */
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* Keep the bare text (rank + slogan) legible on the artwork. */
+#screen-end .rank,
+#screen-end .slogan {
+  text-shadow:
+    0 1px 8px rgba(255, 255, 255, 0.95),
+    0 0 2px rgba(255, 255, 255, 0.9);
 }
 .end-celebrate {
   display: flex;
