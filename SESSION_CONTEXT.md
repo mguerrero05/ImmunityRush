@@ -788,7 +788,14 @@
   unavoidable — no API/tap/meta works; only Add-to-Home-Screen standalone does). Added a small
   `.rn-hint` line on the rotate nudge: "On iPhone? If tapping doesn't go fullscreen, tap Share → Add
   to Home Screen → Add, then open the icon." (phone-only, since the nudge is portrait+coarse). PWA
-  install (manifest + apple meta + icons) verified live. Desktop/Android fullscreen work in-browser. NOTE for future:
+  install (manifest + apple meta + icons) verified live. Desktop/Android fullscreen work in-browser.
+- 2026-08-07 (session 45 — feedback link on end screen): Replaced the Run Complete top-4 preview
+  (`.end-top-wrap`/`#end-top`) with a `.end-feedback` block: note "still in its feedback stage", a
+  "📝 Share your feedback" button → the Google Form
+  (`https://docs.google.com/forms/d/e/1FAIpQLSc4v8B97LUiHQFwfUY4NuxP0A0WugGn0MSicrn_ef7JHiLpUw/viewform?pli=1`,
+  new tab), and a `mailto:michelleguemo22@gmail.com` "Email Michelle Guerrero" contact line. Removed
+  the `showEndTop()` call in endGame (function left as harmless dead code). The full Leaderboard
+  screen is unchanged. NOTE for future:
   the How-to-Play Continue/Back reorder (Continue on top) was already correct + deployed — a user
   "not switched" report was a STALE CACHED index.html (single-page app: navigating screens doesn't
   re-fetch the HTML, so a full page reload / incognito is needed to see HTML-only changes). Verified
