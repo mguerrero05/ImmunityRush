@@ -756,7 +756,13 @@
 - 2026-08-06 (session 39 — final check-in tweaks): Check-in (initials) block is dead-centered
   (`#screen-initials{justify-content:center}` — tried `padding-top:9vh` to lower it but user wanted
   it centered, so reverted) and the message restyled for legibility on the artwork
-  (`#screen-initials .slogan`: Baloo 2, non-italic, bold, `#0b4a6f`, white glow). NOTE for future:
+  (`#screen-initials .slogan`: Baloo 2, non-italic, bold, `#0b4a6f`, white glow).
+- 2026-08-06 (session 40 — sprint copy + pass-by glide fix): Rewrote the Hospital Sprint intro copy
+  (concise GRAB beneficial items / AVOID harmful obstacles wording). **Fixed the pass-by glitch:**
+  `sprProject` used `Math.max(0, z)` for the scale, so once an object reached the camera it FROZE at
+  the near plane next to the runner until removal — now uses `1 / Math.max(0.3, 1 + z*depth)` (no
+  z-clamp, denominator guarded), so objects keep gliding PAST the camera (grow + slide off the
+  bottom). Collision/points unchanged (they key off z directly, not the projection). NOTE for future:
   the How-to-Play Continue/Back reorder (Continue on top) was already correct + deployed — a user
   "not switched" report was a STALE CACHED index.html (single-page app: navigating screens doesn't
   re-fetch the HTML, so a full page reload / incognito is needed to see HTML-only changes). Verified
