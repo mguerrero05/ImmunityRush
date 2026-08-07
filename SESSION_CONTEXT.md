@@ -762,7 +762,11 @@
   `sprProject` used `Math.max(0, z)` for the scale, so once an object reached the camera it FROZE at
   the near plane next to the runner until removal — now uses `1 / Math.max(0.3, 1 + z*depth)` (no
   z-clamp, denominator guarded), so objects keep gliding PAST the camera (grow + slide off the
-  bottom). Collision/points unchanged (they key off z directly, not the projection). NOTE for future:
+  bottom). Collision/points unchanged (they key off z directly, not the projection).
+- 2026-08-06 (session 41 — end-screen backdrop): Added `assets/backgrounds/end-bg.png` wired to
+  `#screen-end` (`background-size:100% 100%` corner-to-corner, replacing the old radial gradient);
+  added a white text-shadow to `#screen-end .rank`/`.slogan` for legibility. All backdrops now:
+  instructions (cover), leaderboard/customize/initials/end (100% 100% fill). NOTE for future:
   the How-to-Play Continue/Back reorder (Continue on top) was already correct + deployed — a user
   "not switched" report was a STALE CACHED index.html (single-page app: navigating screens doesn't
   re-fetch the HTML, so a full page reload / incognito is needed to see HTML-only changes). Verified
