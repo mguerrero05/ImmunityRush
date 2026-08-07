@@ -2276,13 +2276,15 @@ body {
   content: "";
 }
 
-/* Instructions: dead-center the how-to card + buttons (was floating low / the
-   buttons were covering the "Love, Scarborough" art). */
+/* Instructions: keep the how-to card + buttons up top so they clear the
+   "Love, Scarborough" art at the bottom of the artwork (was overlapping it,
+   especially on short landscape screens). */
 #screen-instructions {
-  justify-content: center;
+  justify-content: flex-start;
+  padding-top: 26px;
 }
 #screen-instructions .menu {
-  margin-top: 22px;
+  margin-top: 18px;
 }
 /* Check-in (initials): dead-center the whole block instead of top-anchored. */
 #screen-initials {
