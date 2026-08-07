@@ -3341,22 +3341,22 @@ function setupControls() {
    leave FIT at 1 and clear the inline scale.
    ========================================================= */
 const REF_W = 430,
-  REF_H = 860;
-// True whenever #game is shown UNSCALED (transform:none) rather than via the
-// portrait scale-to-fit — i.e. the desktop side-panel layout OR phone/tablet
-// landscape. In those cases FIT must stay 1 so mini-game effect positions line up.
-const isLandscapeLayout = () =>
-  window.matchMedia("(min-aspect-ratio: 1/1)").matches &&
-  (window.matchMedia("(min-width: 760px) and (pointer: fine)").matches ||
-    window.matchMedia("(pointer: coarse)").matches);
-const isDesktopWide = isLandscapeLayout;
+  REF_H = 860; // portrait phone reference frame
+const DESK_W = 1280,
+  DESK_H = 800; // desktop widescreen reference frame
+const mq = (q) => window.matchMedia(q).matches;
+// Phone/tablet held sideways: #game already fills the viewport via CSS (no scaling).
+const isPhoneLandscape = () => mq("(min-aspect-ratio: 1/1)") && mq("(pointer: coarse)");
+// Desktop widescreen: the fixed 1280x800 layout is scaled UP to fill the screen
+// (same scale-to-fit trick as the portrait frame — removes the big letterbox).
+const isDesktopWide = () =>
+  mq("(min-aspect-ratio: 1/1)") && mq("(min-width: 760px) and (pointer: fine)");
 
 function fitGame() {
   const g = document.getElementById("game");
   if (!g) return;
-  if (isDesktopWide()) {
-    // Desktop: the media query sets #game's fluid size + transform:none. Keep the
-    // scale factor at 1 so effect positions and shake are exactly as before.
+  if (isPhoneLandscape()) {
+    // #game fills the viewport via CSS — no transform scaling needed.
     FIT = 1;
     g.style.removeProperty("--fit");
     return;
@@ -3364,7 +3364,9 @@ function fitGame() {
   const vv = window.visualViewport;
   const vw = vv ? vv.width : window.innerWidth;
   const vh = vv ? vv.height : window.innerHeight;
-  FIT = Math.min(vw / REF_W, vh / REF_H);
+  // Desktop scales the 1280x800 layout; portrait scales the 430x860 frame — both
+  // fill as much of the screen as the aspect allows.
+  FIT = isDesktopWide() ? Math.min(vw / DESK_W, vh / DESK_H) : Math.min(vw / REF_W, vh / REF_H);
   g.style.setProperty("--fit", FIT);
 }
 

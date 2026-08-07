@@ -4235,10 +4235,10 @@ img {
    ========================================================================= */
 @media (min-aspect-ratio: 1/1) and (min-width: 760px) and (pointer: fine) {
   #game {
-    width: min(1280px, 98vw);
-    height: min(800px, 96vh);
-    /* Desktop uses its own fluid sizing — never the phone scale-to-fit. */
-    transform: none;
+    /* Fixed reference size; the base #game transform: scale(var(--fit)) (set by
+       fitGame) grows the whole layout to fill the screen — no big letterbox. */
+    width: 1280px;
+    height: 800px;
   }
   /* Whole maze visible + centred (no camera follow); disable the zoom-in anim. */
   #maze-world,
