@@ -2108,13 +2108,35 @@ body {
    ========================================================= */
 #screen-instructions,
 #screen-leaderboard,
-#screen-customize {
+#screen-customize,
+#screen-initials {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
 #screen-instructions {
   background-image: url("assets/backgrounds/instructions-bg.png?v=1");
+}
+#screen-initials {
+  background-image: url("assets/backgrounds/initials-bg.png?v=1");
+  background-size: 100% 100%; /* fill corner-to-corner like the other backdrops */
+}
+/* Check-in screen title + note, readable on top of the artwork. */
+#screen-initials .screen-title {
+  font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #0b4a6f;
+  margin-top: 8px;
+  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.95);
+}
+.checkin-note {
+  max-width: 300px;
+  text-align: center;
+  font-weight: 700;
+  color: #12507e;
+  margin: 2px 0 14px;
+  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.95);
 }
 #screen-leaderboard {
   background-image: url("assets/backgrounds/leaderboard-bg.png?v=2");
@@ -2140,7 +2162,7 @@ body {
    the character posed lower so it stands on the floor. --- */
 #screen-customize .screen-title {
   font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
-  margin-top: 64px;
+  margin-top: 82px;
   font-size: 36px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -2178,13 +2200,17 @@ body {
 }
 #screen-customize #preview-character {
   margin-top: 104px; /* drop the character lower so it stands on the floor */
-  transform: translateX(-22px); /* nudge the character left */
+  transform: translateX(-40px); /* nudge the character left */
 }
 #screen-customize .controls {
-  max-width: 260px;
+  max-width: 320px;
   gap: 16px;
   align-self: center; /* center the options vertically against the tall character */
   transform: translateX(-58px); /* shift the options well to the left */
+}
+/* Numbered chips fit in a single row per gender (no wrap → nothing cut off). */
+#screen-customize .pill-group {
+  flex-wrap: nowrap;
 }
 /* Section labels (Female / Male) */
 #screen-customize .controls label {
@@ -2202,11 +2228,11 @@ body {
 /* Frosted-glass pill buttons with a gold highlight when selected */
 #screen-customize .char-pick {
   font-family: "Baloo 2", system-ui, sans-serif;
-  min-width: 82px;
-  padding: 11px 20px;
+  min-width: 46px;
+  padding: 10px 14px;
   border: 2px solid rgba(31, 111, 235, 0.4);
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #12507e;
   background: rgba(255, 255, 255, 0.66);
@@ -2240,7 +2266,7 @@ body {
     0 8px 18px rgba(31, 111, 235, 0.45);
 }
 #screen-customize .char-pick.active::before {
-  content: "⭐ ";
+  content: "";
 }
 
 /* Instructions: don't pin the buttons to the very bottom (they were covering the
