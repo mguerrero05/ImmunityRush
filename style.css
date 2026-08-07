@@ -2160,9 +2160,9 @@ body {
 
 /* --- Customize screen: game-style animated title, chunky option buttons, and
    the character posed lower so it stands on the floor. --- */
-#screen-customize .screen-title {
+#screen-customize .screen-title,
+#screen-instructions .screen-title {
   font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
-  margin-top: 82px;
   font-size: 36px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -2178,6 +2178,12 @@ body {
   animation:
     titleShimmer 5s linear infinite,
     titleBob 2.8s ease-in-out infinite;
+}
+#screen-customize .screen-title {
+  margin-top: 82px;
+}
+#screen-instructions .screen-title {
+  margin-top: 4px;
 }
 @keyframes titleShimmer {
   to {
@@ -2204,9 +2210,9 @@ body {
 }
 #screen-customize .controls {
   max-width: 320px;
-  gap: 16px;
-  align-self: center; /* center the options vertically against the tall character */
-  transform: translateX(-58px); /* shift the options well to the left */
+  gap: 14px;
+  align-self: flex-end; /* drop the options down to the floor level */
+  transform: translate(-92px, 16px); /* far left + onto the floor */
 }
 /* Numbered chips fit in a single row per gender (no wrap → nothing cut off). */
 #screen-customize .pill-group {
@@ -2269,10 +2275,20 @@ body {
   content: "";
 }
 
-/* Instructions: don't pin the buttons to the very bottom (they were covering the
-   "Love, Scarborough" art). Group the card + buttons in the upper area instead. */
+/* Instructions: dead-center the how-to card + buttons (was floating low / the
+   buttons were covering the "Love, Scarborough" art). */
+#screen-instructions {
+  justify-content: center;
+}
 #screen-instructions .menu {
   margin-top: 22px;
+}
+/* Check-in (initials): dead-center the whole block instead of top-anchored. */
+#screen-initials {
+  justify-content: center;
+}
+#screen-initials .menu {
+  margin-top: 16px;
 }
 
 .leaderboard {

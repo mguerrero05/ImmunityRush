@@ -702,3 +702,41 @@
   full landscape (whole-maze widescreen layout) while KEEPING the touch D-pad (the widescreen media
   query at `@media (min-aspect-ratio:1/1) and (min-width:760px)` currently hides `#dpad`/
   `#direction-arrows` — must re-enable on touch/coarse-pointer devices or phones have no controls).
+- 2026-08-06 (session 37 — shared leaderboard, end-screen + sprint + landscape + custom backdrops):
+  Big polish session for demo day. **SHARED LIVE LEADERBOARD (Firebase Realtime Database):** user
+  created a free Firebase project ("immunity-rush"); compat SDK loaded via gstatic `<script>`s in
+  index.html; `FIREBASE_CONFIG` + the online-board code live in script.js (section "7b"). Scores
+  pushed to `scores/<YYYY-MM-DD>` (today-scoped) on `endGame`; the Leaderboard screen + the new
+  end-screen top-4 preview subscribe live; on-device board is the offline fallback. **Admin reset:**
+  add `?admin=1` to the URL → a "Clear board (today)" button appears on the Leaderboard. The web
+  config is public by design; test-mode DB rules are open ~30 days (refresh rules if it stops
+  saving). Verified read/write/delete via REST. **END SCREEN ("Run Complete") redesign:** gradient
+  Baloo-style title, score badge with twinkling sparkles, centered/bigger VaxFacts card, celebratory
+  backdrop, + live "🏆 Top scores today" top-4 (`showEndTop`). **TIMER now counts DOWN** (remaining),
+  shown in `#hud-time` (portrait) and `#mhud-time` (landscape). **LANDSCAPE HUD (desktop)** gained
+  the missing End Run button + TIME in `.mhud-left`. **PHONE LANDSCAPE:** rotate-to-play nudge
+  (`#rotate-nudge`, shown only `@media (orientation:portrait) and (pointer:coarse)`); the fancy
+  side-panel layout is now gated to `(pointer:fine)` (desktop only); phones held sideways get a
+  SIMPLE layout — `#game` fills the viewport, whole-maze overview scaled `0.33` (first-pass guess —
+  tune with a real device screenshot), compact top HUD + touch D-pad kept. `isDesktopWide` →
+  `isLandscapeLayout` (true for desktop-wide OR any coarse landscape, so FIT stays 1 when unscaled).
+  **HOSPITAL SPRINT fixes:** collision now resolves over an APPROACH ZONE (z ≤ 0.16 → -0.04) instead
+  of one frame — fixes "it passed right in front of me but nothing happened"; clearing an obstacle
+  anywhere in the zone = clean dodge; every grab shows a celebratory reaction (🎉) and every hit a
+  clear warning; rewrote SPRINT_COLLECT/OBSTACLES `msg`s and the intro to spell out GRAB vs AVOID.
+  **CUSTOM PAGE BACKDROPS** in `assets/backgrounds/`: instructions-bg (cover), leaderboard-bg /
+  customize-bg / initials-bg (all `background-size:100% 100%` — fill corner-to-corner so the corner
+  logos aren't cropped; NO veil so colors stay true). **CUSTOMIZE screen game-look:** Google font
+  **Baloo 2** (link in `<head>`) drives an animated gradient title (`titleShimmer`+`titleBob`);
+  character posed lower + nudged left to stand on the floor; options are **numbered chips 1–5** (one
+  row per gender, no cut-off) styled as frosted-glass pills with a gold-ring selected state, dropped
+  to the floor + far left. Button labels changed in index.html from "Character N" → "N".
+  **INSTRUCTIONS "How to Play"** uses the same animated title and is dead-centered. **CHECK-IN
+  (initials) screen:** copy changed to "Time to check in!" + a static `.checkin-note` ("Add your
+  initials so the leaderboard knows you're here! 🏆" — the `#initials-slogan` is JS-overwritten by
+  `rand(SLOGANS)`, so the check-in message lives in the h2 + note, NOT the slogan); backdrop wired;
+  content dead-centered. **GOTCHAS FIXED:** the initials image was saved as `" initials-bg.png"`
+  (leading space) → renamed; `Customize-bg.png` shows capital-C locally but git tracks it lowercase
+  (`core.ignorecase=true`) so the live Pages URL resolves `customize-bg.png` fine. **OPEN/BY-FEEL:**
+  Customize character-on-floor + options positions and the phone-landscape maze scale are tuned by
+  eye and may need per-device nudging — adjust the `translate()`/`margin`/`scale()` numbers.
