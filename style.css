@@ -2104,8 +2104,7 @@ body {
 
 /* =========================================================
    CUSTOM PAGE BACKDROPS — instructions / leaderboard / customize.
-   A soft light veil over each image keeps titles + cards readable
-   (raise the veil alpha if any image feels too busy behind the text).
+   Full-color artwork, no veil (shows the images at their true colors).
    ========================================================= */
 #screen-instructions,
 #screen-leaderboard,
@@ -2115,19 +2114,13 @@ body {
   background-repeat: no-repeat;
 }
 #screen-instructions {
-  background-image:
-    linear-gradient(rgba(246, 251, 255, 0.4), rgba(246, 251, 255, 0.52)),
-    url("assets/backgrounds/instructions-bg.png?v=1");
+  background-image: url("assets/backgrounds/instructions-bg.png?v=1");
 }
 #screen-leaderboard {
-  background-image:
-    linear-gradient(rgba(246, 251, 255, 0.4), rgba(246, 251, 255, 0.52)),
-    url("assets/backgrounds/leaderboard-bg.png?v=1");
+  background-image: url("assets/backgrounds/leaderboard-bg.png?v=1");
 }
 #screen-customize {
-  background-image:
-    linear-gradient(rgba(246, 251, 255, 0.4), rgba(246, 251, 255, 0.52)),
-    url("assets/backgrounds/customize-bg.png?v=1");
+  background-image: url("assets/backgrounds/customize-bg.png?v=1");
 }
 /* Keep the page titles crisp on top of the artwork. */
 #screen-instructions .screen-title,
