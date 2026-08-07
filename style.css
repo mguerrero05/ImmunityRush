@@ -2181,7 +2181,7 @@ body {
     titleBob 2.8s ease-in-out infinite;
 }
 #screen-customize .screen-title {
-  margin-top: 82px;
+  margin-top: 112px;
 }
 #screen-instructions .screen-title {
   margin-top: 4px;
@@ -2213,7 +2213,7 @@ body {
   max-width: 320px;
   gap: 14px;
   align-self: flex-end; /* drop the options down to the floor level */
-  transform: translate(-140px, 16px); /* far left + onto the floor */
+  transform: translate(-184px, 16px); /* far left + onto the floor */
 }
 /* Numbered chips fit in a single row per gender (no wrap → nothing cut off). */
 #screen-customize .pill-group {
@@ -2280,8 +2280,8 @@ body {
    "Love, Scarborough" art at the bottom of the artwork (was overlapping it,
    especially on short landscape screens). */
 #screen-instructions {
-  justify-content: flex-start;
-  padding-top: 26px;
+  justify-content: center;
+  padding-bottom: 22vh; /* lift the centered block into the upper-middle, clear of the bottom logo */
 }
 #screen-instructions .menu {
   margin-top: 18px;
