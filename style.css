@@ -1913,6 +1913,195 @@ body {
   color: var(--shn-teal);
 }
 
+/* =========================================================
+   RUN COMPLETE — celebratory end screen
+   ========================================================= */
+#screen-end {
+  justify-content: center;
+  background: radial-gradient(125% 90% at 50% 0%, #eef7ff 0%, #dcefff 45%, #cbe4fb 100%);
+}
+.end-celebrate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 380px;
+}
+.end-title {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-align: center;
+  margin: 2px 0 14px;
+  background: linear-gradient(90deg, #1f6feb, #2bb3b3);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: endTitlePop 0.5s ease both;
+}
+@keyframes endTitlePop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.end-score-badge {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 52px;
+  margin: 2px 0 12px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, #2f80ed, #1f6feb 55%, #17a2a2);
+  box-shadow: 0 12px 28px rgba(31, 111, 235, 0.42);
+}
+.end-score-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  color: rgba(255, 255, 255, 0.85);
+}
+.end-score-num {
+  font-size: 56px;
+  font-weight: 900;
+  line-height: 1.05;
+  color: #fff;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+  animation: endScorePulse 1.6s ease-in-out infinite;
+}
+@keyframes endScorePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+/* Twinkling sparkles around the score badge */
+.end-score-badge .spark {
+  position: absolute;
+  color: #ffd34d;
+  font-size: 18px;
+  text-shadow: 0 0 8px rgba(255, 211, 77, 0.85);
+  animation: sparkTwinkle 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes sparkTwinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.65) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(22deg);
+  }
+}
+.spark.sp1 {
+  top: -12px;
+  left: 8%;
+  font-size: 24px;
+  animation-delay: 0s;
+}
+.spark.sp2 {
+  top: 10px;
+  right: 5%;
+  animation-delay: 0.3s;
+}
+.spark.sp3 {
+  bottom: -10px;
+  left: 16%;
+  font-size: 20px;
+  animation-delay: 0.6s;
+}
+.spark.sp4 {
+  top: -6px;
+  right: 20%;
+  font-size: 14px;
+  animation-delay: 0.9s;
+}
+.spark.sp5 {
+  bottom: 4px;
+  right: 9%;
+  font-size: 22px;
+  animation-delay: 1.2s;
+}
+.spark.sp6 {
+  bottom: 12px;
+  left: 3%;
+  font-size: 14px;
+  animation-delay: 1.5s;
+}
+#screen-end .rank {
+  font-size: 16px;
+  margin: 2px 0;
+  text-align: center;
+}
+#screen-end .slogan {
+  font-size: 16px;
+  margin: 4px 0 14px;
+}
+.card.small-print.end-card {
+  font-size: 15px;
+  line-height: 1.55;
+  color: #2c4a63;
+  text-align: center;
+  max-width: 380px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 26px rgba(20, 60, 90, 0.16);
+}
+.card.small-print.end-card p {
+  margin: 0 0 12px;
+}
+.card.small-print.end-card a {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1f6feb, #2bb3b3);
+  color: #fff !important;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(31, 111, 235, 0.34);
+}
+/* Live top-4 preview under the buttons */
+.end-top-wrap {
+  width: 100%;
+  max-width: 300px;
+  margin: 18px auto 4px;
+  text-align: center;
+}
+.end-top-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: var(--shn-blue);
+  margin-bottom: 8px;
+}
+.leaderboard.mini {
+  max-width: 300px;
+  margin: 0 auto;
+}
+.leaderboard.mini li {
+  padding: 7px 13px;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+.leaderboard.mini .empty {
+  font-size: 13px;
+}
+
 .leaderboard {
   list-style: none;
   counter-reset: rank;
@@ -3828,7 +4017,7 @@ img {
    WHOLE map at once (paired with the overview camera in loopMaze). Portrait
    phones keep the camera-follow view. Other screens get landscape polish next.
    ========================================================================= */
-@media (min-aspect-ratio: 1/1) and (min-width: 760px) {
+@media (min-aspect-ratio: 1/1) and (min-width: 760px) and (pointer: fine) {
   #game {
     width: min(1280px, 98vw);
     height: min(800px, 96vh);
@@ -3850,6 +4039,84 @@ img {
   }
 }
 
+/* Phone/tablet held SIDEWAYS: a simple landscape play mode. The frame fills the
+   screen, the compact top HUD stays (it already has score / time / End Run), and
+   the maze shows the WHOLE map (overview camera) scaled to fit. Desktops use the
+   fancy side-panel layout above; touch devices get this instead. */
+@media (min-aspect-ratio: 1/1) and (pointer: coarse) {
+  #game {
+    width: 100vw;
+    height: 100dvh;
+    transform: none;
+    box-shadow: none;
+  }
+  #screen-maze .mission {
+    display: none; /* reclaim vertical room on short landscape screens */
+  }
+  #maze-viewport {
+    top: 46px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    border-radius: 14px;
+  }
+  #maze-world.img-mode,
+  #maze-world.img-mode.zooming {
+    transform: scale(0.33) !important; /* fit the whole map; fine-tuned per feedback */
+    animation: none;
+  }
+  #dpad {
+    display: grid;
+    z-index: 40;
+  }
+}
+
+/* ---------- Rotate-to-play nudge ---------- */
+#rotate-nudge {
+  display: none;
+}
+/* Only phones/tablets held UPRIGHT see it; desktops (fine pointer) never do. */
+@media (orientation: portrait) and (pointer: coarse) {
+  #rotate-nudge {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 6000;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    text-align: center;
+    background: linear-gradient(160deg, #0c2a4a, #123a63 60%, #0f4c81);
+    color: #eaf3fb;
+  }
+  #rotate-nudge .rn-icon {
+    font-size: 58px;
+    margin-bottom: 14px;
+    animation: rnRock 1.8s ease-in-out infinite;
+    transform-origin: center;
+  }
+  #rotate-nudge .rn-title {
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+  #rotate-nudge .rn-sub {
+    font-size: 15px;
+    opacity: 0.85;
+    max-width: 300px;
+    line-height: 1.5;
+  }
+}
+@keyframes rnRock {
+  0%,
+  100% {
+    transform: rotate(-18deg);
+  }
+  50% {
+    transform: rotate(72deg);
+  }
+}
+
 /* =========================================================================
    LANDSCAPE MAZE HUD — reference-style panels (left stats, mission/score,
    bottom legend). Shown only on widescreen; portrait keeps the top bar.
@@ -3857,7 +4124,7 @@ img {
 .mhud {
   display: none;
 }
-@media (min-aspect-ratio: 1/1) and (min-width: 760px) {
+@media (min-aspect-ratio: 1/1) and (min-width: 760px) and (pointer: fine) {
   #screen-maze .hud,
   #screen-maze .mission {
     display: none;
@@ -3975,6 +4242,17 @@ img {
   .mhud-fam {
     font-weight: 800;
     color: #8fe36b;
+  }
+  .mhud-timeval {
+    font-size: 16px;
+    font-weight: 800;
+    color: #eaf3fb;
+  }
+  .mhud-end {
+    margin-top: auto; /* push to the bottom of the tall left panel */
+    width: 100%;
+    padding: 9px 10px;
+    font-size: 13px;
   }
 
   /* ---- Top mission + score + gear ---- */
@@ -4112,7 +4390,7 @@ img {
 
 /* Landscape overview: fit the whole 1586×992 image into the inset play area.
    Play area is now ~1054×736, so the artwork scales up to fill it. */
-@media (min-aspect-ratio: 1/1) and (min-width: 760px) {
+@media (min-aspect-ratio: 1/1) and (min-width: 760px) and (pointer: fine) {
   #maze-world.img-mode,
   #maze-world.img-mode.zooming {
     transform: scale(0.66) !important;

@@ -889,13 +889,19 @@ function addScore(n) {
 const RUN_LIMIT_SECONDS = 300;
 let runTimer = null;
 function updateRunTime() {
-  const mm = Math.floor(state.runSeconds / 60);
-  const ss = String(state.runSeconds % 60).padStart(2, "0");
-  const el = document.getElementById("hud-time");
-  if (el) el.textContent = `${mm}:${ss}`;
+  // Count DOWN: show time remaining in the run.
+  const remain = Math.max(0, RUN_LIMIT_SECONDS - state.runSeconds);
+  const mm = Math.floor(remain / 60);
+  const ss = String(remain % 60).padStart(2, "0");
+  const txt = `${mm}:${ss}`;
+  const el = document.getElementById("hud-time"); // portrait HUD
+  if (el) el.textContent = txt;
+  const el2 = document.getElementById("mhud-time"); // landscape HUD
+  if (el2) el2.textContent = txt;
 }
 function startRunTimer() {
   clearInterval(runTimer);
+  updateRunTime(); // show the full time immediately (not a 1s flash of the default)
   runTimer = setInterval(() => {
     state.runSeconds++;
     updateRunTime();
@@ -927,6 +933,7 @@ function endGame() {
     "Keep your plans. Not the flu.",
   ]);
   showScreen("screen-end");
+  showEndTop(); // live top-4 preview
 }
 
 /* =========================================================
@@ -3105,6 +3112,54 @@ function unsubscribeOnlineBoard() {
   }
 }
 
+// Small live top-4 preview shown on the Run Complete screen so players can see
+// the leading scores and whether they made the top. Live if online, else local.
+let endTopRef = null;
+function showEndTop() {
+  const el = document.getElementById("end-top");
+  if (!el) return;
+  const paint = (rows) => {
+    el.innerHTML = "";
+    if (!rows.length) {
+      el.innerHTML = `<li class="empty">No scores yet — you're first!</li>`;
+      return;
+    }
+    rows.slice(0, 4).forEach((s) => {
+      const li = document.createElement("li");
+      if (s.initials === state.initials) li.classList.add("me");
+      const a = document.createElement("span");
+      a.textContent = s.initials;
+      const b = document.createElement("span");
+      b.textContent = s.score;
+      li.append(a, b);
+      el.appendChild(li);
+    });
+  };
+  if (endTopRef) {
+    endTopRef.off();
+    endTopRef = null;
+  }
+  if (!fbDB) {
+    paint(getScores());
+    return;
+  }
+  endTopRef = fbDB.ref(boardPath());
+  endTopRef.on(
+    "value",
+    (snap) => {
+      const rows = [];
+      snap.forEach((c) => {
+        const v = c.val() || {};
+        if (v.initials != null)
+          rows.push({ initials: String(v.initials).slice(0, 3), score: Number(v.score) || 0 });
+      });
+      rows.sort((a, b) => b.score - a.score);
+      paint(rows);
+    },
+    () => paint(getScores()),
+  );
+}
+
 // Admin-only reset: add ?admin=1 to the URL to reveal a "Clear board" button on
 // the Leaderboard screen (so you can wipe today's board before the competition).
 function isAdmin() {
@@ -3265,8 +3320,14 @@ function setupControls() {
    ========================================================= */
 const REF_W = 430,
   REF_H = 860;
-const isDesktopWide = () =>
-  window.matchMedia("(min-aspect-ratio: 1/1) and (min-width: 760px)").matches;
+// True whenever #game is shown UNSCALED (transform:none) rather than via the
+// portrait scale-to-fit — i.e. the desktop side-panel layout OR phone/tablet
+// landscape. In those cases FIT must stay 1 so mini-game effect positions line up.
+const isLandscapeLayout = () =>
+  window.matchMedia("(min-aspect-ratio: 1/1)").matches &&
+  (window.matchMedia("(min-width: 760px) and (pointer: fine)").matches ||
+    window.matchMedia("(pointer: coarse)").matches);
+const isDesktopWide = isLandscapeLayout;
 
 function fitGame() {
   const g = document.getElementById("game");

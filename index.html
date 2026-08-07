@@ -186,6 +186,12 @@
             <div class="mhud-row">
               <span class="mhud-lbl">👪 FAMILY</span><span class="pips" id="mhud-family"></span>
             </div>
+            <div class="mhud-row">
+              <span class="mhud-lbl">⏱ TIME</span><b class="mhud-timeval" id="mhud-time">5:00</b>
+            </div>
+            <button class="btn tiny mhud-end" type="button" onclick="confirmEndRun()">
+              End Run
+            </button>
           </div>
 
           <div class="mhud-mission">
@@ -300,29 +306,48 @@
          SCREEN: END / GAME OVER
          ===================================================== -->
       <section id="screen-end" class="screen">
-        <h2 class="screen-title">Run Complete</h2>
-        <p class="big-score">Score: <b id="end-score">0</b></p>
-        <p id="end-rank" class="rank"></p>
-        <p class="slogan" id="end-slogan">Can you beat your score?</p>
+        <div class="end-celebrate">
+          <h2 class="end-title">Run Complete!</h2>
 
-        <div class="card small-print">
-          <p>
-            Influenza vaccination is free and available through Ontario's publicly funded flu
-            vaccine program.
-          </p>
-          <p>
-            Have questions about vaccines? Book an appointment with the VaxFacts+ Clinic for a
-            one-to-one, judgement-free phone conversation with a doctor. The goal is to give you
-            facts in a safe space so you can make an informed decision.
-          </p>
-          <a href="https://www.shn.ca/vaxfacts/" target="_blank" rel="noopener"
-            >www.shn.ca/vaxfacts</a
-          >
+          <div class="end-score-badge">
+            <span class="end-score-label">YOUR SCORE</span>
+            <span class="end-score-num" id="end-score">0</span>
+            <span class="spark sp1">✦</span>
+            <span class="spark sp2">✧</span>
+            <span class="spark sp3">✦</span>
+            <span class="spark sp4">✧</span>
+            <span class="spark sp5">✦</span>
+            <span class="spark sp6">✧</span>
+          </div>
+
+          <p id="end-rank" class="rank"></p>
+          <p class="slogan" id="end-slogan">Can you beat your score?</p>
+
+          <div class="card small-print end-card">
+            <p>
+              Influenza vaccination is free and available through Ontario's publicly funded flu
+              vaccine program.
+            </p>
+            <p>
+              Have questions about vaccines? Book an appointment with the VaxFacts+ Clinic for a
+              one-to-one, judgement-free phone conversation with a doctor. The goal is to give you
+              facts in a safe space so you can make an informed decision.
+            </p>
+            <a href="https://www.shn.ca/vaxfacts/" target="_blank" rel="noopener"
+              >Visit www.shn.ca/vaxfacts</a
+            >
+          </div>
         </div>
 
         <div class="menu row">
           <button class="btn btn-primary" onclick="beginGame()">Play Again</button>
           <button class="btn" onclick="showScreen('screen-home')">Back to Home</button>
+        </div>
+
+        <!-- Live top-scores preview so players can see where they stand -->
+        <div class="end-top-wrap">
+          <div class="end-top-title">🏆 Top scores today</div>
+          <ol id="end-top" class="leaderboard mini"></ol>
         </div>
       </section>
 
@@ -334,6 +359,20 @@
           <h3 id="popup-title">Title</h3>
           <p id="popup-text">Text</p>
           <div class="menu row" id="popup-actions"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rotate-to-play nudge: on a phone held upright, cover the screen and ask
+         the player to turn sideways (the maze plays much better in landscape).
+         Sits OUTSIDE #game so it isn't affected by the frame's scale transform.
+         Shown only on portrait touch devices via CSS. -->
+    <div id="rotate-nudge" aria-hidden="true">
+      <div class="rn-inner">
+        <div class="rn-icon">📱↻</div>
+        <div class="rn-title">Turn your phone sideways</div>
+        <div class="rn-sub">
+          Immunity Rush plays best in landscape — rotate your phone to start.
         </div>
       </div>
     </div>
