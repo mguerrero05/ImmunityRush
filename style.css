@@ -2286,10 +2286,9 @@ body {
 #screen-instructions .menu {
   margin-top: 18px;
 }
-/* Check-in (initials): center the whole block, nudged a little lower. */
+/* Check-in (initials): dead-center the whole block. */
 #screen-initials {
   justify-content: center;
-  padding-top: 9vh;
 }
 #screen-initials .menu {
   margin-top: 16px;
