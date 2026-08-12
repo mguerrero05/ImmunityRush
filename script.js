@@ -1858,7 +1858,8 @@ function openLinkZonePopup(z) {
     '<p class="vc-text">Have questions about vaccines? Book an appointment with the <b>VaxFacts+ Clinic</b> for a one-to-one, judgement-free phone conversation with a doctor. The goal is to give you facts in a safe space so you can make an informed decision.</p>' +
     '<p class="vc-text">A flu shot helps protect <b>you, your loved ones and your community</b>.</p>' +
     '<div class="vc-btns">' +
-    '<button class="btn btn-primary vc-visit" type="button">Visit SHN VaxFacts</button>' +
+    '<button class="btn btn-vaccine vc-vaccine" type="button">💉 Ready to Get Your Flu Vaccine?</button>' +
+    '<button class="btn vc-visit" type="button">Visit SHN VaxFacts</button>' +
     '<button class="btn vc-back" type="button">Back to maze</button>' +
     "</div>" +
     "</div>";
@@ -1872,11 +1873,82 @@ function openLinkZonePopup(z) {
     ov.innerHTML = "";
     resumeMazeAfterZone();
   };
+  ov.querySelector(".vc-vaccine").onclick = () => openVaccineInfo();
   ov.querySelector(".vc-visit").onclick = () => {
     window.open(z.url, "_blank", "noopener");
     close();
   };
   ov.querySelector(".vc-back").onclick = close;
+}
+
+/* =========================================================
+   "READY TO GET YOUR FLU VACCINE?" — in-game info page
+   Temporary placeholder info. To UPDATE later, edit the single VACCINE_INFO
+   object below (dates, hours, notes, and add links) — the page re-renders from
+   it. Opened from the Run Complete screen and the VaxFacts+ clinic popup.
+   ========================================================= */
+const VACCINE_INFO = {
+  title: "Ready to Get Your Flu Vaccine?",
+  intro:
+    "Flu vaccines will be available at SHN Workplace Health & Safety clinics beginning October 15.",
+  clinicsHeading: "Upcoming Kickoff Clinic Dates",
+  clinics: [
+    { date: "October 15", place: "General Hospital" },
+    { date: "October 20", place: "Centenary Hospital" },
+    { date: "October 22", place: "Birchmount Hospital" },
+  ],
+  hoursHeading: "Clinic Hours",
+  hoursNote: "Clinic hours will be updated once they are confirmed.",
+  meantimeLead: "In the meantime:",
+  meantime: [
+    {
+      icon: "🏥",
+      text: "Check with your Workplace Health & Safety Department for the latest information.",
+    },
+    { icon: "💊", text: "Visit your local pharmacy for flu vaccine availability." },
+  ],
+  footnote:
+    "Direct access to SHN Workplace Health & Safety clinic schedules and booking information will be added to this page once it becomes available.",
+};
+
+function renderVaccineInfo() {
+  const card = document.getElementById("vaccine-info-card");
+  if (!card) return;
+  const v = VACCINE_INFO;
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const clinics = v.clinics
+    .map(
+      (c) =>
+        `<li><span class="vinfo-date">📅 ${esc(c.date)}</span><span class="vinfo-place">🏥 ${esc(c.place)}</span></li>`,
+    )
+    .join("");
+  const meantime = v.meantime
+    .map((m) => `<li><span class="vinfo-ico">${esc(m.icon)}</span>${esc(m.text)}</li>`)
+    .join("");
+  card.innerHTML =
+    `<h2 class="vinfo-title">${esc(v.title)}</h2>` +
+    `<p class="vinfo-intro">${esc(v.intro)}</p>` +
+    `<div class="vinfo-section"><h3 class="vinfo-h">${esc(v.clinicsHeading)}</h3>` +
+    `<ul class="vinfo-list vinfo-clinics">${clinics}</ul></div>` +
+    `<div class="vinfo-section"><h3 class="vinfo-h">${esc(v.hoursHeading)}</h3>` +
+    `<p class="vinfo-note-line">${esc(v.hoursNote)}</p>` +
+    `<p class="vinfo-lead">${esc(v.meantimeLead)}</p>` +
+    `<ul class="vinfo-list">${meantime}</ul></div>` +
+    `<div class="vinfo-footnote"><span class="vinfo-ico">ℹ️</span>${esc(v.footnote)}</div>` +
+    `<div class="menu"><button class="btn btn-primary" id="vinfo-back" type="button">Back</button></div>`;
+  card.querySelector("#vinfo-back").onclick = closeVaccineInfo;
+}
+function openVaccineInfo() {
+  renderVaccineInfo();
+  const ov = document.getElementById("vaccine-info");
+  if (ov) {
+    ov.scrollTop = 0;
+    ov.classList.add("show");
+  }
+}
+function closeVaccineInfo() {
+  const ov = document.getElementById("vaccine-info");
+  if (ov) ov.classList.remove("show");
 }
 
 // Pop-up asking the player to start a mini-game.

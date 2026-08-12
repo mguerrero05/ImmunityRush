@@ -2118,6 +2118,133 @@ body {
   color: var(--shn-blue-2);
   font-weight: 800;
 }
+
+/* =========================================================
+   "Ready to Get Your Flu Vaccine?" CTA button + in-game info page
+   ========================================================= */
+/* Green health-themed CTA (used on the end screen + VaxFacts popup). */
+.btn-vaccine {
+  width: 100%;
+  max-width: 320px;
+  margin: 10px auto 0;
+  background: linear-gradient(180deg, #3ddc84, var(--shn-green, #34c759));
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 6px 16px rgba(20, 122, 64, 0.34);
+}
+.btn-vaccine:active {
+  transform: scale(0.97);
+}
+
+/* Info-page overlay (sits inside the game frame, above everything). */
+.vinfo-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 300;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(9, 32, 56, 0.55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+.vinfo-overlay.show {
+  display: flex;
+}
+.vinfo-card {
+  width: 100%;
+  max-width: 380px;
+  max-height: 92%;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 20px;
+  padding: 22px 22px 18px;
+  box-shadow: 0 18px 50px rgba(9, 32, 56, 0.4);
+  text-align: left;
+}
+.vinfo-title {
+  font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--shn-blue);
+  text-align: center;
+  margin: 2px 0 12px;
+}
+.vinfo-intro {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: #2c4a63;
+  text-align: center;
+  margin: 0 0 16px;
+}
+.vinfo-section {
+  margin-bottom: 14px;
+}
+.vinfo-h {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--shn-blue-2);
+  margin: 0 0 8px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #e3eef8;
+}
+.vinfo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.vinfo-list li {
+  font-size: 14px;
+  line-height: 1.45;
+  color: #2c4a63;
+  padding: 7px 0;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.vinfo-clinics li {
+  justify-content: space-between;
+  border-bottom: 1px dashed #e3eef8;
+}
+.vinfo-date {
+  font-weight: 700;
+  color: var(--shn-blue);
+  white-space: nowrap;
+}
+.vinfo-place {
+  color: #2c4a63;
+  text-align: right;
+}
+.vinfo-ico {
+  flex: none;
+}
+.vinfo-lead {
+  font-weight: 700;
+  color: var(--shn-blue);
+  margin: 10px 0 4px;
+}
+.vinfo-note-line {
+  font-size: 13.5px;
+  color: #5a7286;
+  font-style: italic;
+  margin: 0 0 6px;
+}
+.vinfo-footnote {
+  margin-top: 12px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #5a7286;
+  background: #eef6fb;
+  border: 1px solid #d7e6f2;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  gap: 8px;
+}
+.vinfo-card .menu {
+  margin-top: 16px;
+}
 .leaderboard.mini {
   max-width: 300px;
   margin: 0 auto;

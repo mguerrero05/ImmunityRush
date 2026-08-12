@@ -363,6 +363,11 @@
           <button class="btn" onclick="showScreen('screen-home')">Back to Home</button>
         </div>
 
+        <!-- Opens the in-game vaccine info page (not an external site) -->
+        <button class="btn btn-vaccine" type="button" onclick="openVaccineInfo()">
+          💉 Ready to Get Your Flu Vaccine?
+        </button>
+
         <!-- Feedback (the game is still in its feedback/testing stage) -->
         <div class="end-feedback">
           <p class="end-feedback-note">
@@ -391,6 +396,17 @@
           <p id="popup-text">Text</p>
           <div class="menu row" id="popup-actions"></div>
         </div>
+      </div>
+
+      <!-- In-game "Ready to Get Your Flu Vaccine?" info page. Content is rendered
+           from the VACCINE_INFO object in script.js (renderVaccineInfo). -->
+      <div
+        id="vaccine-info"
+        class="vinfo-overlay"
+        role="dialog"
+        aria-label="Ready to get your flu vaccine"
+      >
+        <div id="vaccine-info-card" class="vinfo-card"></div>
       </div>
     </div>
 
