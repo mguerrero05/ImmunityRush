@@ -1129,7 +1129,7 @@ function buildMaze() {
   // --- Collectibles: scatter several of each type ---
   liveCollectibles = [];
   const spots = [
-    [100, 260],
+    [1000, 500], // shield — moved from the start over near the Memory Clinic
     [100, 780], // lane 1
     [370, 260],
     [280, 780],
@@ -1854,8 +1854,8 @@ function openLinkZonePopup(z) {
     '<div class="vc-emoji">🎉</div>' +
     '<h2 class="vc-title">Congratulations!</h2>' +
     '<p class="vc-sub">You made it to the VaxFacts Clinic!</p>' +
-    "<p class=\"vc-text\">You've completed the maze and learned how vaccines help protect you and your community. Now you're ready to take the next step: <b>consider getting your flu shot!</b></p>" +
-    '<p class="vc-text">Have questions or want to learn more? Visit <b>SHN VaxFacts</b>. You can also contact them or book an appointment, and the team will help you get started.</p>' +
+    '<p class="vc-text">Influenza vaccination is <b>free</b> and available through Ontario\'s publicly funded flu vaccine program.</p>' +
+    '<p class="vc-text">Have questions about vaccines? Book an appointment with the <b>VaxFacts+ Clinic</b> for a one-to-one, judgement-free phone conversation with a doctor. The goal is to give you facts in a safe space so you can make an informed decision.</p>' +
     '<div class="vc-btns">' +
     '<button class="btn btn-primary vc-visit" type="button">Visit SHN VaxFacts</button>' +
     '<button class="btn vc-back" type="button">Back to maze</button>' +
@@ -2366,7 +2366,12 @@ function freezeRefill() {
 function spawnFreezeBubble(slot) {
   if (!freezeActive) return;
   const stage = document.getElementById("freeze-stage");
-  const positive = Math.random() < 0.5;
+  // Statements are drawn randomly (with repeats) from the pools, so they never
+  // run out. But make sure there's ALWAYS at least one TRUE fact to zap — if none
+  // are on screen, force this one positive; otherwise lean slightly toward facts
+  // so you're not left with only myths.
+  const liveFacts = freeze.bubbles.filter((b) => b.positive && !b.dead && !b.removed).length;
+  const positive = liveFacts === 0 ? true : Math.random() < 0.58;
   const data = positive ? rand(FREEZE_POSITIVE) : rand(FREEZE_NEGATIVE);
   const s = FREEZE_SLOTS[slot];
   const el = document.createElement("div");
