@@ -802,3 +802,13 @@
   re-fetch the HTML, so a full page reload / incognito is needed to see HTML-only changes). Verified
   live via curl. Reminder: `showInstructions(preGame)` hides Continue + makes Back primary when the
   page is opened from the home "Instructions" button (viewing mode) vs the Start-Game flow.
+- 2026-08-11 (session 46 — shield move, freeze fact-guarantee, VaxFacts popup copy): (1) Moved the
+  SHIELD collectible from the start `spots[0]` `[100,260]` to `[1000,500]` near the Memory Clinic
+  zone (1030,438) — verified on-floor + reachable via a wallmask decode script (`/tmp/checkfloor.mjs`;
+  spots assign `COLLECTIBLES[i%5]` so index 0 = shield). (2) Flu Freeze `spawnFreezeBubble`: pools are
+  drawn with `rand()` (repeats, never run out), but now guarantees ≥1 TRUE fact on screen (force
+  positive when `liveFacts===0`) and leans ~58% positive so you're never left with only myths. 17
+  facts is plenty; can add more to FREEZE_POSITIVE for variety if wanted. (3) VaxFacts+ clinic
+  walk-in popup (`openLinkZonePopup` vc-text) replaced with the "Influenza vaccination is free …
+  Book an appointment with the VaxFacts+ Clinic …" copy (kept the Congratulations heading + buttons),
+  plus a closing line "A flu shot helps protect you, your loved ones and your community."

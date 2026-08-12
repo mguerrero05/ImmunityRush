@@ -1856,6 +1856,7 @@ function openLinkZonePopup(z) {
     '<p class="vc-sub">You made it to the VaxFacts Clinic!</p>' +
     '<p class="vc-text">Influenza vaccination is <b>free</b> and available through Ontario\'s publicly funded flu vaccine program.</p>' +
     '<p class="vc-text">Have questions about vaccines? Book an appointment with the <b>VaxFacts+ Clinic</b> for a one-to-one, judgement-free phone conversation with a doctor. The goal is to give you facts in a safe space so you can make an informed decision.</p>' +
+    '<p class="vc-text">A flu shot helps protect <b>you, your loved ones and your community</b>.</p>' +
     '<div class="vc-btns">' +
     '<button class="btn btn-primary vc-visit" type="button">Visit SHN VaxFacts</button>' +
     '<button class="btn vc-back" type="button">Back to maze</button>' +
