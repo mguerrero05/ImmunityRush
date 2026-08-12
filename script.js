@@ -1890,25 +1890,22 @@ function openLinkZonePopup(z) {
 const VACCINE_INFO = {
   title: "Ready to Get Your Flu Vaccine?",
   intro:
-    "Flu vaccines will be available at SHN Workplace Health & Safety clinics beginning October 15.",
-  clinicsHeading: "Upcoming Kickoff Clinic Dates",
-  clinics: [
-    { date: "October 15", place: "General Hospital" },
-    { date: "October 20", place: "Centenary Hospital" },
-    { date: "October 22", place: "Birchmount Hospital" },
-  ],
+    "Protect yourself, your patients, and those around you by getting your annual flu vaccine.",
+  clinicsHeading: "SHN Workplace Health & Safety Clinics",
+  clinicsIntro: "Flu vaccines will be available beginning October 15.",
   hoursHeading: "Clinic Hours",
-  hoursNote: "Clinic hours will be updated once they are confirmed.",
-  meantimeLead: "In the meantime:",
-  meantime: [
-    {
-      icon: "🏥",
-      text: "Check with your Workplace Health & Safety Department for the latest information.",
-    },
-    { icon: "💊", text: "Visit your local pharmacy for flu vaccine availability." },
+  hours: ["Monday–Friday", "7:30 a.m. – 3:30 p.m."],
+  hoursNote: "No appointment is required—simply drop in during clinic hours.",
+  locationsHeading: "Office Locations",
+  locations: [
+    { hospital: "General Hospital", detail: "(Office location to be added)" },
+    { hospital: "Centenary Hospital", detail: "(Office location to be added)" },
+    { hospital: "Birchmount Hospital", detail: "(Office location to be added)" },
   ],
+  otherHeading: "Other Options",
+  other: [{ icon: "💊", text: "Flu vaccines are also available at your local pharmacy." }],
   footnote:
-    "Direct access to SHN Workplace Health & Safety clinic schedules and booking information will be added to this page once it becomes available.",
+    "Additional Workplace Health & Safety clinic details, office locations, and direct SHN links will be added here once they become available.",
 };
 
 function renderVaccineInfo() {
@@ -1916,24 +1913,28 @@ function renderVaccineInfo() {
   if (!card) return;
   const v = VACCINE_INFO;
   const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const clinics = v.clinics
+  const hours = v.hours.map((h) => `<div class="vinfo-hours-line">${esc(h)}</div>`).join("");
+  const locations = v.locations
     .map(
-      (c) =>
-        `<li><span class="vinfo-date">📅 ${esc(c.date)}</span><span class="vinfo-place">🏥 ${esc(c.place)}</span></li>`,
+      (l) =>
+        `<li><span class="vinfo-loc-name">🏥 ${esc(l.hospital)}</span><span class="vinfo-loc-detail">${esc(l.detail)}</span></li>`,
     )
     .join("");
-  const meantime = v.meantime
-    .map((m) => `<li><span class="vinfo-ico">${esc(m.icon)}</span>${esc(m.text)}</li>`)
+  const other = v.other
+    .map((o) => `<li><span class="vinfo-ico">${esc(o.icon)}</span>${esc(o.text)}</li>`)
     .join("");
   card.innerHTML =
     `<h2 class="vinfo-title">${esc(v.title)}</h2>` +
     `<p class="vinfo-intro">${esc(v.intro)}</p>` +
     `<div class="vinfo-section"><h3 class="vinfo-h">${esc(v.clinicsHeading)}</h3>` +
-    `<ul class="vinfo-list vinfo-clinics">${clinics}</ul></div>` +
+    `<p class="vinfo-note-line">${esc(v.clinicsIntro)}</p></div>` +
     `<div class="vinfo-section"><h3 class="vinfo-h">${esc(v.hoursHeading)}</h3>` +
-    `<p class="vinfo-note-line">${esc(v.hoursNote)}</p>` +
-    `<p class="vinfo-lead">${esc(v.meantimeLead)}</p>` +
-    `<ul class="vinfo-list">${meantime}</ul></div>` +
+    `<div class="vinfo-hours">${hours}</div>` +
+    `<p class="vinfo-note-line">${esc(v.hoursNote)}</p></div>` +
+    `<div class="vinfo-section"><h3 class="vinfo-h">${esc(v.locationsHeading)}</h3>` +
+    `<ul class="vinfo-list vinfo-locations">${locations}</ul></div>` +
+    `<div class="vinfo-section"><h3 class="vinfo-h">${esc(v.otherHeading)}</h3>` +
+    `<ul class="vinfo-list">${other}</ul></div>` +
     `<div class="vinfo-footnote"><span class="vinfo-ico">ℹ️</span>${esc(v.footnote)}</div>` +
     `<div class="menu"><button class="btn btn-primary" id="vinfo-back" type="button">Back</button></div>`;
   card.querySelector("#vinfo-back").onclick = closeVaccineInfo;

@@ -2230,6 +2230,37 @@ body {
   font-style: italic;
   margin: 0 0 6px;
 }
+/* Clinic hours — a small highlighted box so the when/where reads instantly. */
+.vinfo-hours {
+  text-align: center;
+  background: #eef6fb;
+  border: 1px solid #d7e6f2;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.vinfo-hours-line {
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--shn-blue);
+}
+/* Office-location rows: hospital name left, placeholder detail right. */
+.vinfo-locations li {
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px dashed #e3eef8;
+}
+.vinfo-loc-name {
+  font-weight: 700;
+  color: var(--shn-blue);
+}
+.vinfo-loc-detail {
+  color: #8095a8;
+  font-style: italic;
+  font-size: 12.5px;
+  text-align: right;
+}
 .vinfo-footnote {
   margin-top: 12px;
   font-size: 12.5px;
