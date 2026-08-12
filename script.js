@@ -1129,7 +1129,7 @@ function buildMaze() {
   // --- Collectibles: scatter several of each type ---
   liveCollectibles = [];
   const spots = [
-    [1000, 500], // shield — moved from the start over near the Memory Clinic
+    [640, 430], // shield — relocated to an open central spot on the route
     [100, 780], // lane 1
     [370, 260],
     [280, 780],
@@ -1142,7 +1142,7 @@ function buildMaze() {
     [790, 640], // lane 4
     [900, 400],
     [900, 620],
-    [960, 800], // lane 5
+    [300, 540], // family — relocated to an open spot on the route
   ];
   spots.forEach((s, i) => {
     const data = COLLECTIBLES[i % COLLECTIBLES.length];
