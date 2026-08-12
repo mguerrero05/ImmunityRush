@@ -812,3 +812,17 @@
   walk-in popup (`openLinkZonePopup` vc-text) replaced with the "Influenza vaccination is free …
   Book an appointment with the VaxFacts+ Clinic …" copy (kept the Congratulations heading + buttons),
   plus a closing line "A flu shot helps protect you, your loved ones and your community."
+- 2026-08-11 (session 47 — vaccine info page + collectible relocations): NEW FEATURE: in-game
+  "Ready to Get Your Flu Vaccine?" info page — an overlay `#vaccine-info` (inside #game, z-index 300,
+  scrollable card) rendered from a SINGLE data object `VACCINE_INFO` in script.js
+  (`renderVaccineInfo`/`openVaccineInfo`/`closeVaccineInfo`). To update later just edit VACCINE_INFO
+  (intro, `clinics[]` date/place, hoursNote, `meantime[]`, footnote). Opened from (a) a green
+  `.btn-vaccine` "💉 Ready to Get Your Flu Vaccine?" button on the Run Complete screen (under Play
+  Again/Back to Home) and (b) a matching `.vc-vaccine` button added to the VaxFacts+ clinic popup
+  (`openLinkZonePopup`; kept Visit SHN VaxFacts + Back to maze). CSS `.vinfo-*` + `.btn-vaccine`
+  (uses `--shn-green`). Back button closes the overlay. COLLECTIBLE MOVES (in the `spots` array in
+  the maze builder; types cycle `COLLECTIBLES[i%5]`, so idx0=shield, idx13=family): shield moved
+  from start→(1000,500) near Memory Clinic, then per feedback relocated to open central (640,430);
+  the family token at (960,800) relocated to (300,540). Both verified on-floor + reachable via a
+  wallmask flood-fill from SPAWN (328,180) (script `/tmp/reach.mjs`). Other shields (spots 5,10) and
+  families (spots 3,8) unchanged.
