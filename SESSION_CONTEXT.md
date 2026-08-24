@@ -826,3 +826,14 @@
   the family token at (960,800) relocated to (300,540). Both verified on-floor + reachable via a
   wallmask flood-fill from SPAWN (328,180) (script `/tmp/reach.mjs`). Other shields (spots 5,10) and
   families (spots 3,8) unchanged.
+- 2026-08-24 (session 48 — vaccine page content rewrite; staff/patient hazard sprites incoming):
+  Rewrote the `VACCINE_INFO` object + `renderVaccineInfo` to the finalized content: intro "Protect
+  yourself, your patients…", "SHN Workplace Health & Safety Clinics" (available Oct 15), Clinic Hours
+  box (Mon–Fri 7:30 a.m.–3:30 p.m., no appointment), Office Locations placeholders (General/
+  Centenary/Birchmount – "(Office location to be added)"), Other Options (💊 pharmacy), footnote.
+  New CSS `.vinfo-hours`/`.vinfo-hours-line`/`.vinfo-locations`/`.vinfo-loc-name`/`.vinfo-loc-detail`.
+  NEXT/IN PROGRESS: replacing the germ hazard visual (currently `assets/icons/germ.png` in a `.hazard`
+  div, 5 patrols moving vertically via `spawnHazards`/`updateHazards`, box 30x30, vy bounce between
+  min/max) with animated WALKING staff/patient sprites (user is providing sprite sheets → folder
+  `assets/hazards/`, faces down when vy>0 / up when vy<0). Will need a walk-anim render + person-sized
+  visual with a sensible hit box.
