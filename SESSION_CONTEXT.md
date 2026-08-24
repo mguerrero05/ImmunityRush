@@ -848,3 +848,15 @@
   (1536x1024), `roamer-3.png` (1254x1254) — DIFFERENT layouts, so each needs its grid read
   individually before wiring the walk animation to replace germ.png. NOT wired yet (germs still use
   germ.png); the 3 sprites are committed but unused for now.
+- 2026-08-24 (session 50 — roamers WIRED: germs → walking staff/patients): Replaced the germ visual
+  with animated walking people. All 3 sheets are **4 cols × 2 rows** (top=down, bottom=up). roamer-2
+  & roamer-3 shipped with a MAGENTA background (~251,3,250) — chroma-keyed to transparent (`/tmp/chroma.mjs`,
+  writes RGBA). Frames were drifting sideways up to ~90px (the "rocking") → RE-CENTERED every frame to
+  its cell's alpha-centroid so they walk a straight line (`/tmp/recenter.mjs`). `ROAMER_SHEETS`
+  (name+per-sheet display w/h since cell aspects differ: r1/r2 68×90, r3 46×90) + `paintHazardRoamer(d,h,i)`
+  render a `.roamer-sprite` (bg-size 400% 200%, `roamerWalk` keyframes cycle 4 frames; `.hazard.roamer`
+  drops the red threat glow). `updateHazards` sets `data-facing` (down if vy≥0 else up) each frame.
+  Per FEEDBACK: walking UP uses the SAME row as down (`[data-facing="up"] .roamer-sprite{background-position-y:0%}`),
+  and trimmed the maze to the ORIGINAL 3 patrollers (removed the 4th far-right (1205,400) one) → one
+  distinct sprite each. NOTE: both germ-creation loops (buildImageMaze inline + legacy `spawnHazards`)
+  updated via one replace_all. germ.png now unused. Open: size/position tuning is by-feel.
