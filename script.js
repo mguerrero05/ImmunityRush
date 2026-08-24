@@ -798,6 +798,7 @@ function beginGame() {
   state.health = 3;
   state.shielded = false;
   state.speedBoost = false;
+  slowTimer = 0; // clear any sick slow-down at the start of a run
   state.family = 0;
   // Clear mini-game state so zone doors work again on a fresh run. Without this,
   // dying in a mini-game (which ends the run) left zoneCooldown stuck "on", so
@@ -962,6 +963,9 @@ let walls = [];
 let liveCollectibles = []; // {el, x, y, w, h, data}
 let hazards = []; // patrolling flu germs {el, x, y, w, h, min, max, vy}
 let hazardCooldown = 0; // frames of immunity after a hazard hit
+let slowTimer = 0; // frames of "feeling sick" slow-down after a hazard hit
+const SLOW_FRAMES = 180; // ~3s of walking slower after getting hit
+const SLOW_FACTOR = 0.5; // half speed while slowed
 let keycard = null; // {el, x, y, w, h} — unlocks the vault
 let lockedDoor = null; // {rect, el} — blocks the vault until the keycard is found
 let vaultHintShown = false; // one-time "find the keycard" hint near the locked door
@@ -1465,7 +1469,7 @@ function loopMaze() {
     mazeFrame = requestAnimationFrame(loopMaze);
     return;
   }
-  const spd = player.speed * (state.speedBoost ? 2 : 1);
+  const spd = player.speed * (state.speedBoost ? 2 : 1) * (slowTimer > 0 ? SLOW_FACTOR : 1);
   let dx = 0,
     dy = 0;
   if (keys.up) dy -= spd;
@@ -1680,6 +1684,9 @@ function spawnHazards(worldEl) {
 }
 function updateHazards() {
   if (hazardCooldown > 0) hazardCooldown--;
+  if (slowTimer > 0) slowTimer--;
+  const pElSick = document.getElementById("player");
+  if (pElSick) pElSick.classList.toggle("slowed", slowTimer > 0);
   const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
   hazards.forEach((h) => {
     h.y += h.vy;
@@ -1705,11 +1712,13 @@ function hitByHazard() {
   playSound("hit");
   shake();
   floatText("-30", c.x, c.y, "#ff6b6b");
+  slowTimer = SLOW_FRAMES; // getting sick slows you down for a few seconds
+  floatText("Slowed!", c.x, c.y - 34, "#ffb020");
   bigMessage(rand(HAZARD_LINES), {
-    icon: "🦠",
-    title: "-30",
+    icon: "⚠️",
+    title: "Warning — you're at risk!",
     tone: "warn",
-    duration: 1500,
+    duration: 1600,
   });
   // Small knockback — but ONLY if the destination is clear floor. Uses the pixel
   // mask (playerInWall), because in image-maze mode the `walls` array is empty, so

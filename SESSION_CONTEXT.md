@@ -837,3 +837,14 @@
   min/max) with animated WALKING staff/patient sprites (user is providing sprite sheets → folder
   `assets/hazards/`, faces down when vy>0 / up when vy<0). Will need a walk-anim render + person-sized
   visual with a sensible hit box.
+- 2026-08-24 (session 49 — hazard slow-down + at-risk warning; facts/myths PDF; sprites dropped in):
+  Getting hit by a hazard now SLOWS the player (`slowTimer`=SLOW_FRAMES 180 ≈3s, `SLOW_FACTOR` 0.5;
+  applied in the movement `spd` calc; decremented + `.slowed` class toggled in `updateHazards`; reset
+  to 0 in beginGame). Hit `bigMessage` reworded to "⚠️ Warning — you're at risk!" (+ "Slowed!"
+  floatText); `#player.slowed` CSS gives a pale/sick filter tint (filter only — a transform would
+  fight the player's scale). Facts/myths review doc `Immunity-Rush-Facts-and-Myths-Review.md` (19
+  facts, 12 myths, 9 flags) built by a subagent + exported to `~/Desktop/Immunity-Rush-Facts-and-Myths-Review.pdf`.
+  STAFF/PATIENT SPRITES: user dropped `assets/hazards/roamer-1.png` (1536x1024), `roamer-2.png`
+  (1536x1024), `roamer-3.png` (1254x1254) — DIFFERENT layouts, so each needs its grid read
+  individually before wiring the walk animation to replace germ.png. NOT wired yet (germs still use
+  germ.png); the 3 sprites are committed but unused for now.

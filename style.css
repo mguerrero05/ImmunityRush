@@ -1173,6 +1173,11 @@ body {
   display: block;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
 }
+/* "Feeling sick" look while the player is slowed after a hazard hit (filter only —
+   a transform here would fight the player's facing/scale transform). */
+#player.slowed {
+  filter: brightness(0.88) saturate(0.5) hue-rotate(-8deg);
+}
 .spr-label {
   line-height: 1.2;
 }
