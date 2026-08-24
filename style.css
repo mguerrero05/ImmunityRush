@@ -4782,6 +4782,49 @@ img {
   width: 48px;
   height: 48px;
 }
+/* Staff/patient walking sprite replacing the germ. Sheets are 4 cols × 2 rows
+   (top = walking down, bottom = walking up); JS sets per-sheet width/height inline
+   and toggles data-facing. */
+.hazard.roamer {
+  filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.3)); /* soft shadow, not the red threat glow */
+}
+.img-mode .hazard.roamer {
+  width: 44px;
+  height: 44px;
+}
+.roamer-sprite {
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  background-repeat: no-repeat;
+  background-size: 400% 200%;
+  background-position-x: 0%;
+  background-position-y: 0%;
+  pointer-events: none;
+  animation: roamerWalk 0.62s infinite;
+}
+.hazard.roamer[data-facing="up"] .roamer-sprite {
+  background-position-y: 100%;
+}
+@keyframes roamerWalk {
+  0%,
+  24.99% {
+    background-position-x: 0%;
+  }
+  25%,
+  49.99% {
+    background-position-x: 33.333%;
+  }
+  50%,
+  74.99% {
+    background-position-x: 66.667%;
+  }
+  75%,
+  99.99% {
+    background-position-x: 100%;
+  }
+}
 /* Clinic entry markers: a soft glowing pad over the room doorway. */
 .img-mode .zone {
   width: 128px;

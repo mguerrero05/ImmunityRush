@@ -1264,10 +1264,9 @@ function buildImageMaze(worldEl) {
     { x: 1205, y: 400, w: 46, h: 46, min: 340, max: 560, vy: 1.7 }, // far-right corridor (kept right so you can pass on the left)
   ];
   hazardCooldown = 0;
-  hazards.forEach((h) => {
+  hazards.forEach((h, i) => {
     const d = document.createElement("div");
-    d.className = "hazard";
-    d.innerHTML = '<img class="hazard-img" src="assets/icons/germ.png?v=1" alt="">';
+    paintHazardRoamer(d, h, i);
     d.style.left = h.x + "px";
     d.style.top = h.y + "px";
     worldEl.appendChild(d);
@@ -1663,6 +1662,23 @@ function resetPowerups() {
 /* ---------- Patrolling flu hazards ---------- */
 // Flu germs drift up and down the lanes. Touch one and you take a hit
 // (lose health + points) unless your shield is up, which absorbs it.
+// Staff/patient sprite sheets that replace the germs (each is 4 columns × 2 rows:
+// TOP row = walking DOWN, BOTTOM row = walking UP). Cell aspect differs per sheet,
+// so each carries its own display width/height to avoid stretching.
+const ROAMER_SHEETS = [
+  { name: "roamer-1", w: 68, h: 90 },
+  { name: "roamer-2", w: 68, h: 90 },
+  { name: "roamer-3", w: 46, h: 90 },
+];
+function paintHazardRoamer(d, h, i) {
+  d.className = "hazard roamer";
+  d.dataset.facing = h.vy >= 0 ? "down" : "up";
+  const s = ROAMER_SHEETS[i % ROAMER_SHEETS.length];
+  d.innerHTML =
+    `<div class="roamer-sprite" style="width:${s.w}px;height:${s.h}px;` +
+    `background-image:url('assets/hazards/${s.name}.png?v=1')"></div>`;
+}
+
 function spawnHazards(worldEl) {
   hazards = [
     { x: 100, y: 300, w: 30, h: 30, min: 200, max: 950, vy: 2.0 }, // lane 1
@@ -1672,10 +1688,9 @@ function spawnHazards(worldEl) {
     { x: 900, y: 400, w: 30, h: 30, min: 200, max: 520, vy: 2.4 }, // lane 5 (upper)
   ];
   hazardCooldown = 0;
-  hazards.forEach((h) => {
+  hazards.forEach((h, i) => {
     const d = document.createElement("div");
-    d.className = "hazard";
-    d.innerHTML = '<img class="hazard-img" src="assets/icons/germ.png?v=1" alt="">';
+    paintHazardRoamer(d, h, i);
     d.style.left = h.x + "px";
     d.style.top = h.y + "px";
     worldEl.appendChild(d);
@@ -1692,6 +1707,7 @@ function updateHazards() {
     h.y += h.vy;
     if (h.y <= h.min || h.y >= h.max) h.vy *= -1;
     h.el.style.top = h.y + "px";
+    h.el.dataset.facing = h.vy >= 0 ? "down" : "up"; // face down going down, up going up
     if (hazardCooldown === 0 && overlap(pBox, { x: h.x, y: h.y, w: h.w, h: h.h })) {
       hitByHazard();
     }
