@@ -1675,7 +1675,7 @@ function paintHazardRoamer(d, h, i) {
   const s = ROAMER_SHEETS[i % ROAMER_SHEETS.length];
   d.innerHTML =
     `<div class="roamer-sprite" style="width:${s.w}px;height:${s.h}px;` +
-    `background-image:url('assets/hazards/${s.name}.png?v=1')"></div>`;
+    `background-image:url('assets/hazards/${s.name}.png?v=2')"></div>`;
 }
 
 function spawnHazards(worldEl) {
