@@ -4804,8 +4804,10 @@ img {
   pointer-events: none;
   animation: roamerWalk 0.62s infinite;
 }
+/* Walking up uses the SAME row as walking down (per feedback) — both face the
+   way the down sprite faces. */
 .hazard.roamer[data-facing="up"] .roamer-sprite {
-  background-position-y: 100%;
+  background-position-y: 0%;
 }
 @keyframes roamerWalk {
   0%,

@@ -1261,7 +1261,6 @@ function buildImageMaze(worldEl) {
     { x: 700, y: 430, w: 46, h: 46, min: 360, max: 500, vy: 1.8 },
     { x: 950, y: 540, w: 46, h: 46, min: 460, max: 640, vy: -1.8 },
     { x: 560, y: 640, w: 46, h: 46, min: 560, max: 720, vy: 1.6 },
-    { x: 1205, y: 400, w: 46, h: 46, min: 340, max: 560, vy: 1.7 }, // far-right corridor (kept right so you can pass on the left)
   ];
   hazardCooldown = 0;
   hazards.forEach((h, i) => {
