@@ -860,3 +860,17 @@
   and trimmed the maze to the ORIGINAL 3 patrollers (removed the 4th far-right (1205,400) one) → one
   distinct sprite each. NOTE: both germ-creation loops (buildImageMaze inline + legacy `spawnHazards`)
   updated via one replace_all. germ.png now unused. Open: size/position tuning is by-feel.
+- 2026-08-26 (session 51 — flu-exposure flash, cache-busting, arrows-right, 4th roamer): (1) Roamer
+  hit now shows a GREEN "flu exposure" wash (`#flu-flash` div in #game, `fluFlash()` re-triggers the
+  `fluFlash` keyframes) + a PER-PERSON message: `FLU_EXPOSURE[i%len]` set on `h.msg` in
+  paintHazardRoamer, shown by `hitByHazard(h)` ("contact → week off work", "exposed → miss booked
+  vacation", "close contact → home sick vs family"). (2) CACHE-BUSTING: index.html now loads
+  `style.css?v=N` + `script.js?v=N` (currently **v=4**) and roamer images `?v=2` — BUMP the v when
+  script/style change so users don't get stale cached JS (this was the recurring "nothing changed"
+  problem; verified deploys via curl). (3) Direction arrows (`updateDirectionArrows`) now STACK down
+  the RIGHT side (`right:8px`, top 70+idx*26) instead of pointing from all edges — removed the orange
+  darts label floating over Memory Match. (4) 4th roamer added: `roamer-4.png` (4×2, transparent,
+  re-centered) → ROAMER_SHEETS idx3; a HORIZONTAL patroller `{x:600,y:520,min:500,max:700,vx:1.6}` on
+  the open mid corridor (verified floor+reachable), 2nd-from-left. `updateHazards` now branches on
+  `h.vx` (horizontal, bounce on X) vs `h.vy` (vertical); horizontal walkers face the camera (down row,
+  since sheets are front/back only). To add more horizontal walkers, give the hazard a `vx` + X min/max.
