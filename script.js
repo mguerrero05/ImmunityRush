@@ -1669,9 +1669,16 @@ const ROAMER_SHEETS = [
   { name: "roamer-2", w: 68, h: 90 },
   { name: "roamer-3", w: 46, h: 90 },
 ];
+// Per-person "flu exposure" message shown when you touch that roamer.
+const FLU_EXPOSURE = [
+  "You've been in contact with the flu! Be careful, or you'll need to take a week off work.",
+  "You've been exposed to the flu. If you aren't vaccinated, you're going to miss your booked vacation.",
+  "Close contact with the flu! Without a flu shot, you could end up home sick instead of with the people you love.",
+];
 function paintHazardRoamer(d, h, i) {
   d.className = "hazard roamer";
   d.dataset.facing = h.vy >= 0 ? "down" : "up";
+  h.msg = FLU_EXPOSURE[i % FLU_EXPOSURE.length];
   const s = ROAMER_SHEETS[i % ROAMER_SHEETS.length];
   d.innerHTML =
     `<div class="roamer-sprite" style="width:${s.w}px;height:${s.h}px;` +
@@ -1708,11 +1715,23 @@ function updateHazards() {
     h.el.style.top = h.y + "px";
     h.el.dataset.facing = h.vy >= 0 ? "down" : "up"; // face down going down, up going up
     if (hazardCooldown === 0 && overlap(pBox, { x: h.x, y: h.y, w: h.w, h: h.h })) {
-      hitByHazard();
+      hitByHazard(h);
     }
   });
 }
-function hitByHazard() {
+// Green "flu exposure" flash that briefly washes over the game frame.
+function fluFlash() {
+  let el = document.getElementById("flu-flash");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "flu-flash";
+    document.getElementById("game").appendChild(el);
+  }
+  el.classList.remove("show");
+  void el.offsetWidth; // restart the animation
+  el.classList.add("show");
+}
+function hitByHazard(h) {
   hazardCooldown = 45; // ~0.75s immunity so one germ doesn't drain you instantly
   const c = centerOf(document.getElementById("player"));
   if (state.shielded) {
@@ -1726,14 +1745,15 @@ function hitByHazard() {
   updateHUD();
   playSound("hit");
   shake();
+  fluFlash(); // green flu-exposure wash over the screen
   floatText("-30", c.x, c.y, "#ff6b6b");
   slowTimer = SLOW_FRAMES; // getting sick slows you down for a few seconds
   floatText("Slowed!", c.x, c.y - 34, "#ffb020");
-  bigMessage(rand(HAZARD_LINES), {
-    icon: "⚠️",
-    title: "Warning — you're at risk!",
+  bigMessage(h && h.msg ? h.msg : rand(HAZARD_LINES), {
+    icon: "🤒",
+    title: "Flu exposure!",
     tone: "warn",
-    duration: 1600,
+    duration: 2600,
   });
   // Small knockback — but ONLY if the destination is clear floor. Uses the pixel
   // mask (playerInWall), because in image-maze mode the `walls` array is empty, so
