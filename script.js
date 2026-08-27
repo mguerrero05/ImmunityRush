@@ -1261,6 +1261,7 @@ function buildImageMaze(worldEl) {
     { x: 700, y: 430, w: 46, h: 46, min: 360, max: 500, vy: 1.8 },
     { x: 950, y: 540, w: 46, h: 46, min: 460, max: 640, vy: -1.8 },
     { x: 560, y: 640, w: 46, h: 46, min: 560, max: 720, vy: 1.6 },
+    { x: 600, y: 520, w: 46, h: 46, min: 500, max: 700, vx: 1.6 }, // roamer-4: walks HORIZONTALLY along the open corridor
   ];
   hazardCooldown = 0;
   hazards.forEach((h, i) => {
@@ -1668,6 +1669,7 @@ const ROAMER_SHEETS = [
   { name: "roamer-1", w: 68, h: 90 },
   { name: "roamer-2", w: 68, h: 90 },
   { name: "roamer-3", w: 46, h: 90 },
+  { name: "roamer-4", w: 68, h: 90 },
 ];
 // Per-person "flu exposure" message shown when you touch that roamer.
 const FLU_EXPOSURE = [
@@ -1677,7 +1679,8 @@ const FLU_EXPOSURE = [
 ];
 function paintHazardRoamer(d, h, i) {
   d.className = "hazard roamer";
-  d.dataset.facing = h.vy >= 0 ? "down" : "up";
+  // Horizontal walkers face the camera (down row); vertical ones face down/up.
+  d.dataset.facing = h.vx ? "down" : h.vy >= 0 ? "down" : "up";
   h.msg = FLU_EXPOSURE[i % FLU_EXPOSURE.length];
   const s = ROAMER_SHEETS[i % ROAMER_SHEETS.length];
   d.innerHTML =
@@ -1710,10 +1713,17 @@ function updateHazards() {
   if (pElSick) pElSick.classList.toggle("slowed", slowTimer > 0);
   const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
   hazards.forEach((h) => {
-    h.y += h.vy;
-    if (h.y <= h.min || h.y >= h.max) h.vy *= -1;
-    h.el.style.top = h.y + "px";
-    h.el.dataset.facing = h.vy >= 0 ? "down" : "up"; // face down going down, up going up
+    if (h.vx) {
+      // Horizontal patroller (bounces between min/max on X).
+      h.x += h.vx;
+      if (h.x <= h.min || h.x >= h.max) h.vx *= -1;
+      h.el.style.left = h.x + "px";
+    } else {
+      h.y += h.vy;
+      if (h.y <= h.min || h.y >= h.max) h.vy *= -1;
+      h.el.style.top = h.y + "px";
+      h.el.dataset.facing = h.vy >= 0 ? "down" : "up"; // face down going down, up going up
+    }
     if (hazardCooldown === 0 && overlap(pBox, { x: h.x, y: h.y, w: h.w, h: h.h })) {
       hitByHazard(h);
     }
@@ -2039,18 +2049,23 @@ function buildDirectionArrows() {
 }
 // Keep arrows pinned to screen edges pointing toward their zone.
 function updateDirectionArrows(camX, camY) {
+  // Off-screen mini-game labels stack neatly down the RIGHT side (out of the way,
+  // not floating over the maze/Memory clinic).
+  let idx = 0;
   document.querySelectorAll("#direction-arrows .dir").forEach((a) => {
     const z = ZONES.find((zz) => zz.key === a.dataset.key);
-    // Zone center in screen coordinates (z.x,z.y is already the centre).
-    let sx = z.x + camX;
-    let sy = z.y + camY;
-    const margin = 28;
+    const sx = z.x + camX;
+    const sy = z.y + camY;
     const onScreen = sx > 0 && sx < VIEW_W && sy > 60 && sy < VIEW_H;
-    a.style.opacity = onScreen ? "0" : "1"; // hide arrow when zone is visible
-    sx = Math.max(margin, Math.min(VIEW_W - margin, sx));
-    sy = Math.max(60, Math.min(VIEW_H - margin, sy));
-    a.style.left = sx + "px";
-    a.style.top = sy + "px";
+    if (onScreen) {
+      a.style.opacity = "0";
+      return;
+    }
+    a.style.opacity = "1";
+    a.style.left = "auto";
+    a.style.right = "8px";
+    a.style.top = 70 + idx * 26 + "px";
+    idx++;
   });
 }
 
