@@ -2967,9 +2967,9 @@ function startMemory() {
   showScreen("screen-memory");
   showPopup(
     "Memory Match",
-    "Flip two cards at a time and connect each flu prevention action with its correct benefit or outcome.\n\n" +
-      "• Flip two cards at a time.\n• Match each action or fact with its related benefit.\n" +
-      "• Correct matches stay visible; incorrect matches flip back.\n• Complete every pair to finish.",
+    "Find the matching pairs! Every card has a twin with the same flu-fact picture.\n\n" +
+      "• Tap a card — it flips up BIG so you can read the fact.\n• Tap another and find its identical match.\n" +
+      "• Matched pairs stay up; wrong ones flip back.\n• Match all the pairs to finish.",
     [
       {
         text: "Start Memory Match",
@@ -2993,11 +2993,12 @@ function beginMemoryRound() {
   stage.appendChild(board);
   toast(rand(MEMORY_MESSAGES), 1800);
 
-  // Deck: each pair -> one picture card + one fact card, both sharing a pairId.
+  // Deck: each fact -> TWO IDENTICAL cards (image + fact together). Find the twins.
   const deck = [];
   MEMORY_PAIRS.forEach((pair, i) => {
-    deck.push({ pairId: i, kind: "img", img: pair.img, alt: pair.alt });
-    deck.push({ pairId: i, kind: "fact", text: pair.fact });
+    const card = { pairId: i, img: pair.img, alt: pair.alt, fact: pair.fact };
+    deck.push({ ...card });
+    deck.push({ ...card });
   });
   // Fisher–Yates shuffle.
   for (let i = deck.length - 1; i > 0; i--) {
@@ -3028,16 +3029,14 @@ function beginMemoryRound() {
   deck.forEach((card) => {
     const el = document.createElement("div");
     el.className = "mem-card";
-    let face;
-    if (card.kind === "img") {
-      // Picture card: show ONLY the image, contained (never cropped/stretched).
-      face = `<span class="mem-face mem-face-img"><img class="mem-img" src="${card.img}" alt="${card.alt}"></span>`;
-    } else {
-      // Fact card: centered, wrapping text — no image, no explanation.
-      face = `<span class="mem-face mem-face-fact">${card.text}</span>`;
-    }
-    el.innerHTML = `<span class="mem-back">＋</span>${face}`;
     el.dataset.pair = card.pairId;
+    el.dataset.fact = card.fact;
+    el.dataset.img = card.img;
+    el.dataset.alt = card.alt;
+    el.innerHTML =
+      `<span class="mem-back">＋</span>` +
+      `<span class="mem-face"><img class="mem-img" src="${card.img}" alt="${card.alt}">` +
+      `<span class="mem-txt">${card.fact}</span></span>`;
     el.addEventListener("click", () => flipCard(el));
     board.appendChild(el);
   });
@@ -3048,52 +3047,91 @@ function flipCard(el) {
   if (el.classList.contains("flipped") || el.classList.contains("matched")) return;
 
   el.classList.add("flipped");
-
-  if (!memory.first) {
-    memory.first = el;
-    return;
-  }
-
-  memory.moves++;
-  document.getElementById("memory-moves").textContent = memory.moves;
-
-  if (memory.first.dataset.pair === el.dataset.pair) {
-    // Match — keep both face-up, educational feedback, +100.
+  memory.lock = true; // lock while the big "read it" card is up
+  // Zoom the card up BIG so the player has to read it before continuing.
+  peekCard(el, () => {
+    if (!memory.first) {
+      memory.first = el;
+      memory.lock = false;
+      return;
+    }
+    memory.moves++;
+    document.getElementById("memory-moves").textContent = memory.moves;
     const first = memory.first;
     memory.first = null;
-    first.classList.add("matched");
-    el.classList.add("matched");
-    memory.pairs++;
-    memory.score += 100;
-    document.getElementById("memory-pairs").textContent = memory.pairs;
-    document.getElementById("memory-score").textContent = memory.score;
-    addScore(100);
-    playSound("success");
-    const mc = centerOf(el);
-    floatText("+100", mc.x, mc.y, "#57d38c");
-    bigMessage(MEMORY_PAIRS[Number(el.dataset.pair)].msg, {
-      icon: "✅",
-      title: "Match!",
-      tone: "good",
-      duration: 2600,
-    });
-    if (memory.pairs === MEMORY_PAIRS.length) finishMemory();
-  } else {
-    // Miss — short message, then flip both back (no point loss).
-    playSound("error");
-    toast(rand(MEMORY_WRONG), 1600);
-    memory.lock = true;
-    const a = memory.first,
-      b = el;
-    memory.first = null;
-    a.classList.add("mem-miss"); // brief shake — mismatch feedback (visual only)
-    b.classList.add("mem-miss");
-    setTimeout(() => {
-      a.classList.remove("flipped", "mem-miss");
-      b.classList.remove("flipped", "mem-miss");
+
+    if (first.dataset.pair === el.dataset.pair) {
+      // Match — keep both face-up, +100, big "Correct!" splash + the fact.
+      first.classList.add("matched");
+      el.classList.add("matched");
+      memory.pairs++;
+      memory.score += 100;
+      document.getElementById("memory-pairs").textContent = memory.pairs;
+      document.getElementById("memory-score").textContent = memory.score;
+      addScore(100);
+      playSound("success");
+      const mc = centerOf(el);
+      floatText("+100", mc.x, mc.y, "#57d38c");
+      memoryCorrectBanner(MEMORY_PAIRS[Number(el.dataset.pair)]);
       memory.lock = false;
-    }, 850);
+      if (memory.pairs === MEMORY_PAIRS.length) setTimeout(() => finishMemory(), 2400);
+    } else {
+      // Miss — short message, then flip both back (no point loss).
+      playSound("error");
+      toast(rand(MEMORY_WRONG), 1500);
+      first.classList.add("mem-miss");
+      el.classList.add("mem-miss");
+      setTimeout(() => {
+        first.classList.remove("flipped", "mem-miss");
+        el.classList.remove("flipped", "mem-miss");
+        memory.lock = false;
+      }, 800);
+    }
+  });
+}
+
+// Zoom the just-flipped card into a big, in-your-face panel so the player reads
+// it (image + fact), then continues on "Got it".
+function peekCard(el, done) {
+  const stage = document.getElementById("memory-stage");
+  let ov = document.getElementById("mem-peek");
+  if (!ov) {
+    ov = document.createElement("div");
+    ov.id = "mem-peek";
+    stage.appendChild(ov);
   }
+  ov.innerHTML =
+    `<div class="mem-peek-card">` +
+    `<img class="mem-peek-img" src="${el.dataset.img}" alt="${el.dataset.alt}">` +
+    `<p class="mem-peek-txt">${el.dataset.fact}</p>` +
+    `<button class="btn btn-primary mem-peek-btn" type="button">Got it</button>` +
+    `</div>`;
+  ov.classList.remove("show");
+  void ov.offsetWidth;
+  ov.classList.add("show");
+  ov.querySelector(".mem-peek-btn").onclick = () => {
+    ov.classList.remove("show");
+    done();
+  };
+}
+
+// Big "Correct!" splash across the board + repeat the matched fact.
+function memoryCorrectBanner(pair) {
+  const stage = document.getElementById("memory-stage");
+  let ov = document.getElementById("mem-correct");
+  if (!ov) {
+    ov = document.createElement("div");
+    ov.id = "mem-correct";
+    stage.appendChild(ov);
+  }
+  const fact = String(pair.msg).replace(/^correct!\s*/i, "");
+  ov.innerHTML =
+    `<div class="mem-correct-word">Correct!</div>` + `<p class="mem-correct-fact">${fact}</p>`;
+  ov.classList.remove("show");
+  void ov.offsetWidth;
+  ov.classList.add("show");
+  clearTimeout(memory.correctT);
+  memory.correctT = setTimeout(() => ov.classList.remove("show"), 2600);
 }
 
 function finishMemory(timeUp = false) {
