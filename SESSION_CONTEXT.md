@@ -874,3 +874,31 @@
   the open mid corridor (verified floor+reachable), 2nd-from-left. `updateHazards` now branches on
   `h.vx` (horizontal, bounce on X) vs `h.vy` (vertical); horizontal walkers face the camera (down row,
   since sheets are front/back only). To add more horizontal walkers, give the hazard a `vx` + X min/max.
+- 2026-08-31 (session 52 — SENT HOME SICK screen + RECOVERY WEEK: VAX MATCH mini-game): When the
+  player loses all health (3 hits, unchanged), `hitByHazard`'s health-0 branch now calls
+  `sentHomeSick()` instead of resetting to START — it stops the maze loop + run timer, sets
+  overlayPaused, closes any big message, and shows the new **`#screen-sickhome`** bed scene
+  (backdrop `assets/backgrounds/sick-home-bg.png`, 1672×941 opaque RGB, used as full cover; darkened
+  gradient + glowing "📅 Start Recovery Week" button). That button calls `startRecovery()` →
+  **`#screen-recovery`** (class `screen minigame`), a full match-3 game (script.js section "6z",
+  inserted before the LEADERBOARD section). BOARD: 7×7 grid, six vaccine tiles (`RG_TILES`: shield,
+  calendar, heart, family, hospital, vaxfacts — each a UNIQUE emoji + a redundant background tint so
+  identity never relies on colour). Swap adjacent tiles → match 3+, cascades resolve via
+  `rgResolveStep` (clear→gravity→refill→repeat). Matches fill a Knowledge Meter (`RG_METER_MAX=12`);
+  at full → `rgShowQuestion()` pauses the puzzle for one multiple-choice question. SEVEN recovery
+  days = seven questions (day circles `#rg-days` fill with ✓). Correct: +50, fills the day, resets
+  meter, unlocks a booster (`RG_BOOSTER_ORDER` cycles shield/knowledge/community/vaxfacts), shows a
+  green explanation + Continue. Wrong: supportive feedback, disables that option, lets them retry —
+  never framed as failing. BOOSTERS: Protection Shield (clears a row), Knowledge Boost (removes all of
+  one type), Community Protection (3×3), VaxFacts Help (removes one wrong answer next question). After
+  7 days → `rgComplete()` "Recovery Week Complete!" (Continue / Review What I Learned / Play Again).
+  `returnToWork()` folds recovery points into the run score via `addScore`, restores health to 3,
+  returns to the maze at START, points toward VaxFacts+/OHS. EDITABLE QUESTION BANK = `RECOVERY_QUESTIONS`
+  array (clearly labelled at the top of section 6z), structure
+  `{id,question,options[4],correctIndex,explanation,sourceLabel}` — 7 questions, no baked-in stats,
+  all claims general. Accessibility: tiles/options/boosters are real `<button>`s (keyboard focusable,
+  Enter to select→swap), focus-visible rings, ARIA labels, unique icon+tint per tile, reduced-motion
+  media query, pause/sound/`?`-instructions in the HUD. ALSO this session: **Flu Freeze timer 60s → 45s**
+  (`freeze.time` init + the `freeze-time` display, `startFreeze`). Cache-busting bumped **v=7 → v=8**
+  in index.html. Existing mini-games otherwise untouched; `node --check` + ESLint + Prettier all clean.
+  Verified additive — no unrelated systems rewritten.

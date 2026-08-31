@@ -1876,6 +1876,13 @@ function hitByHazard(h) {
   state.score = Math.max(0, state.score - 30);
   updateHUD();
   playSound("hit");
+  if (state.health <= 0) {
+    // Ran out of health -> sent home sick (Recovery Week mini-game).
+    shake();
+    closeBigMessage();
+    sentHomeSick();
+    return;
+  }
   shake();
   fluFlash(); // green flu-exposure wash over the screen
   floatText("-30", c.x, c.y, "#ff6b6b");
@@ -2577,7 +2584,7 @@ function beginFreezeRound() {
   freeze = {
     score: 0,
     lives: 3,
-    time: 60,
+    time: 45,
     combo: 0,
     bubbles: [],
     paused: false,
@@ -2585,7 +2592,7 @@ function beginFreezeRound() {
   };
   document.getElementById("freeze-score").textContent = 0;
   document.getElementById("freeze-lives").textContent = 3;
-  document.getElementById("freeze-time").textContent = 60;
+  document.getElementById("freeze-time").textContent = 45;
   toast("Read each virus — zap only the TRUE ones.", 2200);
 
   // Keep empty slots filling so the board cycles gently.
@@ -3294,6 +3301,727 @@ function finishMemory(timeUp = false) {
         },
       },
     ],
+  );
+}
+
+/* =========================================================
+   6z. RECOVERY WEEK — VAX MATCH (match-3 recovery mini-game)
+   ---------------------------------------------------------
+   Entered when the player runs out of health (sent home sick).
+   A 7x7 match-3 puzzle across 7 "recovery days". Each day you
+   answer one short knowledge question. This is an educational
+   game mechanic, NOT a medical assessment or return-to-work
+   clearance tool.
+   ========================================================= */
+
+/* -----------------------------------------------------------
+   EDITABLE QUESTION BANK
+   -----------------------------------------------------------
+   Seven questions — one per recovery day. To edit a question,
+   change its `question`, `options`, `explanation`, or
+   `sourceLabel`. `correctIndex` is the 0-based position of the
+   correct answer inside `options` (0 = first option). Keep all
+   claims general — do not add specific statistics here.
+   ----------------------------------------------------------- */
+const RECOVERY_QUESTIONS = [
+  {
+    id: 1,
+    question: "Why is influenza vaccination recommended every year?",
+    options: [
+      "Flu viruses change over time and vaccine protection decreases, so a yearly dose keeps protection up to date",
+      "One flu shot protects you for the rest of your life",
+      "The vaccine only works if you get it on the same date each year",
+      "Yearly shots are only for people who have already had the flu",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Influenza viruses can change from season to season and the vaccine is updated to match. Protection can also decrease over time, so an annual dose helps keep your protection current.",
+    sourceLabel: "Occupational Health & Safety",
+  },
+  {
+    id: 2,
+    question: "Can the injectable flu vaccine give you the flu?",
+    options: [
+      "No — the injectable vaccine does not contain live virus that can cause an influenza infection",
+      "Yes, it always gives you a mild case of the flu",
+      "Yes, that is how it builds protection",
+      "Only if you are already feeling unwell",
+    ],
+    correctIndex: 0,
+    explanation:
+      "The injectable influenza vaccine does not contain live virus capable of producing an infection, so it cannot cause the flu. Some people notice mild, short-term effects, which are different from having influenza.",
+    sourceLabel: "Occupational Health & Safety",
+  },
+  {
+    id: 3,
+    question: "What is a key benefit of getting the influenza vaccine?",
+    options: [
+      "It reduces the risk of getting the flu and of flu-related complications, including severe illness",
+      "It guarantees you will never catch any respiratory illness",
+      "It replaces the need for handwashing and other everyday habits",
+      "It only helps people who work in hospitals",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Vaccination reduces the risk of getting influenza and can also lower the risk of complications, including severe illness. Everyday habits like handwashing still help too.",
+    sourceLabel: "Occupational Health & Safety",
+  },
+  {
+    id: 4,
+    question: "Why is flu vaccination especially encouraged for healthcare workers?",
+    options: [
+      "They can be exposed to influenza at work and could pass it to vulnerable patients, coworkers, or household members",
+      "They are the only people who can catch the flu",
+      "It is only about protecting the worker and no one else",
+      "Healthcare workers cannot get the flu at all",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Healthcare workers may be exposed to influenza at work. Getting vaccinated helps protect them and the vulnerable patients, coworkers, and family members around them.",
+    sourceLabel: "Occupational Health & Safety",
+  },
+  {
+    id: 5,
+    question: "Who can face a higher risk of complications from influenza?",
+    options: [
+      "People with certain chronic conditions, older adults, young children, and those who are pregnant",
+      "Only people who never wash their hands",
+      "Only people who work night shifts",
+      "No one — the flu is the same risk for everyone",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Some groups — including people with certain chronic conditions, older adults, young children, and those who are pregnant — can be at higher risk of complications from influenza.",
+    sourceLabel: "Occupational Health & Safety",
+  },
+  {
+    id: 6,
+    question: "How do mild vaccine side effects compare to having the flu?",
+    options: [
+      "Mild, short-term effects like soreness at the injection site are different from having influenza",
+      "They are exactly the same as a full case of the flu",
+      "Side effects last for several weeks",
+      "There are never any effects of any kind",
+    ],
+    correctIndex: 0,
+    explanation:
+      "Some people notice mild, short-term effects such as soreness where the shot was given. These are not the same as being sick with influenza.",
+    sourceLabel: "Occupational Health & Safety",
+  },
+  {
+    id: 7,
+    question: "If you still have questions about the flu vaccine, what can you do?",
+    options: [
+      "Seek trusted information and judgement-free support through the VaxFacts Clinic and your workplace resources",
+      "Ignore the questions and hope they go away",
+      "Only ask people who are not medical professionals",
+      "Assume there is no way to get answers",
+    ],
+    correctIndex: 0,
+    explanation:
+      "It's normal to have questions. You can get trusted information and judgement-free support through the VaxFacts Clinic and your workplace's Occupational Health & Safety resources.",
+    sourceLabel: "VaxFacts Clinic",
+  },
+];
+
+/* -----------------------------------------------------------
+   TILE TYPES — six vaccine-related tiles. Each has a UNIQUE
+   icon/shape and name, so tiles are identifiable without
+   relying on colour alone.
+   ----------------------------------------------------------- */
+const RG_TILES = [
+  { key: "shield", icon: "🛡️", name: "Shield — protection" },
+  { key: "calendar", icon: "📅", name: "Calendar — annual vaccination" },
+  { key: "heart", icon: "💙", name: "Heart — reducing severe illness" },
+  { key: "family", icon: "👪", name: "Family — protecting others" },
+  { key: "hospital", icon: "🏥", name: "Hospital — safe healthcare setting" },
+  { key: "vaxfacts", icon: "✚", name: "VaxFacts — trusted support" },
+];
+
+const RG_SIZE = 7; // 7 columns x 7 rows
+const RG_METER_MAX = 12; // tile clears needed to reach a knowledge checkpoint
+
+// Boosters unlocked (one per correct answer), cycled in this order.
+const RG_BOOSTER_ORDER = ["shield", "knowledge", "community", "vaxfacts"];
+const RG_BOOSTER_INFO = {
+  shield: { icon: "🛡️", label: "Protection Shield", hint: "Tap a tile to clear its whole row" },
+  knowledge: {
+    icon: "💡",
+    label: "Knowledge Boost",
+    hint: "Tap a tile to remove all of that type",
+  },
+  community: { icon: "👪", label: "Community Protection", hint: "Tap a tile to clear a 3×3 area" },
+  vaxfacts: { icon: "✚", label: "VaxFacts Help", hint: "Removes one wrong answer next question" },
+};
+
+// Recovery-game state.
+let rg = null;
+
+function rgNewState() {
+  return {
+    board: [],
+    sel: null, // [r,c] currently selected tile
+    busy: false, // true while a cascade / animation is resolving
+    paused: false,
+    day: 0, // recovery days completed (0..7)
+    meter: 0, // knowledge meter toward next checkpoint
+    score: 0, // points earned this recovery run
+    question: false, // a knowledge question is open
+    boosters: { shield: 0, knowledge: 0, community: 0, vaxfacts: 0 },
+    pendingBooster: null, // a targeted booster waiting for a tap
+    vaxHelp: false, // remove one wrong option on the next question
+  };
+}
+
+// ----- Entry / exit -----
+
+// Called from hitByHazard when health hits 0: leave the maze, show the bed scene.
+function sentHomeSick() {
+  stopMazeLoop();
+  stopRunTimer();
+  overlayPaused = true;
+  showScreen("screen-sickhome");
+}
+
+// Called by the "Start Recovery Week" calendar button on the sick-home screen.
+function startRecovery() {
+  rg = rgNewState();
+  currentMini = "recovery";
+  showScreen("screen-recovery");
+  rg.board = rgGen();
+  rgRender();
+  rgUpdateHud();
+  rgUpdateDays();
+  rgUpdateMeter();
+  rgRenderBoosters();
+}
+
+// After finishing all 7 days: back to work, health restored, pointed to OHS/VaxFacts.
+function returnToWork() {
+  rgCloseOverlays();
+  addScore(rg ? rg.score : 0); // fold recovery points into the run score
+  state.health = 3;
+  updateHUD();
+  player.x = START_X;
+  player.y = START_Y;
+  unstickPlayer();
+  currentMini = null;
+  rg = null;
+  overlayPaused = false;
+  showScreen("screen-maze");
+  startRunTimer();
+  startMazeLoop();
+  toast("Back at work! Visit the VaxFacts+ clinic for flu-vaccination info. 💙", 3400);
+}
+
+// Exit button — leaves the recovery game without finishing (back to work, no bonus).
+function rgExit() {
+  showPopup("Leave Recovery Week?", "You can come back and finish your recovery later.", [
+    { text: "Keep resting", action: hidePopup },
+    {
+      text: "Back to work",
+      primary: true,
+      action: () => {
+        hidePopup();
+        rgCloseOverlays();
+        state.health = 3;
+        updateHUD();
+        player.x = START_X;
+        player.y = START_Y;
+        unstickPlayer();
+        currentMini = null;
+        rg = null;
+        overlayPaused = false;
+        showScreen("screen-maze");
+        startRunTimer();
+        startMazeLoop();
+      },
+    },
+  ]);
+}
+
+// ----- Board generation & rendering -----
+
+function rgGen() {
+  const b = [];
+  for (let r = 0; r < RG_SIZE; r++) {
+    b[r] = [];
+    for (let c = 0; c < RG_SIZE; c++) {
+      let t;
+      let tries = 0;
+      do {
+        t = Math.floor(Math.random() * RG_TILES.length);
+        tries++;
+      } while (
+        tries < 25 &&
+        ((c >= 2 && b[r][c - 1] === t && b[r][c - 2] === t) ||
+          (r >= 2 && b[r - 1][c] === t && b[r - 2][c] === t))
+      );
+      b[r][c] = t;
+    }
+  }
+  return b;
+}
+
+function rgCell(r, c) {
+  return document.querySelector(`#rg-board .rg-tile[data-r="${r}"][data-c="${c}"]`);
+}
+
+function rgRender() {
+  const board = document.getElementById("rg-board");
+  if (!board) return;
+  board.style.setProperty("--rg-size", RG_SIZE);
+  board.innerHTML = "";
+  for (let r = 0; r < RG_SIZE; r++) {
+    for (let c = 0; c < RG_SIZE; c++) {
+      const t = rg.board[r][c];
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "rg-tile rg-t-" + (t >= 0 ? RG_TILES[t].key : "empty");
+      b.dataset.r = r;
+      b.dataset.c = c;
+      b.setAttribute("role", "gridcell");
+      if (t >= 0) {
+        b.textContent = RG_TILES[t].icon;
+        b.setAttribute("aria-label", RG_TILES[t].name);
+      }
+      if (rg.sel && rg.sel[0] === r && rg.sel[1] === c) b.classList.add("sel");
+      if (rg.pendingBooster) b.classList.add("targeting");
+      b.onclick = () => rgTap(r, c);
+      board.appendChild(b);
+    }
+  }
+}
+
+// ----- Interaction -----
+
+function rgTap(r, c) {
+  if (rg.busy || rg.paused || rg.question) return;
+  if (rg.pendingBooster) {
+    rgApplyBoosterAt(r, c);
+    return;
+  }
+  if (!rg.sel) {
+    rg.sel = [r, c];
+    rgRender();
+    return;
+  }
+  const [sr, sc] = rg.sel;
+  if (sr === r && sc === c) {
+    rg.sel = null;
+    rgRender();
+    return;
+  }
+  if (Math.abs(sr - r) + Math.abs(sc - c) === 1) {
+    rg.sel = null;
+    rgTrySwap(sr, sc, r, c);
+  } else {
+    rg.sel = [r, c];
+    rgRender();
+  }
+}
+
+function rgTrySwap(r1, c1, r2, c2) {
+  const B = rg.board;
+  const tmp = B[r1][c1];
+  B[r1][c1] = B[r2][c2];
+  B[r2][c2] = tmp;
+  if (rgFindMatches().length) {
+    rgRender();
+    rg.busy = true;
+    playSound("click");
+    setTimeout(rgResolveStep, 130);
+  } else {
+    // Not a valid match — swap back.
+    B[r2][c2] = B[r1][c1];
+    B[r1][c1] = tmp;
+    rgRender();
+    const el = rgCell(r1, c1);
+    if (el) {
+      el.classList.add("shake");
+      setTimeout(() => el.classList.remove("shake"), 300);
+    }
+    playSound("error");
+  }
+}
+
+// ----- Match detection & cascade -----
+
+function rgFindMatches() {
+  const hits = new Set();
+  const B = rg.board;
+  for (let r = 0; r < RG_SIZE; r++) {
+    let run = 1;
+    for (let c = 1; c <= RG_SIZE; c++) {
+      const same = c < RG_SIZE && B[r][c] !== -1 && B[r][c] === B[r][c - 1];
+      if (same) run++;
+      else {
+        if (run >= 3) for (let k = 1; k <= run; k++) hits.add(r + "," + (c - k));
+        run = 1;
+      }
+    }
+  }
+  for (let c = 0; c < RG_SIZE; c++) {
+    let run = 1;
+    for (let r = 1; r <= RG_SIZE; r++) {
+      const same = r < RG_SIZE && B[r][c] !== -1 && B[r][c] === B[r - 1][c];
+      if (same) run++;
+      else {
+        if (run >= 3) for (let k = 1; k <= run; k++) hits.add(r - k + "," + c);
+        run = 1;
+      }
+    }
+  }
+  return [...hits].map((s) => s.split(",").map(Number));
+}
+
+function rgGravity() {
+  const B = rg.board;
+  for (let c = 0; c < RG_SIZE; c++) {
+    let write = RG_SIZE - 1;
+    for (let r = RG_SIZE - 1; r >= 0; r--) {
+      if (B[r][c] !== -1) {
+        B[write][c] = B[r][c];
+        if (write !== r) B[r][c] = -1;
+        write--;
+      }
+    }
+    for (let r = write; r >= 0; r--) {
+      B[r][c] = Math.floor(Math.random() * RG_TILES.length);
+    }
+  }
+}
+
+// One step of the cascade: clear current matches, drop, refill, repeat.
+function rgResolveStep() {
+  const matches = rgFindMatches();
+  if (!matches.length) {
+    rg.busy = false;
+    rgCheckMeter();
+    return;
+  }
+  matches.forEach(([r, c]) => {
+    const el = rgCell(r, c);
+    if (el) el.classList.add("rg-clear");
+  });
+  rg.score += matches.length * 10;
+  rgUpdateHud();
+  rgAddMeter(matches.length);
+  playSound("pop");
+  setTimeout(() => {
+    matches.forEach(([r, c]) => {
+      rg.board[r][c] = -1;
+    });
+    rgGravity();
+    rgRender();
+    setTimeout(rgResolveStep, 140);
+  }, 200);
+}
+
+function rgAddMeter(n) {
+  rg.meter = Math.min(RG_METER_MAX, rg.meter + n);
+  rgUpdateMeter();
+}
+
+function rgCheckMeter() {
+  if (rg.meter >= RG_METER_MAX && rg.day < RECOVERY_QUESTIONS.length && !rg.question) {
+    rgShowQuestion();
+  }
+}
+
+// ----- HUD: score, day circles, meter -----
+
+function rgUpdateHud() {
+  const el = document.getElementById("rg-score");
+  if (el) el.textContent = rg.score;
+}
+
+function rgUpdateDays() {
+  const box = document.getElementById("rg-days");
+  if (!box) return;
+  box.innerHTML = "";
+  for (let i = 0; i < RECOVERY_QUESTIONS.length; i++) {
+    const d = document.createElement("span");
+    d.className = "rg-day" + (i < rg.day ? " filled" : "");
+    d.textContent = i < rg.day ? "✓" : i + 1;
+    d.setAttribute("aria-label", `Recovery day ${i + 1}${i < rg.day ? " complete" : ""}`);
+    box.appendChild(d);
+  }
+}
+
+function rgUpdateMeter() {
+  const fill = document.getElementById("rg-meter-fill");
+  if (fill) fill.style.width = Math.round((rg.meter / RG_METER_MAX) * 100) + "%";
+}
+
+// ----- Boosters -----
+
+function rgUnlockBooster() {
+  const type = RG_BOOSTER_ORDER[rg.day % RG_BOOSTER_ORDER.length];
+  rg.boosters[type]++;
+  rgRenderBoosters();
+  const info = RG_BOOSTER_INFO[type];
+  toast(`Booster unlocked: ${info.icon} ${info.label}!`, 2200);
+}
+
+function rgRenderBoosters() {
+  const box = document.getElementById("rg-boosters");
+  if (!box) return;
+  box.innerHTML = "";
+  RG_BOOSTER_ORDER.forEach((type) => {
+    const info = RG_BOOSTER_INFO[type];
+    const count = rg.boosters[type];
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "rg-booster" + (rg.pendingBooster === type ? " active" : "");
+    b.disabled = count <= 0;
+    b.innerHTML = `<span class="rg-bi">${info.icon}</span><span class="rg-bn">${info.label}</span><span class="rg-bc">×${count}</span>`;
+    b.setAttribute("aria-label", `${info.label}: ${info.hint}. ${count} available.`);
+    b.title = info.hint;
+    b.onclick = () => rgActivateBooster(type);
+    box.appendChild(b);
+  });
+}
+
+function rgActivateBooster(type) {
+  if (rg.busy || rg.question || rg.boosters[type] <= 0) return;
+  if (type === "vaxfacts") {
+    rg.boosters.vaxfacts--;
+    rg.vaxHelp = true;
+    rgRenderBoosters();
+    toast("VaxFacts Help ready — one wrong answer removed next question. ✚", 2400);
+    return;
+  }
+  // Targeted boosters: arm, then the next tile tap chooses where.
+  rg.pendingBooster = rg.pendingBooster === type ? null : type;
+  rgRenderBoosters();
+  rgRender();
+  if (rg.pendingBooster) toast(RG_BOOSTER_INFO[type].hint + ".", 2200);
+}
+
+function rgApplyBoosterAt(r, c) {
+  const B = rg.board;
+  const type = rg.pendingBooster;
+  rg.pendingBooster = null;
+  const cells = [];
+  if (type === "shield") {
+    for (let cc = 0; cc < RG_SIZE; cc++) cells.push([r, cc]);
+  } else if (type === "community") {
+    for (let dr = -1; dr <= 1; dr++)
+      for (let dc = -1; dc <= 1; dc++) {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= 0 && nc >= 0 && nr < RG_SIZE && nc < RG_SIZE) cells.push([nr, nc]);
+      }
+  } else if (type === "knowledge") {
+    const t = B[r][c];
+    for (let rr = 0; rr < RG_SIZE; rr++)
+      for (let cc = 0; cc < RG_SIZE; cc++) if (B[rr][cc] === t) cells.push([rr, cc]);
+  }
+  rg.boosters[type]--;
+  rgRenderBoosters();
+  cells.forEach(([rr, cc]) => {
+    B[rr][cc] = -1;
+  });
+  rg.score += cells.length * 5;
+  rgUpdateHud();
+  rgAddMeter(cells.length);
+  playSound("pop");
+  rgGravity();
+  rgRender();
+  rg.busy = true;
+  setTimeout(rgResolveStep, 150);
+}
+
+// ----- Knowledge questions -----
+
+function rgShowQuestion() {
+  rg.question = true;
+  rg.pendingBooster = null;
+  rg.sel = null;
+  rgRender();
+  const q = RECOVERY_QUESTIONS[rg.day];
+  const removed = new Set();
+  if (rg.vaxHelp) {
+    // Remove one wrong option before showing.
+    for (let i = 0; i < q.options.length; i++) {
+      if (i !== q.correctIndex) {
+        removed.add(i);
+        break;
+      }
+    }
+    rg.vaxHelp = false;
+  }
+  const ov = rgOverlay("rg-question");
+  const opts = q.options
+    .map((o, i) =>
+      removed.has(i) ? "" : `<button type="button" class="rg-opt" data-i="${i}">${o}</button>`,
+    )
+    .join("");
+  ov.innerHTML = `
+    <div class="rg-card" role="dialog" aria-modal="true" aria-label="Recovery day ${rg.day + 1} question">
+      <div class="rg-card-tag">Recovery Day ${rg.day + 1} · Knowledge check</div>
+      <h3 class="rg-q">${q.question}</h3>
+      <div class="rg-opts">${opts}</div>
+      <div class="rg-expl" id="rg-expl" hidden></div>
+      <button type="button" class="btn btn-primary rg-continue" id="rg-continue" hidden>Continue ▶</button>
+    </div>`;
+  ov.querySelectorAll(".rg-opt").forEach((btn) => {
+    btn.onclick = () => rgAnswer(parseInt(btn.dataset.i, 10), btn);
+  });
+  const first = ov.querySelector(".rg-opt");
+  if (first) first.focus();
+}
+
+function rgAnswer(idx, btn) {
+  const q = RECOVERY_QUESTIONS[rg.day];
+  const expl = document.getElementById("rg-expl");
+  if (idx === q.correctIndex) {
+    btn.classList.add("correct");
+    document.querySelectorAll("#rg-question .rg-opt").forEach((b) => (b.disabled = true));
+    rg.score += 50;
+    rg.day++;
+    rg.meter = 0;
+    rgUpdateHud();
+    rgUpdateDays();
+    rgUpdateMeter();
+    rgUnlockBooster();
+    playSound("success");
+    burst(window.innerWidth / 2, window.innerHeight / 2, "#34c759", 14);
+    if (expl) {
+      expl.hidden = false;
+      expl.className = "rg-expl good";
+      expl.innerHTML = `<b>✅ Nice — that's right.</b><p>${q.explanation}</p><span class="rg-src">Source: ${q.sourceLabel}</span>`;
+    }
+    const cont = document.getElementById("rg-continue");
+    if (cont) {
+      cont.hidden = false;
+      cont.textContent = rg.day >= RECOVERY_QUESTIONS.length ? "See your results ▶" : "Continue ▶";
+      cont.onclick = rgAfterQuestion;
+      cont.focus();
+    }
+  } else {
+    // Supportive corrective feedback — not framed as failing. Let them try again.
+    btn.disabled = true;
+    btn.classList.add("wrong");
+    playSound("error");
+    if (expl) {
+      expl.hidden = false;
+      expl.className = "rg-expl soft";
+      expl.innerHTML = `<b>Not quite — and that's okay.</b><p>${q.explanation}</p><p class="rg-try">Have another look and pick the answer that fits.</p>`;
+    }
+  }
+}
+
+function rgAfterQuestion() {
+  rgCloseOverlay("rg-question");
+  rg.question = false;
+  if (rg.day >= RECOVERY_QUESTIONS.length) {
+    rgComplete();
+  } else {
+    rg.busy = false;
+  }
+}
+
+// ----- Completion & review -----
+
+function rgComplete() {
+  playSound("success");
+  const ov = rgOverlay("rg-done");
+  ov.innerHTML = `
+    <div class="rg-card rg-done-card" role="dialog" aria-modal="true" aria-label="Recovery Week complete">
+      <div class="rg-done-emoji">🎉</div>
+      <h2 class="rg-done-title">Recovery Week Complete!</h2>
+      <p class="rg-done-msg">You strengthened your influenza-vaccine knowledge. Once you have recovered
+      and met your workplace's return-to-work requirements, visit Occupational Health and Safety for
+      influenza-vaccination information.</p>
+      <div class="rg-done-score">Recovery points: <b>${rg.score}</b></div>
+      <div class="rg-done-btns">
+        <button type="button" class="btn btn-primary" id="rg-continue-btn">Continue</button>
+        <button type="button" class="btn" id="rg-review-btn">Review What I Learned</button>
+        <button type="button" class="btn btn-ghost" id="rg-again-btn">Play Again</button>
+      </div>
+    </div>`;
+  document.getElementById("rg-continue-btn").onclick = returnToWork;
+  document.getElementById("rg-review-btn").onclick = rgReview;
+  document.getElementById("rg-again-btn").onclick = () => {
+    rgCloseOverlays();
+    startRecovery();
+  };
+}
+
+function rgReview() {
+  const ov = rgOverlay("rg-review");
+  const items = RECOVERY_QUESTIONS.map(
+    (q, i) => `
+    <li class="rg-rv-item">
+      <div class="rg-rv-day">Day ${i + 1}</div>
+      <div class="rg-rv-body">
+        <div class="rg-rv-q">${q.question}</div>
+        <div class="rg-rv-a">${q.options[q.correctIndex]}</div>
+        <div class="rg-rv-e">${q.explanation}</div>
+        <div class="rg-src">Source: ${q.sourceLabel}</div>
+      </div>
+    </li>`,
+  ).join("");
+  ov.innerHTML = `
+    <div class="rg-card rg-review-card" role="dialog" aria-modal="true" aria-label="Review what I learned">
+      <h2 class="rg-rv-title">Review What I Learned</h2>
+      <ul class="rg-rv-list">${items}</ul>
+      <button type="button" class="btn btn-primary" id="rg-review-back">Back</button>
+    </div>`;
+  document.getElementById("rg-review-back").onclick = () => {
+    rgCloseOverlay("rg-review");
+  };
+}
+
+// ----- Overlays / pause / info -----
+
+function rgOverlay(id) {
+  let ov = document.getElementById(id);
+  if (!ov) {
+    ov = document.createElement("div");
+    ov.id = id;
+    ov.className = "rg-overlay";
+    document.getElementById("recovery-stage").appendChild(ov);
+  }
+  ov.hidden = false;
+  return ov;
+}
+
+function rgCloseOverlay(id) {
+  const ov = document.getElementById(id);
+  if (ov) ov.remove();
+}
+
+function rgCloseOverlays() {
+  ["rg-question", "rg-done", "rg-review", "rg-pause"].forEach(rgCloseOverlay);
+}
+
+function rgTogglePause() {
+  if (rg.question) return;
+  rg.paused = !rg.paused;
+  if (rg.paused) {
+    const ov = rgOverlay("rg-pause");
+    ov.innerHTML = `
+      <div class="rg-card" role="dialog" aria-modal="true" aria-label="Paused">
+        <h2 class="rg-done-title">Paused</h2>
+        <p class="rg-done-msg">Take your time — rest is part of recovery.</p>
+        <button type="button" class="btn btn-primary" id="rg-resume">Resume</button>
+      </div>`;
+    document.getElementById("rg-resume").onclick = rgTogglePause;
+  } else {
+    rgCloseOverlay("rg-pause");
+  }
+}
+
+function rgInfo() {
+  showPopup(
+    "Recovery Week: Vax Match",
+    "Swap two side-by-side tiles to line up 3 or more of the same icon. Matches fill your Knowledge Meter. " +
+      "When it's full, answer a short question to complete a recovery day — 7 days finishes the week. " +
+      "Correct answers unlock boosters. This is a learning game, not a medical assessment.",
+    [{ text: "Got it", primary: true, action: hidePopup }],
   );
 }
 

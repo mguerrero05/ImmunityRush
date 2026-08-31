@@ -24,7 +24,7 @@
       href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=7" />
+    <link rel="stylesheet" href="style.css?v=8" />
   </head>
   <body>
     <!-- =========================================================
@@ -396,6 +396,48 @@
       </section>
 
       <!-- =====================================================
+         SCREEN: SENT HOME SICK (health ran out) -> Recovery Week
+         ===================================================== -->
+      <section id="screen-sickhome" class="screen">
+        <div class="sick-panel">
+          <h2 class="sick-title">Sent Home Sick 🤒</h2>
+          <p class="sick-text">
+            The flu caught up with you — you're recovering at home. Rest up, and use your recovery
+            week to strengthen your flu-vaccine know-how so you come back stronger!
+          </p>
+          <button class="btn btn-primary sick-cal" type="button" onclick="startRecovery()">
+            📅 Start Recovery Week
+          </button>
+        </div>
+      </section>
+
+      <!-- =====================================================
+         SCREEN: RECOVERY WEEK — VAX MATCH (match-3 recovery game)
+         ===================================================== -->
+      <section id="screen-recovery" class="screen minigame">
+        <div class="mg-hud rg-hud">
+          <span>Score: <b id="rg-score">0</b></span>
+          <span class="rg-days" id="rg-days" aria-label="Recovery days completed"></span>
+          <button class="btn tiny" type="button" onclick="rgTogglePause()" aria-label="Pause">
+            ⏸
+          </button>
+          <button class="btn tiny" type="button" onclick="rgInfo()" aria-label="How to play">
+            ?
+          </button>
+          <button class="btn tiny" type="button" onclick="rgExit()">Exit</button>
+        </div>
+        <div id="recovery-stage" class="mg-stage">
+          <div class="rg-panel">
+            <div class="rg-meter" aria-label="Knowledge meter">
+              <div class="rg-meter-fill" id="rg-meter-fill"></div>
+            </div>
+            <div class="rg-board" id="rg-board" role="grid" aria-label="Vaccine match puzzle"></div>
+            <div class="rg-boosters" id="rg-boosters"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
          GENERIC POP-UP (mini-game entry, facts, etc.)
          ===================================================== -->
       <div id="popup" class="popup-overlay">
@@ -445,6 +487,6 @@
 
     <!-- Collision map auto-generated from the maze artwork (see assets/maze/). -->
     <script src="assets/maze/wallmask.js"></script>
-    <script src="script.js?v=7"></script>
+    <script src="script.js?v=8"></script>
   </body>
 </html>
