@@ -1458,9 +1458,9 @@ body {
   display: grid;
   /* Fixed card size + centred board, so cards never stretch to fill a wide
      stage (which ballooned them on desktop). The clinic backdrop frames it. */
-  grid-template-columns: repeat(4, 92px);
+  grid-template-columns: repeat(4, 114px);
   grid-auto-rows: auto;
-  gap: 10px;
+  gap: 12px;
   justify-content: center;
   align-content: center;
 }
@@ -1528,8 +1528,8 @@ body {
   max-height: 58%;
 }
 .mem-txt {
-  font-size: 8px;
-  line-height: 1.18;
+  font-size: 9.5px;
+  line-height: 1.2;
   font-weight: 700;
   color: var(--shn-blue);
   overflow: hidden;
