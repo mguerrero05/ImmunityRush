@@ -1178,6 +1178,150 @@ body {
 #player.slowed {
   filter: brightness(0.88) saturate(0.5) hue-rotate(-8deg);
 }
+/* =========================================================
+   FIRST-TIME COACH-MARK TUTORIAL — fun, game-styled onboarding
+   ========================================================= */
+#tutorial {
+  position: fixed;
+  inset: 0;
+  z-index: 6500;
+  display: none;
+}
+#tutorial.show {
+  display: block;
+}
+.tut-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 28, 50, 0.74);
+}
+/* Spotlight: darkens everything except a glowing hole over the target. */
+.tut-spot {
+  position: fixed;
+  display: none;
+  border-radius: 16px;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 9999px rgba(8, 28, 50, 0.74),
+    inset 0 0 0 3px #ffd34d;
+  animation: tutSpot 1.3s ease-in-out infinite;
+}
+@keyframes tutSpot {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 9999px rgba(8, 28, 50, 0.74),
+      inset 0 0 0 3px #ffd34d,
+      0 0 14px 2px rgba(255, 211, 77, 0.55);
+  }
+  50% {
+    box-shadow:
+      0 0 0 9999px rgba(8, 28, 50, 0.74),
+      inset 0 0 0 3px #ffd34d,
+      0 0 28px 7px rgba(255, 211, 77, 0.85);
+  }
+}
+.tut-card {
+  position: absolute;
+  left: 50%;
+  top: 5%;
+  transform: translateX(-50%);
+  width: calc(100% - 36px);
+  max-width: 350px;
+  background: linear-gradient(165deg, #ffffff, #eef6ff);
+  border: 3px solid #ffd34d;
+  border-radius: 22px;
+  padding: 18px 22px 16px;
+  text-align: center;
+  box-shadow: 0 22px 52px rgba(8, 28, 50, 0.5);
+  animation: tutPop 0.34s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+@keyframes tutPop {
+  0% {
+    transform: translateX(-50%) scale(0.7);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+}
+.tut-emoji {
+  font-size: 42px;
+  line-height: 1;
+  margin-bottom: 6px;
+  animation: tutBob 1.8s ease-in-out infinite;
+}
+@keyframes tutBob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(3deg);
+  }
+}
+.tut-title {
+  font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #1f6feb, #2bb3b3, #34c98a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.tut-text {
+  font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: #2c4a63;
+  margin-bottom: 14px;
+}
+.tut-dots {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.tut-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cfe0f2;
+  transition: transform 0.2s;
+}
+.tut-dot.on {
+  background: linear-gradient(90deg, #1f6feb, #2bb3b3);
+  transform: scale(1.4);
+}
+.tut-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+.tut-skip {
+  background: none;
+  border: none;
+  color: #8095a8;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 10px;
+}
+.tut-next {
+  width: auto;
+  padding: 11px 30px;
+  font-family: "Baloo 2", system-ui, sans-serif;
+  font-weight: 800;
+  background: linear-gradient(180deg, #3ddc84, #16a085);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(20, 122, 64, 0.36);
+}
+
 /* Green "flu exposure" wash over the frame when a roamer catches you. */
 #flu-flash {
   position: absolute;

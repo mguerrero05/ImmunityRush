@@ -828,6 +828,128 @@ function beginGame() {
   startRunTimer();
   keys.up = keys.down = keys.left = keys.right = false; // clear any stale key state
   startMazeLoop();
+  maybeStartTutorial(); // first-time coach-mark onboarding
+}
+
+/* =========================================================
+   FIRST-TIME COACH-MARK TUTORIAL (maze onboarding)
+   Auto-shows once (stored in localStorage); Skip anytime; replayable from the
+   How-to-Play screen. Spotlights the D-pad; other steps are centered cards.
+   ========================================================= */
+const TUTORIAL_STEPS = [
+  {
+    emoji: "🎯",
+    title: "Welcome to Immunity Rush!",
+    text: "Explore the hospital, take on the 4 clinic challenges, then reach the VaxFacts+ clinic.",
+  },
+  {
+    emoji: "🕹️",
+    title: "Move around",
+    text: "Use the arrow keys or WASD — or the on-screen buttons / swipe on your phone.",
+    target: "#dpad",
+  },
+  {
+    emoji: "🛡️ ❤️ ⚡",
+    title: "Collect the tokens",
+    text: "Grab shields, hearts, speed boosts, family and wellness tokens for points and protection.",
+  },
+  {
+    emoji: "🤒",
+    title: "Watch out for people!",
+    text: "These are patients and coworkers — and some have the flu! Without a vaccine you're not protected. Touch one and you'll be slowed and lose health… lose it all and you'll be sent home sick on mandatory leave! Grab a 🛡️ shield to block a hit.",
+  },
+  {
+    emoji: "🏥",
+    title: "Clinics & challenges",
+    text: "Walk into a clinic door to play a quick challenge. In them: collect the good ✅ and avoid the bad 🚫. Have fun!",
+  },
+];
+let tutStep = 0;
+let tutorialInGame = false;
+
+function maybeStartTutorial() {
+  try {
+    if (localStorage.getItem("immunityTutorialSeen")) return;
+  } catch (e) {
+    /* localStorage blocked — just show it */
+  }
+  startTutorial(true);
+}
+function buildTutorialOverlay() {
+  let ov = document.getElementById("tutorial");
+  if (ov) return ov;
+  ov = document.createElement("div");
+  ov.id = "tutorial";
+  ov.innerHTML =
+    '<div class="tut-dim"></div><div class="tut-spot"></div>' +
+    '<div class="tut-card"><div class="tut-emoji"></div><div class="tut-title"></div>' +
+    '<div class="tut-text"></div><div class="tut-dots"></div>' +
+    '<div class="tut-btns"><button class="tut-skip" type="button">Skip</button>' +
+    '<button class="tut-next btn btn-primary" type="button">Next</button></div></div>';
+  document.body.appendChild(ov);
+  ov.querySelector(".tut-skip").onclick = () => endTutorial();
+  ov.querySelector(".tut-next").onclick = () => {
+    if (tutStep >= TUTORIAL_STEPS.length - 1) endTutorial();
+    else {
+      tutStep++;
+      showTutorialStep();
+    }
+  };
+  return ov;
+}
+function startTutorial(inGame) {
+  tutorialInGame = !!inGame;
+  if (tutorialInGame) {
+    overlayPaused = true; // freeze the maze loop
+    stopRunTimer(); // and the countdown
+  }
+  const ov = buildTutorialOverlay();
+  tutStep = 0;
+  ov.classList.add("show");
+  showTutorialStep();
+}
+function showTutorialStep() {
+  const ov = document.getElementById("tutorial");
+  const step = TUTORIAL_STEPS[tutStep];
+  ov.querySelector(".tut-emoji").textContent = step.emoji;
+  ov.querySelector(".tut-title").textContent = step.title;
+  ov.querySelector(".tut-text").textContent = step.text;
+  ov.querySelector(".tut-next").textContent =
+    tutStep >= TUTORIAL_STEPS.length - 1 ? "Got it!" : "Next";
+  ov.querySelector(".tut-dots").innerHTML = TUTORIAL_STEPS.map(
+    (_, i) => `<span class="tut-dot${i === tutStep ? " on" : ""}"></span>`,
+  ).join("");
+  const spot = ov.querySelector(".tut-spot");
+  const dim = ov.querySelector(".tut-dim");
+  const target = step.target ? document.querySelector(step.target) : null;
+  if (target && target.getClientRects().length) {
+    const r = target.getBoundingClientRect();
+    const pad = 8;
+    spot.style.display = "block";
+    spot.style.left = r.left - pad + "px";
+    spot.style.top = r.top - pad + "px";
+    spot.style.width = r.width + pad * 2 + "px";
+    spot.style.height = r.height + pad * 2 + "px";
+    dim.style.display = "none";
+  } else {
+    spot.style.display = "none";
+    dim.style.display = "block";
+  }
+}
+function endTutorial() {
+  const ov = document.getElementById("tutorial");
+  if (ov) ov.classList.remove("show");
+  try {
+    localStorage.setItem("immunityTutorialSeen", "1");
+  } catch (e) {
+    /* ignore */
+  }
+  if (tutorialInGame) {
+    overlayPaused = false;
+    keys.up = keys.down = keys.left = keys.right = false;
+    startRunTimer();
+  }
+  tutorialInGame = false;
 }
 
 // Ask before ending the run from the maze.
