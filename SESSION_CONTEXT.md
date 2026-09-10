@@ -902,3 +902,11 @@
   (`freeze.time` init + the `freeze-time` display, `startFreeze`). Cache-busting bumped **v=7 → v=8**
   in index.html. Existing mini-games otherwise untouched; `node --check` + ESLint + Prettier all clean.
   Verified additive — no unrelated systems rewritten.
+- 2026-09-10 (session 53 — end-screen survey link swapped): Replaced the end-screen feedback block
+  (index.html ~line 380, `.end-feedback`). New copy: "Thank you so much for playing Immunity Rush! If
+  you could take a moment to complete this short survey, it would help me a ton with my study and with
+  improving the game. I greatly appreciate your time :) 🙌". Button label changed to "📝 Click here
+  for the survey" and the href now points to the NEW Google Form
+  (`1FAIpQLSfrckoSIZNCC4et6XoOeuSm-xwcxGe2pJPyyj3vrTgl3ZrZFA/viewform?usp=dialog`), replacing the old
+  `1FAIpQLSc4v8B97LUiHQFwfUY4NuxP0A0WugGn0MSicrn_ef7JHiLpUw` form. Email line + everything else
+  unchanged; no css/js changes so cache version stayed v=8.
