@@ -910,3 +910,33 @@
   (`1FAIpQLSfrckoSIZNCC4et6XoOeuSm-xwcxGe2pJPyyj3vrTgl3ZrZFA/viewform?usp=dialog`), replacing the old
   `1FAIpQLSc4v8B97LUiHQFwfUY4NuxP0A0WugGn0MSicrn_ef7JHiLpUw` form. Email line + everything else
   unchanged; no css/js changes so cache version stayed v=8.
+- 2026-09-14 (session 54 — onboarding flow, perf, roamer paths, Vax Match polish): Big batch, all
+  deployed (cache now **v=14**; bump on every script/style change). (1) ONBOARDING TUTORIAL text #4
+  reworded to the shorter "Watch out!! Some patients and coworkers have the flu!..." line (TUTORIAL_STEPS
+  in script.js). (2) HOME BUTTON REWIRING: "Instructions" button now runs `startTutorial(false)` DIRECTLY
+  (coach-marks immediately) instead of showing the old How-to-Play page; "Start Game" now goes straight to
+  `startInitials()` (skips that page). The `#screen-instructions` page is now unreachable (dead HTML, left
+  in place). (3) AUTO-FULLSCREEN REMOVED (was breaking a SharePoint embed the user presents from): removed
+  `goFullscreen()` from Start, and COMMENTED OUT the two `firstGestureFullscreen` window listeners near line
+  4433 (`void firstGestureFullscreen` keeps lint clean). Re-enable by uncommenting. (4) BACKGROUND/REFOCUS
+  FIX for "glitches after not opening for a while": added `clearAllInput()` (zeros `keys`) on window blur /
+  pagehide / touchcancel / pointercancel / visibilitychange, + refit on return. Root cause = stuck key/D-pad
+  when you tab away mid-move so the character drifts. (5) START LAG FIX: the maze floor `maze-bg.png` is
+  **2.56 MB** and only loaded when you pressed "Let's Go" (blank floor for a beat). Added `preloadHeavyArt()`
+  in `init()` — warms maze-bg + sick-home-bg in the background so the maze paints instantly. FUTURE: shrink
+  maze-bg.png (~2.56MB → ~400-600KB) for instant first-ever load. (6) ROAMERS WALKING THROUGH WALLS: the old
+  hazard patrol positions literally crossed walls. Mapped the collision mask (`assets/maze/wallmask.js`,
+  window.WALL_MASK, 396×249 @ maskF=4) with node scripts (in scratchpad) to find VERIFIED walkable corridors,
+  then repositioned all 4 roamers onto them: V-central {x:640,min:250,max:600,vy}, V-right {x:960,450-900,vy},
+  V-left {x:460,470-900,vy}, H-central {x:620,620-1200,vx} — all validated 0 wall-hits. Also added
+  `hazardBlocked(h,x,y)` (feet footprint vs maskBlocked) so `updateHazards` turns a roamer at any wall as a
+  safety net. To move a roamer, keep its range inside a real corridor (rerun scratchpad corr.js/verify.js).
+  (7) SENT-HOME text → "Uh oh.. You've been Home Sick 🤒 / The flu caught up with you and followed you
+  home...". (8) RECOVERY WEEK: VAX MATCH POLISH per user ("confusing, too small, add swipe, onboarding"):
+  added SWIPE/drag-to-swap (`rgSetupInput`/`rgSwipe`/`rgDrag`, pointer events on #rg-board, `touch-action:none`;
+  tap-two-tiles still works; `rgSwipeConsumed` suppresses the trailing click); BIGGER board (max-width 360→404,
+  tile font 22→27, gap 5); BOLD COLORED GEM BLOCKS (`.rg-t-*` now vivid gradients: shield=blue, calendar=amber,
+  heart=pink, family=green, hospital=purple, vaxfacts=cyan; glossy inset highlight + emoji text-shadow; colour
+  + unique icon, never colour alone); and an INTRO overlay `rgIntro()` shown at game start (what it is, how to
+  play, a 6-block colour legend, "Let's recover! ▶"). rgCloseOverlays now also clears "rg-intro". (9) Flu Freeze
+  timer already 45s from session 52. All changes: node --check + ESLint + Prettier clean each deploy.
