@@ -756,10 +756,27 @@ function rotateSlogan(elId) {
    4. GAME FLOW
    ========================================================= */
 
+// Warm the big background images in the background right after the home screen
+// loads, so pressing "Let's Go" shows the maze INSTANTLY instead of waiting for a
+// multi-MB PNG to download + decode the moment you start. Decoding early (where
+// supported) means the first paint is immediate.
+function preloadHeavyArt() {
+  const urls = [
+    "assets/maze/maze-bg.png?v=2", // the maze floor (must match the CSS url)
+    "assets/backgrounds/sick-home-bg.png", // Recovery Week backdrop
+  ];
+  urls.forEach((u) => {
+    const img = new Image();
+    img.src = u;
+    if (img.decode) img.decode().catch(() => {});
+  });
+}
+
 // Called once when the page loads.
 function init() {
   setupCustomizeControls();
   setupControls();
+  preloadHeavyArt();
 }
 
 // Home -> initials screen.
