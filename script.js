@@ -3534,6 +3534,79 @@ function startRecovery() {
   rgUpdateDays();
   rgUpdateMeter();
   rgRenderBoosters();
+  rgSetupInput(); // swipe / drag to swap (attached once)
+  rgIntro(); // explain the game before play starts
+}
+
+// One-time swipe/drag handling: press a tile and flick toward a neighbour to swap.
+// Tapping two side-by-side tiles still works (handled by each tile's click).
+let rgDrag = null;
+let rgSwipeConsumed = false;
+let rgInputReady = false;
+function rgSetupInput() {
+  if (rgInputReady) return;
+  const board = document.getElementById("rg-board");
+  if (!board) return;
+  board.addEventListener("pointerdown", (e) => {
+    const t = e.target.closest(".rg-tile");
+    if (!t) return;
+    rgSwipeConsumed = false;
+    rgDrag = { r: +t.dataset.r, c: +t.dataset.c, x: e.clientX, y: e.clientY };
+  });
+  window.addEventListener("pointermove", (e) => {
+    if (!rgDrag) return;
+    const dx = e.clientX - rgDrag.x;
+    const dy = e.clientY - rgDrag.y;
+    const TH = 14; // how far you must flick before it counts as a swipe
+    if (Math.abs(dx) < TH && Math.abs(dy) < TH) return;
+    let tr = rgDrag.r;
+    let tc = rgDrag.c;
+    if (Math.abs(dx) > Math.abs(dy)) tc += dx > 0 ? 1 : -1;
+    else tr += dy > 0 ? 1 : -1;
+    if (tr >= 0 && tc >= 0 && tr < RG_SIZE && tc < RG_SIZE) {
+      rgSwipeConsumed = true; // stop the trailing click from also selecting
+      rgSwipe(rgDrag.r, rgDrag.c, tr, tc);
+    }
+    rgDrag = null;
+  });
+  window.addEventListener("pointerup", () => {
+    rgDrag = null;
+  });
+  rgInputReady = true;
+}
+function rgSwipe(r, c, tr, tc) {
+  if (!rg || rg.busy || rg.paused || rg.question) return;
+  if (rg.pendingBooster) {
+    rgApplyBoosterAt(r, c);
+    return;
+  }
+  rg.sel = null;
+  rgTrySwap(r, c, tr, tc);
+}
+
+// Intro / how-to shown when the recovery game opens.
+function rgIntro() {
+  const legend = RG_TILES.map(
+    (t) =>
+      `<div class="rg-leg"><span class="rg-tile rg-t-${t.key} rg-leg-tile">${t.icon}</span><span class="rg-leg-name">${t.name}</span></div>`,
+  ).join("");
+  const ov = rgOverlay("rg-intro");
+  ov.innerHTML = `
+    <div class="rg-card rg-intro-card" role="dialog" aria-modal="true" aria-label="How to play Vax Match">
+      <div class="rg-done-emoji">🧩</div>
+      <h2 class="rg-done-title">Recovery Week: Vax Match</h2>
+      <p class="rg-intro-text">You're home sick. <b>Match vaccine blocks</b> to fill your Knowledge
+      Meter and recover across <b>7 days</b> — each full meter asks you one quick flu-vaccine question.</p>
+      <div class="rg-intro-how">
+        <div class="rg-intro-line">👆 <b>Swipe</b> a block toward a neighbour to swap them (or tap two side-by-side blocks).</div>
+        <div class="rg-intro-line">🔗 Line up <b>3 or more of the same block</b> to clear them and fill the meter.</div>
+      </div>
+      <div class="rg-legend">${legend}</div>
+      <button type="button" class="btn btn-primary rg-continue" id="rg-intro-go">Let's recover! ▶</button>
+    </div>`;
+  const go = document.getElementById("rg-intro-go");
+  go.onclick = () => rgCloseOverlay("rg-intro");
+  go.focus();
 }
 
 // After finishing all 7 days: back to work, health restored, pointed to OHS/VaxFacts.
@@ -3627,7 +3700,13 @@ function rgRender() {
       }
       if (rg.sel && rg.sel[0] === r && rg.sel[1] === c) b.classList.add("sel");
       if (rg.pendingBooster) b.classList.add("targeting");
-      b.onclick = () => rgTap(r, c);
+      b.onclick = () => {
+        if (rgSwipeConsumed) {
+          rgSwipeConsumed = false;
+          return;
+        }
+        rgTap(r, c);
+      };
       board.appendChild(b);
     }
   }
@@ -4035,7 +4114,7 @@ function rgCloseOverlay(id) {
 }
 
 function rgCloseOverlays() {
-  ["rg-question", "rg-done", "rg-review", "rg-pause"].forEach(rgCloseOverlay);
+  ["rg-intro", "rg-question", "rg-done", "rg-review", "rg-pause"].forEach(rgCloseOverlay);
 }
 
 function rgTogglePause() {

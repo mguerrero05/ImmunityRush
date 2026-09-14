@@ -5580,7 +5580,7 @@ img {
 /* ----- Knowledge meter ----- */
 .rg-meter {
   width: 100%;
-  max-width: 360px;
+  max-width: 404px;
   height: 16px;
   border-radius: 10px;
   background: rgba(15, 76, 129, 0.16);
@@ -5604,47 +5604,69 @@ img {
   --rg-size: 7;
   display: grid;
   grid-template-columns: repeat(var(--rg-size), 1fr);
-  gap: 4px;
+  gap: 5px;
   width: 100%;
-  max-width: 360px;
+  max-width: 404px;
   aspect-ratio: 1;
-  padding: 6px;
+  padding: 7px;
   background: rgba(15, 76, 129, 0.1);
-  border-radius: 14px;
+  border-radius: 16px;
+  touch-action: none; /* let swipes swap tiles instead of scrolling the page */
 }
 .rg-tile {
-  border: 2px solid rgba(15, 76, 129, 0.12);
-  border-radius: 10px;
+  border: none;
+  border-radius: 12px;
   background: #fff;
-  font-size: 22px;
+  font-size: 27px;
   line-height: 1;
   display: grid;
   place-items: center;
   cursor: pointer;
   padding: 0;
   aspect-ratio: 1;
+  touch-action: none;
+  /* Bold, glossy "gem" look: a light highlight on top of the solid colour. */
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -4px 6px rgba(0, 0, 0, 0.18),
+    0 2px 4px rgba(0, 0, 0, 0.18);
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 0 3px rgba(255, 255, 255, 0.6);
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 .rg-tile:hover {
   transform: translateY(-1px);
 }
 .rg-tile.sel {
-  border-color: var(--shn-blue-2);
+  transform: scale(1.09);
   box-shadow:
-    0 0 0 3px rgba(31, 111, 235, 0.5),
-    0 2px 6px rgba(0, 0, 0, 0.2);
-  transform: scale(1.06);
+    0 0 0 4px #fff,
+    0 0 0 7px var(--shn-blue-2),
+    0 3px 8px rgba(0, 0, 0, 0.3);
 }
 .rg-tile.targeting {
   cursor: crosshair;
-  border-color: var(--shn-teal);
+  animation: rgTarget 0.9s ease-in-out infinite;
+}
+@keyframes rgTarget {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 3px 0 rgba(255, 255, 255, 0.5),
+      0 0 0 2px var(--shn-teal);
+  }
+  50% {
+    box-shadow:
+      inset 0 3px 0 rgba(255, 255, 255, 0.5),
+      0 0 0 4px var(--shn-teal);
+  }
 }
 .rg-tile:focus-visible {
-  outline: 3px solid var(--shn-blue-2);
-  outline-offset: 2px;
+  outline: 3px solid #fff;
+  outline-offset: -3px;
 }
 .rg-tile.rg-clear {
   animation: rgPop 0.2s ease forwards;
@@ -5652,24 +5674,25 @@ img {
 .rg-tile.shake {
   animation: rgShake 0.3s ease;
 }
-/* Distinct background tints per tile — a redundant cue on top of the unique icon. */
+/* Bold, obviously-different colour per block (identity carried by BOTH the vivid
+   colour AND the unique icon — never colour alone). */
 .rg-t-shield {
-  background: #e8f0fb;
+  background: linear-gradient(#5b9bff, #2b6fe0);
 }
 .rg-t-calendar {
-  background: #fff4e2;
+  background: linear-gradient(#ffc94b, #f5a623);
 }
 .rg-t-heart {
-  background: #eaf6ff;
+  background: linear-gradient(#ff8fab, #ef476f);
 }
 .rg-t-family {
-  background: #eafaf0;
+  background: linear-gradient(#5fd39b, #23af67);
 }
 .rg-t-hospital {
-  background: #fdecec;
+  background: linear-gradient(#b58cf2, #8b5cf6);
 }
 .rg-t-vaxfacts {
-  background: #eef7f7;
+  background: linear-gradient(#5fd6e6, #12b5c9);
 }
 @keyframes rgPop {
   to {
@@ -5697,7 +5720,7 @@ img {
   justify-content: center;
   gap: 6px;
   width: 100%;
-  max-width: 360px;
+  max-width: 404px;
 }
 .rg-booster {
   flex: 1 1 44%;
@@ -5851,6 +5874,55 @@ img {
   width: 100%;
 }
 
+/* ----- Intro / how-to overlay ----- */
+.rg-intro-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #33475b;
+  margin: 4px 0 12px;
+}
+.rg-intro-how {
+  text-align: left;
+  background: #eef4fb;
+  border: 1px solid #cfe0f2;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.rg-intro-line {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--shn-blue);
+}
+.rg-intro-line + .rg-intro-line {
+  margin-top: 6px;
+}
+.rg-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin-bottom: 6px;
+}
+.rg-leg {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  text-align: left;
+}
+.rg-leg-tile {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  font-size: 18px;
+  aspect-ratio: auto;
+}
+.rg-leg-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #33475b;
+  line-height: 1.15;
+}
+
 /* ----- Completion card ----- */
 .rg-done-card .rg-done-emoji {
   font-size: 48px;
@@ -5922,6 +5994,7 @@ img {
 @media (prefers-reduced-motion: reduce) {
   .sick-cal,
   .rg-tile,
+  .rg-tile.targeting,
   .rg-tile.rg-clear,
   .rg-tile.shake,
   .rg-meter-fill {
