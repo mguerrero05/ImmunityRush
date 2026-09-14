@@ -1396,11 +1396,15 @@ function buildImageMaze(worldEl) {
   );
 
   // Patrolling germs — kept away from the reception START so you're not hit at spawn.
+  // Patrol lines are placed on VERIFIED walkable corridors (checked against the
+  // pixel mask) so the roamers walk the same open floor as the player instead of
+  // clipping through walls. updateHazards() also turns them back at any wall as a
+  // safety net. To move one, keep its range inside a real corridor.
   hazards = [
-    { x: 700, y: 430, w: 46, h: 46, min: 360, max: 500, vy: 1.8 },
-    { x: 950, y: 540, w: 46, h: 46, min: 460, max: 640, vy: -1.8 },
-    { x: 560, y: 640, w: 46, h: 46, min: 560, max: 720, vy: 1.6 },
-    { x: 600, y: 520, w: 46, h: 46, min: 500, max: 700, vx: 1.6 }, // roamer-4: walks HORIZONTALLY along the open corridor
+    { x: 640, y: 250, w: 46, h: 46, min: 250, max: 600, vy: 1.8 }, // central vertical corridor
+    { x: 960, y: 450, w: 46, h: 46, min: 450, max: 900, vy: -1.8 }, // right-central vertical corridor
+    { x: 460, y: 470, w: 46, h: 46, min: 470, max: 900, vy: 1.6 }, // left-central vertical corridor
+    { x: 620, y: 600, w: 46, h: 46, min: 620, max: 1200, vx: 1.6 }, // long horizontal corridor
   ];
   hazardCooldown = 0;
   hazards.forEach((h, i) => {
@@ -1845,6 +1849,22 @@ function spawnHazards(worldEl) {
     h.el = d;
   });
 }
+// Would a roamer standing at (x,y) have its FEET inside a wall? Uses the same
+// pixel mask the player walks on, so roamers stay on the opened-up floor instead
+// of clipping through walls. In the non-image maze (no mask) this is a no-op, so
+// those roamers keep their old min/max patrol behaviour.
+function hazardBlocked(h, x, y) {
+  if (!maskBits) return false;
+  const w = h.w,
+    ht = h.h;
+  return (
+    maskBlocked(x + w * 0.5, y + ht) ||
+    maskBlocked(x + w * 0.4, y + ht - 2) ||
+    maskBlocked(x + w * 0.6, y + ht - 2) ||
+    maskBlocked(x + w * 0.5, y + ht - 8)
+  );
+}
+
 function updateHazards() {
   if (hazardCooldown > 0) hazardCooldown--;
   if (slowTimer > 0) slowTimer--;
@@ -1853,13 +1873,16 @@ function updateHazards() {
   const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
   hazards.forEach((h) => {
     if (h.vx) {
-      // Horizontal patroller (bounces between min/max on X).
-      h.x += h.vx;
-      if (h.x <= h.min || h.x >= h.max) h.vx *= -1;
+      // Horizontal patroller: bounce at the min/max ends OR before a wall, so it
+      // stays in the open corridor instead of walking through it.
+      const nx = h.x + h.vx;
+      if (nx <= h.min || nx >= h.max || hazardBlocked(h, nx, h.y)) h.vx *= -1;
+      else h.x = nx;
       h.el.style.left = h.x + "px";
     } else {
-      h.y += h.vy;
-      if (h.y <= h.min || h.y >= h.max) h.vy *= -1;
+      const ny = h.y + h.vy;
+      if (ny <= h.min || ny >= h.max || hazardBlocked(h, h.x, ny)) h.vy *= -1;
+      else h.y = ny;
       h.el.style.top = h.y + "px";
       h.el.dataset.facing = h.vy >= 0 ? "down" : "up"; // face down going down, up going up
     }
