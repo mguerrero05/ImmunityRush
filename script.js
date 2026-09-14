@@ -4430,8 +4430,11 @@ function firstGestureFullscreen() {
   window.removeEventListener("keydown", firstGestureFullscreen);
   goFullscreen();
 }
-window.addEventListener("pointerdown", firstGestureFullscreen);
-window.addEventListener("keydown", firstGestureFullscreen);
+// Automatic fullscreen is DISABLED for now — it interferes with embedding the
+// game in SharePoint. Re-enable by uncommenting these two listeners.
+// window.addEventListener("pointerdown", firstGestureFullscreen);
+// window.addEventListener("keydown", firstGestureFullscreen);
+void firstGestureFullscreen; // keep referenced so linting stays clean
 
 /* =========================================================
    BOOT
