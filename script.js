@@ -4400,6 +4400,28 @@ window.addEventListener("orientationchange", fitGame);
 window.addEventListener("fullscreenchange", fitGame);
 if (window.visualViewport) window.visualViewport.addEventListener("resize", fitGame);
 
+/* ---------------------------------------------------------
+   BACKGROUND / REFOCUS SAFETY
+   ---------------------------------------------------------
+   If you switch tabs, lock the phone, or get a call mid-move, the browser may
+   never deliver the matching keyup / touchend — so a held direction stays "on"
+   and the character keeps drifting by itself when you come back (the "glitch
+   after not opening it for a while"). Clear all input whenever the game loses
+   focus or is hidden, and again when it comes back, then re-fit the frame in
+   case the viewport changed while it was away.
+   --------------------------------------------------------- */
+function clearAllInput() {
+  keys.up = keys.down = keys.left = keys.right = false;
+}
+window.addEventListener("blur", clearAllInput);
+window.addEventListener("pagehide", clearAllInput);
+window.addEventListener("touchcancel", clearAllInput);
+window.addEventListener("pointercancel", clearAllInput);
+document.addEventListener("visibilitychange", () => {
+  clearAllInput();
+  if (!document.hidden) fitGame();
+});
+
 // Go fullscreen when the player starts (must be called from a user gesture — the
 // Start button's click). Fills the screen and hides the browser chrome so the
 // scale-to-fit frame gets the whole display. Fails silently where it isn't
