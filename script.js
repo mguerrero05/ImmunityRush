@@ -1380,15 +1380,17 @@ function buildImageMaze(worldEl) {
     worldEl.appendChild(d);
   });
 
-  // Boosters, each on a verified naturally-reachable floor spot (top-left = feet − 15).
+  // Tokens sit in OPEN corridors along the route (not tucked in corners). Each
+  // spot was verified against the wall mask: reachable from the start, fully
+  // surrounded by floor, spread across the maze, and clear of the clinic doors.
   liveCollectibles = [];
   [
-    [284, 335, "shield"],
-    [484, 385, "heart"],
-    [684, 415, "speed"],
-    [544, 285, "family"],
-    [984, 235, "wellness"],
-    [302, 381, "family"],
+    [485, 325, "shield"], // upper-central
+    [1005, 285, "family"], // upper-right
+    [665, 525, "heart"], // central corridor
+    [945, 605, "speed"], // mid-right corridor
+    [445, 865, "wellness"], // lower-left corridor
+    [685, 885, "family"], // bottom-central corridor
   ].forEach(([x, y, key]) =>
     spawnCollectible(
       worldEl,
