@@ -1063,3 +1063,18 @@
   influenza virus on contact, rendering it completely inactive." (title unchanged). NOTE: the Flu Facts
   "clean-hands" fact in fluFacts.js STILL says soap-and-water (approved sourced content — left as-is;
   user was offered a change). Local preview: `python3 -m http.server 5680`. Checks clean; tests 10/10.
+- 2026-09-15 (session 61 — hand-wash station → rotating fact card + survey text): Cache now **v=38**.
+  (1) HAND-WASH STATION now uses the SAME rotating Next/Close card as the Information desk (not a
+  single bigMessage). Refactored the fact-card controller to be DECK-BASED: `openFactCard(deck,
+  triggerEl, fallbackFocusId)`, `fluDeck()` (flu facts, key immunityFluFacts) + `handHygieneDeck()`
+  (hand-hygiene, key immunityHandHygiene) — each deck keeps its own no-repeat sessionStorage rotation.
+  `showFluFact` → info desk/button; NEW `showHandHygiene` → wash station. `loadFluState/saveFluState`
+  now take a key; `fluAdvance` uses current `ffDeck`. checkZones: handwash zone kind:"handwash" →
+  showHandHygiene; other infoZones → showFluFact. Removed the old `HANDWASH_INFO` const +
+  `openInfoZonePopup` (dead). (2) NEW CONTENT in fluFacts.js: `HANDHYGIENE_FACTS` (5 facts, category
+  "hand-hygiene" → label "HAND HYGIENE", empty sourceIds) exposed as `FluFacts.handHygieneFacts`; added
+  "hand-hygiene" to categoryLabels. Facts: ABHR inactivates flu (lipid envelope), gloves≠hand hygiene,
+  commonly-missed areas, C. difficile needs soap&water, ABHR vs frequent washing. Verbatim user wording
+  (one comma added in #3). (3) END-SCREEN SURVEY invite text (index.html .end-feedback-note) changed to
+  "Please take two minutes to share your feedback with us!..." (anonymous, research note). Survey link/
+  button unchanged. Checks: node --check + ESLint clean + tests 10/10 + Prettier.
