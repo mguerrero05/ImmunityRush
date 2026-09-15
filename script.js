@@ -3600,11 +3600,12 @@ function rgIntro() {
     <div class="rg-card rg-intro-card" role="dialog" aria-modal="true" aria-label="How to play Vax Match">
       <div class="rg-done-emoji">🧩</div>
       <h2 class="rg-done-title">Recovery Week: Vax Match</h2>
-      <p class="rg-intro-text">You're home sick. <b>Match vaccine blocks</b> to fill your Knowledge
-      Meter and recover across <b>7 days</b> — each full meter asks you one quick flu-vaccine question.</p>
+      <p class="rg-intro-text">You're home sick for <b>7 days</b>, but recovery starts now! Match
+      <b>3 or more vaccine blocks</b> to fill your Knowledge Meter. Fill it completely to strengthen
+      your flu vaccine knowledge, recover, and get ready to return to work!</p>
       <div class="rg-intro-how">
-        <div class="rg-intro-line">👆 <b>Swipe</b> a block toward a neighbour to swap them (or tap two side-by-side blocks).</div>
-        <div class="rg-intro-line">🔗 Line up <b>3 or more of the same block</b> to clear them and fill the meter.</div>
+        <div class="rg-intro-line">👆 <b>Swipe or tap</b> two side-by-side blocks to create a match.</div>
+        <div class="rg-intro-line">🔗 Line up <b>3 or more identical blocks</b> to clear them and fill your Knowledge Meter!</div>
       </div>
       <div class="rg-legend">${legend}</div>
       <button type="button" class="btn btn-primary rg-continue" id="rg-intro-go">Let's recover! ▶</button>
