@@ -1045,3 +1045,21 @@
   now rate 0.92, pitch 1.02, lang matched to the voice. NOTE: quality is device/browser-dependent —
   Chrome/Edge have genuinely natural voices; a plain browser may only offer robotic ones (can't be
   replaced in-page without an external TTS service = cost/dependency). All checks clean; tests 10/10.
+- 2026-09-15 (session 60 — mobile polish, immunity gap, voice aid REMOVED, ABHR wording): Cache now
+  **v=36**. (1) PHONE CLUTTER: `@media (pointer: coarse)` hides `#direction-arrows` (top-right mini-game
+  labels) + `#flu-facts-btn` (bottom-right) — phone players still reach facts via the Information desk.
+  (2) VAXFACTS+ CONGRATS OVERLAY (#vax-congrats) now phone-friendly: `.vc-card` max-height:100% +
+  overflow-y:auto + a phone media query (smaller title/emoji, full-width buttons) so the exit/back
+  buttons are reachable. (3) GENERIC POPUP (`.popup-box`, used by Sprint/Freeze intros & completes,
+  Recovery leave/info) now max-height:100% + overflow-y:auto so buttons stay reachable at large font
+  sizes. (4) HOSPITAL SPRINT intro text shortened (the in-game ✅/🚫 legend covers details) so the
+  Start button sits high on screen. (5) POST-HIT IMMUNITY: `HAZARD_IMMUNITY_FRAMES = 120` (~2s, was 45)
+  set in hitByHazard; player gets a `.invuln` blink class while hazardCooldown>0 (CSS invulnBlink,
+  reduced-motion aware) so you can get clear after a hit. (6) VOICE AID REMOVED (user disliked it):
+  `speechOn = false` (all speak() calls become no-ops everywhere) + removed the "🔊 turn your volume up"
+  line from the onboarding clinics step. speak/stopSpeak/voice-selection plumbing left in but inert.
+  (7) HAND-WASH STATION text: iterated soap&water → "alcohol-based hand rub for 20s" → FINAL (user's
+  exact wording): "Alcohol-based hand rub (ABHR) physically dissolves the lipid envelope of the
+  influenza virus on contact, rendering it completely inactive." (title unchanged). NOTE: the Flu Facts
+  "clean-hands" fact in fluFacts.js STILL says soap-and-water (approved sourced content — left as-is;
+  user was offered a change). Local preview: `python3 -m http.server 5680`. Checks clean; tests 10/10.
