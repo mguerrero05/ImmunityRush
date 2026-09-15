@@ -876,7 +876,7 @@ const TUTORIAL_STEPS = [
   {
     emoji: "🤒",
     title: "Watch out for people!",
-    text: "Watch out!! Some patients and coworkers have the flu! Without a vaccine, every contact slows you down and costs health. Lose all your health, and you'll be sent home on mandatory sick leave and risk family at home. Grab a 🛡️ shield to block one hit!",
+    text: "Watch out! Some patients and coworkers may be contagious, but you won't know who. Without a vaccine, every contact puts you at risk of getting sick. Lose all your health, and you'll be sent home on mandatory sick leave, where you could expose your family to the flu. Grab a 🛡️ shield to block one hit!",
   },
   {
     emoji: "🏥",
