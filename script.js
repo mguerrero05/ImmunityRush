@@ -665,7 +665,7 @@ function playSound(type) {
 // built-in text-to-speech (no library, no cost). Helps players who find the text
 // hard to read. It uses the device's own volume — turn it up to hear it. `speechOn`
 // lets us disable it globally if needed.
-let speechOn = true;
+let speechOn = false; // spoken read-aloud aid is OFF (removed per request)
 let chosenVoice = null;
 
 // Voice quality depends on what the device/browser provides. We pick the most
@@ -997,7 +997,7 @@ const TUTORIAL_STEPS = [
   {
     emoji: "🏥",
     title: "Clinics & challenges",
-    text: "Enter one of the four labelled clinic doors to play a quick minigame. Collect the good ✅, avoid the bad 🚫, and have fun! 🔊 Turn your volume up — when you make a mistake, the correction is read aloud to help you.",
+    text: "Enter one of the four labelled clinic doors to play a quick minigame. Collect the good ✅, avoid the bad 🚫, and have fun!",
   },
 ];
 let tutStep = 0;
