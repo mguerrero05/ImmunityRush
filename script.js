@@ -865,7 +865,7 @@ const TUTORIAL_STEPS = [
   {
     emoji: "🕹️",
     title: "Move around",
-    text: "Use the arrow keys or WASD — or the on-screen buttons / swipe on your phone.",
+    text: "To move, use the arrow keys on a computer. On your phone, swipe or use the on-screen buttons.",
     target: "#dpad",
   },
   {
