@@ -1221,6 +1221,7 @@ let walls = [];
 let liveCollectibles = []; // {el, x, y, w, h, data}
 let hazards = []; // patrolling flu germs {el, x, y, w, h, min, max, vy}
 let hazardCooldown = 0; // frames of immunity after a hazard hit
+const HAZARD_IMMUNITY_FRAMES = 120; // ~2 seconds of play — time to get away after a hit
 let slowTimer = 0; // frames of "feeling sick" slow-down after a hazard hit
 const SLOW_FRAMES = 180; // ~3s of walking slower after getting hit
 const SLOW_FACTOR = 0.5; // half speed while slowed
@@ -2007,7 +2008,10 @@ function updateHazards() {
   if (hazardCooldown > 0) hazardCooldown--;
   if (slowTimer > 0) slowTimer--;
   const pElSick = document.getElementById("player");
-  if (pElSick) pElSick.classList.toggle("slowed", slowTimer > 0);
+  if (pElSick) {
+    pElSick.classList.toggle("slowed", slowTimer > 0);
+    pElSick.classList.toggle("invuln", hazardCooldown > 0); // brief post-hit safety flash
+  }
   const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
   hazards.forEach((h) => {
     if (h.vx) {
@@ -2042,7 +2046,7 @@ function fluFlash() {
   el.classList.add("show");
 }
 function hitByHazard(h) {
-  hazardCooldown = 45; // ~0.75s immunity so one germ doesn't drain you instantly
+  hazardCooldown = HAZARD_IMMUNITY_FRAMES; // ~2s immunity so you can get clear after a hit
   const c = centerOf(document.getElementById("player"));
   if (state.shielded) {
     endShield();
