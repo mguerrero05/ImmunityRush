@@ -5116,7 +5116,7 @@ img {
    floor. Flat (no 3D tilt); elements sit on top at image-pixel positions.
    ========================================================================= */
 #maze-world.img-mode {
-  background: url("assets/maze/maze-bg.png?v=3") center / 100% 100% no-repeat;
+  background: url("assets/maze/maze-bg.png?v=4") center / 100% 100% no-repeat;
   transform: none;
 }
 #maze-world.img-mode::before {
