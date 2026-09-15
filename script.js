@@ -881,7 +881,7 @@ const TUTORIAL_STEPS = [
   {
     emoji: "🏥",
     title: "Clinics & challenges",
-    text: "Walk into a clinic door to play a quick challenge. In them: collect the good ✅ and avoid the bad 🚫. Have fun!",
+    text: "Enter one of the four labelled clinic doors to play a quick minigame. Collect the good ✅, avoid the bad 🚫, and have fun!",
   },
 ];
 let tutStep = 0;
