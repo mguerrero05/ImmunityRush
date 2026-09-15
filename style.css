@@ -1115,9 +1115,11 @@ body {
   right: 0;
   z-index: 100; /* keep the control hint above the Sprint runner */
   text-align: center;
-  font-size: 12px;
+  font-size: 14.5px;
+  line-height: 1.3;
+  padding: 0 10px;
   color: var(--shn-blue);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Sprint runner */
@@ -1587,14 +1589,18 @@ body {
 }
 .mg-correction-text {
   color: #234;
-  font-size: 14px;
-  line-height: 1.35;
+  font-size: 16px;
+  line-height: 1.4;
   margin-bottom: 10px;
 }
 .mg-correction-lives {
   font-size: 12px;
   font-weight: 700;
   color: #789;
+}
+.mg-correction-btn {
+  margin-top: 12px;
+  width: 100%;
 }
 
 /* Memory match */
@@ -1681,10 +1687,11 @@ body {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
-/* Big "read it" peek card + "Correct!" splash (overlay the memory stage). */
-#memory-stage {
-  position: relative;
-}
+/* Big "read it" peek card + "Correct!" splash (overlay the memory stage).
+   NOTE: #memory-stage must keep the .mg-stage `position: absolute` full-bleed
+   layout so the clinic backdrop fills the whole screen. It already establishes a
+   positioning context for the inset overlays below (an earlier `position:relative`
+   here collapsed the stage to the card-tray width and shrank the backdrop). */
 #mem-peek {
   position: absolute;
   inset: 0;
@@ -2444,6 +2451,21 @@ body {
   box-shadow: 0 6px 16px rgba(20, 122, 64, 0.34);
 }
 .btn-vaccine:active {
+  transform: scale(0.97);
+}
+.btn-vaxfacts {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin: 10px auto 0;
+  background: linear-gradient(180deg, #3fc6c6, var(--shn-teal, #2bb3b3));
+  color: #fff;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(20, 100, 122, 0.32);
+}
+.btn-vaxfacts:active {
   transform: scale(0.97);
 }
 

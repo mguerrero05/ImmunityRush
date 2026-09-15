@@ -526,9 +526,11 @@ function toast(msg, ms = 1800) {
 let overlayPaused = false;
 let bigMsgTimer = null;
 let bigMsgSafety = null;
+let bigMsgOnClose = null; // optional callback fired when the message is dismissed
 function closeBigMessage() {
   clearTimeout(bigMsgTimer);
   clearTimeout(bigMsgSafety);
+  stopSpeak(); // stop any spoken rationale when the message closes
   const ov = document.getElementById("big-msg");
   if (ov) {
     ov.classList.remove("show");
@@ -537,13 +539,28 @@ function closeBigMessage() {
   const btn = document.getElementById("big-msg-btn");
   if (btn) btn.onclick = null;
   overlayPaused = false; // release the pause — this is what un-freezes gameplay
+  if (bigMsgOnClose) {
+    const cb = bigMsgOnClose;
+    bigMsgOnClose = null;
+    cb();
+  }
 }
 // bigMessage(text, { icon, title, tone, duration, button })
 //  - tone: "good" | "bonus" | "warn" | "info" (colour accent only, not a game tell)
 //  - button:true shows a Continue button and waits for it (with a safety timeout);
 //    otherwise it auto-closes after `duration` ms.
 function bigMessage(text, opts = {}) {
-  const { icon = "", title = "", tone = "info", duration = 1600, button = false } = opts;
+  const {
+    icon = "",
+    title = "",
+    tone = "info",
+    duration = 1600,
+    button = false,
+    btnLabel = "",
+    onClose = null,
+    readAloud = false,
+  } = opts;
+  bigMsgOnClose = onClose;
   const ov = document.getElementById("big-msg");
   if (!ov) {
     // Overlay markup missing — fall back to a toast so a message is never lost.
@@ -562,9 +579,11 @@ function bigMessage(text, opts = {}) {
   card.className = "big-msg-card tone-" + tone;
   const btn = document.getElementById("big-msg-btn");
   btn.style.display = button ? "" : "none";
+  if (button) btn.textContent = btnLabel || "Continue";
 
   ov.classList.add("show");
   overlayPaused = true;
+  if (readAloud) speak(text); // spoken audio aid for the rationale
   clearTimeout(bigMsgTimer);
   clearTimeout(bigMsgSafety);
 
@@ -641,6 +660,40 @@ function playSound(type) {
     /* audio not available — ignore silently */
   }
 }
+
+// Spoken audio aid: reads correction / rationale pop-ups aloud using the browser's
+// built-in text-to-speech (no library, no cost). Helps players who find the text
+// hard to read. It uses the device's own volume — turn it up to hear it. `speechOn`
+// lets us disable it globally if needed.
+let speechOn = true;
+function speak(text) {
+  if (!speechOn || !text) return;
+  try {
+    const synth = window.speechSynthesis;
+    if (!synth) return;
+    synth.cancel(); // drop any line still playing so corrections don't stack up
+    // Strip emoji / symbols so the voice reads only the words.
+    const clean = String(text)
+      .replace(/[^\p{L}\p{N}\p{P}\s]/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!clean) return;
+    const u = new SpeechSynthesisUtterance(clean);
+    u.rate = 0.98;
+    u.pitch = 1;
+    synth.speak(u);
+  } catch (e) {
+    /* speech not available — ignore */
+  }
+}
+function stopSpeak() {
+  try {
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  } catch (e) {
+    /* ignore */
+  }
+}
+
 function toggleMute() {
   muted = !muted;
   localStorage.setItem("immunityMuted", muted ? "1" : "0");
@@ -881,7 +934,7 @@ const TUTORIAL_STEPS = [
   {
     emoji: "🏥",
     title: "Clinics & challenges",
-    text: "Enter one of the four labelled clinic doors to play a quick minigame. Collect the good ✅, avoid the bad 🚫, and have fun!",
+    text: "Enter one of the four labelled clinic doors to play a quick minigame. Collect the good ✅, avoid the bad 🚫, and have fun! 🔊 Turn your volume up — when you make a mistake, the correction is read aloud to help you.",
   },
 ];
 let tutStep = 0;
@@ -1385,12 +1438,12 @@ function buildImageMaze(worldEl) {
   // surrounded by floor, spread across the maze, and clear of the clinic doors.
   liveCollectibles = [];
   [
-    [485, 325, "shield"], // upper-central
-    [1005, 285, "family"], // upper-right
-    [665, 525, "heart"], // central corridor
-    [945, 605, "speed"], // mid-right corridor
-    [445, 865, "wellness"], // lower-left corridor
-    [685, 885, "family"], // bottom-central corridor
+    [485, 325, "shield"], // top-left
+    [1005, 285, "heart"], // top-centre
+    [1165, 325, "family"], // top-right
+    [505, 525, "speed"], // mid-left
+    [1165, 585, "wellness"], // mid-right
+    [545, 905, "family"], // bottom-centre
   ].forEach(([x, y, key]) =>
     spawnCollectible(
       worldEl,
@@ -1407,9 +1460,9 @@ function buildImageMaze(worldEl) {
   // safety net. To move one, keep its range inside a real corridor.
   hazards = [
     { x: 640, y: 250, w: 46, h: 46, min: 250, max: 600, vy: 1.8 }, // central vertical corridor
-    { x: 960, y: 450, w: 46, h: 46, min: 450, max: 900, vy: -1.8 }, // right-central vertical corridor
+    { x: 780, y: 380, w: 46, h: 46, min: 380, max: 620, vy: -1.8 }, // central-right corridor (away from Memory door)
     { x: 460, y: 470, w: 46, h: 46, min: 470, max: 900, vy: 1.6 }, // left-central vertical corridor
-    { x: 620, y: 600, w: 46, h: 46, min: 620, max: 1200, vx: 1.6 }, // long horizontal corridor
+    { x: 620, y: 600, w: 46, h: 46, min: 620, max: 1180, vx: 1.6 }, // long horizontal corridor
   ];
   hazardCooldown = 0;
   hazards.forEach((h, i) => {
@@ -2809,18 +2862,28 @@ function showFreezeCorrection(item, final) {
   ov.innerHTML =
     '<div class="mg-correction-card">' +
     `<div class="mg-correction-tag">${rand(FREEZE_LIFE_LOST)}</div>` +
-    `<div class="mg-correction-item">${item.data.text}</div>` +
+    // Don't reprint the myth (avoids reinforcing it) — lead with the correct fact.
+    '<div class="mg-correction-item">💡 Did you know?</div>' +
     `<div class="mg-correction-text">${item.data.feedback}</div>` +
     `<div class="mg-correction-lives">${final ? "No lives left" : "Lives left: " + freeze.lives}</div>` +
+    '<button type="button" class="btn btn-primary mg-correction-btn" id="freeze-corr-btn">Got it ✓</button>' +
     "</div>";
   ov.classList.add("show");
   freeze.paused = true;
+  speak(item.data.feedback); // spoken audio aid for the rationale
   clearTimeout(freeze.corrT);
-  freeze.corrT = setTimeout(() => {
+  // Stay open until the player taps "Got it" so the rationale can be read; a long
+  // safety timeout guarantees the game never stays frozen if the button is missed.
+  const dismiss = () => {
+    clearTimeout(freeze.corrT);
+    stopSpeak();
     ov.classList.remove("show");
     freeze.paused = false;
     if (final) finishFreeze();
-  }, 2800);
+  };
+  const gb = document.getElementById("freeze-corr-btn");
+  if (gb) gb.onclick = dismiss;
+  freeze.corrT = setTimeout(dismiss, 12000);
 }
 
 function finishFreeze() {
@@ -3040,13 +3103,16 @@ function resolveDartCard(card) {
     updateDartsGoal();
     document.getElementById("darts-score").textContent = darts.score;
     reshuffleUnlocked(); // every pick refreshes the sections still open
+    const wasLast = darts.locked >= DART_SECTIONS.length;
     bigMessage(card.data.feedback, {
       icon: "✅",
       title: `Locked!  +${pts}${darts.combo >= 2 ? `  ·  Combo x${darts.combo}` : ""}`,
       tone: "correct",
-      duration: 1600,
+      button: true, // wait for the player to read the rationale, then close
+      btnLabel: "Got it ✓",
+      readAloud: true, // spoken audio aid
+      onClose: wasLast ? finishDarts : null, // finish only after the last one is read
     });
-    if (darts.locked >= DART_SECTIONS.length) setTimeout(finishDarts, 400);
   } else {
     // A myth → clear it; the open sections (this one included) refresh.
     darts.combo = 0;
@@ -3061,7 +3127,9 @@ function resolveDartCard(card) {
       icon: "❌",
       title: "That was a myth — the open sections refresh",
       tone: "wrong",
-      duration: 1900,
+      button: true, // wait for the player to read the rationale, then close
+      btnLabel: "Got it ✓",
+      readAloud: true, // spoken audio aid
     });
     reshuffleUnlocked();
   }

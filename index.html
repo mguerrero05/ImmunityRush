@@ -24,7 +24,7 @@
       href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=22" />
+    <link rel="stylesheet" href="style.css?v=23" />
   </head>
   <body>
     <!-- =========================================================
@@ -356,9 +356,6 @@
               Still have questions? Book a private, judgment-free call with a VaxFacts+ doctor and
               get reliable information to help you make a confident, informed decision.
             </p>
-            <a href="https://www.shn.ca/vaxfacts/" target="_blank" rel="noopener"
-              >Book with the VaxFacts+ Clinic →</a
-            >
             <p>
               Ready to get vaccinated? Click below to see when Workplace Health and Safety will be
               offering influenza vaccines at your location!
@@ -371,10 +368,19 @@
           <button class="btn" onclick="showScreen('screen-home')">Back to Home</button>
         </div>
 
-        <!-- Opens the in-game vaccine info page (not an external site) -->
+        <!-- Primary call-to-action FIRST: get vaccinated (Workplace Health & Safety info) -->
         <button class="btn btn-vaccine" type="button" onclick="openVaccineInfo()">
-          💉 Ready to Get Your Flu Vaccine?
+          💉 Ready to Get Vaccinated?
         </button>
+        <!-- Secondary: still have questions? -> VaxFacts+ clinic -->
+        <a
+          class="btn btn-vaxfacts"
+          href="https://www.shn.ca/vaxfacts/"
+          target="_blank"
+          rel="noopener"
+        >
+          💬 Have Questions? Talk to VaxFacts+
+        </a>
 
         <!-- Feedback (the game is still in its feedback/testing stage) -->
         <div class="end-feedback">
@@ -489,6 +495,6 @@
 
     <!-- Collision map auto-generated from the maze artwork (see assets/maze/). -->
     <script src="assets/maze/wallmask.js"></script>
-    <script src="script.js?v=22"></script>
+    <script src="script.js?v=23"></script>
   </body>
 </html>
