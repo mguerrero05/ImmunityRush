@@ -2167,7 +2167,7 @@ let infoZones = []; // walk-in info spots (e.g. the hand-wash station), built in
 const HANDWASH_INFO = {
   icon: "🧼",
   title: "Easy to Forget, Important to Remember!",
-  text: "We touch shared surfaces all day and it's easy to forget about the germs on our hands. Clean your hands with an alcohol-based hand rub for at least 20 seconds. Clean hands help slow the spread of flu, while vaccination provides your best defence against influenza.",
+  text: "Alcohol-based hand rub (ABHR) physically dissolves the lipid envelope of the influenza virus on contact, rendering it completely inactive.",
 };
 const ZONE_HIT = 56; // trigger box (centred on z.x,z.y) — small, so it only fires inside the room
 function checkZones() {
