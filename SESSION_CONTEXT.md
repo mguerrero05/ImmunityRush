@@ -940,3 +940,30 @@
   + unique icon, never colour alone); and an INTRO overlay `rgIntro()` shown at game start (what it is, how to
   play, a 6-block colour legend, "Let's recover! ▶"). rgCloseOverlays now also clears "rg-intro". (9) Flu Freeze
   timer already 45s from session 52. All changes: node --check + ESLint + Prettier clean each deploy.
+- 2026-09-14 (session 55 — onboarding always-on + copy rewrites + tokens on path + Vax Match deadlock
+  fix): Cache now **v=21**. (1) ONBOARDING NOW SHOWS EVERY RUN: `beginGame()` calls `startTutorial(true)`
+  directly (was `maybeStartTutorial()`, which gated on localStorage "immunityTutorialSeen" so it vanished
+  once seen — the user reported it "disappeared"). This is a presentation/multi-user game so everyone
+  sees it; Skip still available. `maybeStartTutorial` is now dead code (left in place; endTutorial still
+  writes the localStorage flag harmlessly). (2) TUTORIAL COPY rewrites (TUTORIAL_STEPS in script.js):
+  step "Move around" → "To move, use the arrow keys on a computer. On your phone, swipe or use the
+  on-screen buttons."; step "Watch out for people!" → "Watch out! Some patients and coworkers may be
+  contagious, but you won't know who. Without a vaccine, every contact puts you at risk of getting sick.
+  Lose all your health, and you'll be sent home on mandatory sick leave, where you could expose your
+  family to the flu. Grab a 🛡️ shield to block one hit!"; step "Clinics & challenges" → "Enter one of
+  the four labelled clinic doors to play a quick minigame. Collect the good ✅, avoid the bad 🚫, and
+  have fun!". (3) VAX MATCH INTRO copy (`rgIntro()`): body → "You're home sick for 7 days, but recovery
+  starts now! Match 3 or more vaccine blocks to fill your Knowledge Meter. Fill it completely to
+  strengthen your flu vaccine knowledge, recover, and get ready to return to work!"; how-to lines →
+  "👆 Swipe or tap two side-by-side blocks to create a match." / "🔗 Line up 3 or more identical blocks
+  to clear them and fill your Knowledge Meter!". (4) TOKENS MOVED ONTO THE PATH (user: tokens were in
+  dumb corners): used scratchpad node tools (flood-fill reachability from START + 5×5 openness score +
+  greedy spread, all vs window.WALL_MASK) to pick 6 open, reachable, spread, off-clinic spots. New
+  buildImageMaze collectibles (top-left px): shield[485,325], family[1005,285], heart[665,525],
+  speed[945,605], wellness[445,865], family[685,885]. (5) VAX MATCH DEADLOCK FIX (user: "no ability to
+  match anything"): added `rgHasMove()` (tries every adjacent swap for a match) + `rgGenSolvable()`
+  (regenerates until a board has no ready matches AND a move). `startRecovery` now uses rgGenSolvable;
+  `rgResolveStep`'s settle branch reshuffles (toast "No moves left — shuffling the blocks! 🔀") whenever
+  rgHasMove() is false, so the player is never stuck. All deploys node --check + ESLint + Prettier clean.
+  NOTE: some token corridors overlap roamer patrols (by design/acceptable). Still-open future items:
+  shrink maze-bg.png (2.56MB), optional embed-safe fullscreen toggle button.
