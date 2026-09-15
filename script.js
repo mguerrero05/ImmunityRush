@@ -2605,10 +2605,9 @@ function startSprint() {
   showScreen("screen-sprint");
   showPopup(
     "Hospital Sprint",
-    "Your shift is moving fast!\n\n" +
-      "✅ GRAB the beneficial items — 💉, ❤️, 👪, ⭐, ⚡.\n\n" +
-      "🚫 AVOID the harmful obstacles that come with the flu — 🚧 sick-day absence, 📅 cancelled plans, ☁️ low-energy cloud. Hitting these costs points!\n\n" +
-      "How to move:\n• ← / → (or swipe) to switch lanes\n• Space / Up / tap to JUMP over harmful obstacles\n• Down (swipe down) to DUCK under harmful obstacles\n\nReach the finish before time runs out!",
+    "✅ Grab the good items · 🚫 Avoid the flu obstacles.\n\n" +
+      "Move: ← / → or swipe to change lanes · tap / Space to JUMP · swipe down to DUCK.\n\n" +
+      "Reach the finish before time runs out!",
     [
       {
         text: "Start Sprint",
