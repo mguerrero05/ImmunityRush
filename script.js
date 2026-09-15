@@ -1433,6 +1433,19 @@ function buildImageMaze(worldEl) {
     worldEl.appendChild(d);
   });
 
+  // Walk-in INFO spot: the hand-wash station (bottom-left). Stepping on it shows a
+  // friendly pop-up (read aloud). A soft pulsing marker hints it's interactive.
+  infoZones = [{ key: "handwash", x: 160, y: 860, size: 96, ...HANDWASH_INFO }];
+  infoZones.forEach((z) => {
+    const d = document.createElement("div");
+    d.className = "zone info-zone";
+    d.dataset.key = z.key;
+    d.style.left = z.x - 40 + "px";
+    d.style.top = z.y - 40 + "px";
+    d.innerHTML = `<div class="zone-icon">${z.icon}</div>`;
+    worldEl.appendChild(d);
+  });
+
   // Tokens sit in OPEN corridors along the route (not tucked in corners). Each
   // spot was verified against the wall mask: reachable from the start, fully
   // surrounded by floor, spread across the maze, and clear of the clinic doors.
@@ -2076,17 +2089,26 @@ function markClinicVisited(key) {
 // Detect when the player stands on a mini-game zone.
 let zoneCooldown = false;
 let linkZones = []; // walk-in website links (e.g. VaxFacts+), built in buildImageMaze
+let infoZones = []; // walk-in info spots (e.g. the hand-wash station), built in buildImageMaze
+
+// EDITABLE: the hand-wash station pop-up (bottom-left of the maze). Change the
+// title/text here; it is shown AND read aloud when the player walks into it.
+const HANDWASH_INFO = {
+  icon: "🧼",
+  title: "Easy to Forget, Important to Remember!",
+  text: "We touch shared surfaces all day and it's easy to forget about the germs on our hands. Wash with soap and water for at least 20 seconds. Clean hands help slow the spread of flu, while vaccination provides your best defence against influenza.",
+};
 const ZONE_HIT = 56; // trigger box (centred on z.x,z.y) — small, so it only fires inside the room
 function checkZones() {
   const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
-  const hitBox = (z) => ({
-    x: z.x - ZONE_HIT / 2,
-    y: z.y - ZONE_HIT / 2,
-    w: ZONE_HIT,
-    h: ZONE_HIT,
-  });
+  const hitBox = (z) => {
+    const s = z.size || ZONE_HIT;
+    return { x: z.x - s / 2, y: z.y - s / 2, w: s, h: s };
+  };
   const onAnyZone =
-    ZONES.some((z) => overlap(pBox, hitBox(z))) || linkZones.some((z) => overlap(pBox, hitBox(z)));
+    ZONES.some((z) => overlap(pBox, hitBox(z))) ||
+    linkZones.some((z) => overlap(pBox, hitBox(z))) ||
+    infoZones.some((z) => overlap(pBox, hitBox(z)));
   // While cooled down (just declined a zone or just finished a mini-game), wait until
   // the player physically walks off the zone before it can trigger again. No teleport.
   if (zoneCooldown) {
@@ -2105,6 +2127,26 @@ function checkZones() {
       return;
     }
   }
+  for (const z of infoZones) {
+    if (overlap(pBox, hitBox(z))) {
+      openInfoZonePopup(z);
+      return;
+    }
+  }
+}
+
+// Walk-in info spot (e.g. the hand-wash station): a friendly, colourful pop-up
+// that is also read aloud. Reuses the big-message overlay + spoken audio aid.
+function openInfoZonePopup(z) {
+  zoneCooldown = true; // re-arms once the player walks off the spot
+  bigMessage(z.text, {
+    icon: z.icon || "💡",
+    title: z.title,
+    tone: "good",
+    button: true,
+    btnLabel: "Got it ✓",
+  });
+  speak(z.title + ". " + z.text); // read the whole message aloud (title + body)
 }
 
 // Walk-in VaxFacts+ clinic: a celebratory "you made it!" overlay (confetti) that

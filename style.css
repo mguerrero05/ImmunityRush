@@ -5209,6 +5209,31 @@ img {
 .img-mode .zone .zone-icon {
   font-size: 30px;
 }
+/* Hand-wash (info) spot: a compact, friendly pulsing marker — not a clinic door. */
+.img-mode .zone.info-zone {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.9);
+  background: radial-gradient(circle, rgba(91, 192, 190, 0.5), rgba(43, 179, 179, 0.18));
+  display: grid;
+  place-items: center;
+  animation: infoZonePulse 1.8s ease-in-out infinite;
+}
+.img-mode .zone.info-zone .zone-icon {
+  font-size: 34px;
+}
+@keyframes infoZonePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(91, 192, 190, 0.55);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 18px 7px rgba(91, 192, 190, 0.35);
+    transform: scale(1.05);
+  }
+}
 
 /* Landscape overview: fit the whole 1586×992 image into the inset play area.
    Play area is now ~1054×736, so the artwork scales up to fill it. */
