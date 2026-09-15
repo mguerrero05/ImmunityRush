@@ -24,7 +24,7 @@
       href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=26" />
+    <link rel="stylesheet" href="style.css?v=27" />
   </head>
   <body>
     <!-- =========================================================
@@ -228,6 +228,18 @@
             <div id="player" class="character-stage maze-player"></div>
           </div>
         </div>
+
+        <!-- Reachable, keyboard-accessible entry to the educational Flu Facts
+             pop-up (the Information desk in the maze is the in-world trigger). -->
+        <button
+          id="flu-facts-btn"
+          class="flu-facts-btn"
+          type="button"
+          onclick="showFluFact(this)"
+          aria-haspopup="dialog"
+        >
+          💡 Flu Facts
+        </button>
 
         <!-- Mobile touch D-pad -->
         <div id="dpad">
@@ -495,6 +507,8 @@
 
     <!-- Collision map auto-generated from the maze artwork (see assets/maze/). -->
     <script src="assets/maze/wallmask.js"></script>
-    <script src="script.js?v=26"></script>
+    <!-- Educational Flu Facts content + rotation logic (loaded before script.js). -->
+    <script src="fluFacts.js?v=27"></script>
+    <script src="script.js?v=27"></script>
   </body>
 </html>

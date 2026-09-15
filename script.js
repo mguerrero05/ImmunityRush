@@ -1433,9 +1433,13 @@ function buildImageMaze(worldEl) {
     worldEl.appendChild(d);
   });
 
-  // Walk-in INFO spot: the hand-wash station (bottom-left). Stepping on it shows a
-  // friendly pop-up (read aloud). A soft pulsing marker hints it's interactive.
-  infoZones = [{ key: "handwash", x: 160, y: 860, size: 96, ...HANDWASH_INFO }];
+  // Walk-in INFO spots (soft pulsing markers hint they're interactive):
+  //  • the hand-wash station (bottom-left) → a friendly read-aloud pop-up
+  //  • the Information desk (bottom-centre) → the educational Flu Facts card
+  infoZones = [
+    { key: "handwash", x: 160, y: 860, size: 96, kind: "message", ...HANDWASH_INFO },
+    { key: "infodesk", x: 749, y: 865, size: 104, kind: "flufacts", icon: "💡" },
+  ];
   infoZones.forEach((z) => {
     const d = document.createElement("div");
     d.className = "zone info-zone";
@@ -2129,7 +2133,12 @@ function checkZones() {
   }
   for (const z of infoZones) {
     if (overlap(pBox, hitBox(z))) {
-      openInfoZonePopup(z);
+      if (z.kind === "flufacts") {
+        zoneCooldown = true;
+        showFluFact(null); // the Information desk opens the educational Flu Facts card
+      } else {
+        openInfoZonePopup(z);
+      }
       return;
     }
   }
@@ -2147,6 +2156,175 @@ function openInfoZonePopup(z) {
     btnLabel: "Got it ✓",
   });
   speak(z.title + ". " + z.text); // read the whole message aloud (title + body)
+}
+
+/* =========================================================
+   FLU FACTS — accessible educational pop-up
+   ---------------------------------------------------------
+   Content + rotation logic live in fluFacts.js (window.FluFacts). This is the
+   presentation + game-integration layer only. Triggered by the Information desk
+   (walk-in) or the "Flu Facts" button. One card at a time; movement pauses while
+   open; a shuffled no-repeat queue is persisted in sessionStorage for the play
+   session; full keyboard + focus management; reduced-motion respected via CSS.
+   ========================================================= */
+const FLU_STATE_KEY = "immunityFluFacts"; // per-session rotation state
+let fluFactOpen = false;
+let fluFactReturnEl = null; // element that regains focus when the card closes
+let fluValidatedOnce = false;
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+function loadFluState() {
+  try {
+    const raw = sessionStorage.getItem(FLU_STATE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {}; // private mode / storage blocked — rotation still works in-memory
+  }
+}
+function saveFluState(s) {
+  try {
+    sessionStorage.setItem(FLU_STATE_KEY, JSON.stringify(s));
+  } catch (e) {
+    /* ignore — non-persistent fallback */
+  }
+}
+function fluValidateOnce() {
+  if (fluValidatedOnce || !window.FluFacts) return;
+  fluValidatedOnce = true;
+  const problems = FluFacts.validateContent(FluFacts.fluFacts, FluFacts.healthSources);
+  if (problems.length) console.warn("[FluFacts] content issues:\n" + problems.join("\n"));
+}
+
+// Open the pop-up on the next unseen fact. `triggerEl` regains focus on close.
+function showFluFact(triggerEl) {
+  if (fluFactOpen || !window.FluFacts) return;
+  fluValidateOnce();
+  fluFactReturnEl = triggerEl || document.getElementById("flu-facts-btn") || null;
+  fluFactOpen = true;
+  overlayPaused = true; // pause maze movement while reading
+  keys.up = keys.down = keys.left = keys.right = false;
+  const res = FluFacts.pickNext(loadFluState(), FluFacts.fluFacts, Math.random);
+  saveFluState(res.state);
+  fluBuildCard(res.fact);
+}
+
+// "Next fact" — advance the rotation and repaint the same card in place.
+function fluAdvance() {
+  if (!window.FluFacts) return;
+  const res = FluFacts.pickNext(loadFluState(), FluFacts.fluFacts, Math.random);
+  saveFluState(res.state);
+  fluBuildCard(res.fact);
+}
+
+function fluBuildCard(fact) {
+  let ov = document.getElementById("flu-fact");
+  if (!ov) {
+    ov = document.createElement("div");
+    ov.id = "flu-fact";
+    ov.className = "flu-fact-overlay";
+    ov.setAttribute("role", "dialog");
+    ov.setAttribute("aria-modal", "true");
+    ov.setAttribute("aria-labelledby", "ff-title");
+    ov.setAttribute("aria-describedby", "ff-body");
+    document.getElementById("game").appendChild(ov);
+  }
+  if (!fact) {
+    closeFluFact();
+    return;
+  }
+  const label = FluFacts.categoryLabels[fact.category] || "FLU FACT";
+  const { sources, missing } = FluFacts.getSourcesFor(fact, FluFacts.healthSources);
+  if (missing.length) {
+    console.warn(
+      `[FluFacts] fact "${fact.id}" references missing source(s): ${missing.join(", ")}`,
+    );
+  }
+  const primary = sources[0] ? sources[0].organization : "Public health sources";
+  const srcLinks = sources
+    .map(
+      (s) =>
+        `<a class="ff-src-link" href="${s.url}" target="_blank" rel="noopener noreferrer">` +
+        `${escapeHtml(s.organization)} — ${escapeHtml(s.title)}` +
+        ` <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a>`,
+    )
+    .join("");
+  ov.innerHTML =
+    '<div class="ff-card">' +
+    `<div class="ff-cat">${escapeHtml(label)}</div>` +
+    `<h2 class="ff-title" id="ff-title">${escapeHtml(fact.title)}</h2>` +
+    `<p class="ff-body" id="ff-body">${escapeHtml(fact.body)}</p>` +
+    `<button class="ff-src-toggle" type="button" aria-expanded="false">` +
+    `Source: ${escapeHtml(primary)} <span class="ff-caret" aria-hidden="true">▾</span></button>` +
+    '<div class="ff-sources" hidden>' +
+    `<div class="ff-src-list">${srcLinks}</div>` +
+    `<p class="ff-disclaimer">${escapeHtml(FluFacts.disclaimer)}</p>` +
+    "</div>" +
+    '<div class="ff-actions">' +
+    '<button class="btn ff-next" type="button">Next fact</button>' +
+    '<button class="btn btn-primary ff-close" type="button">Close</button>' +
+    "</div>" +
+    "</div>";
+  ov.classList.add("show");
+  const toggle = ov.querySelector(".ff-src-toggle");
+  const sourcesBox = ov.querySelector(".ff-sources");
+  toggle.onclick = () => {
+    const opening = sourcesBox.hasAttribute("hidden");
+    if (opening) sourcesBox.removeAttribute("hidden");
+    else sourcesBox.setAttribute("hidden", "");
+    toggle.setAttribute("aria-expanded", opening ? "true" : "false");
+  };
+  ov.querySelector(".ff-next").onclick = fluAdvance;
+  ov.querySelector(".ff-close").onclick = closeFluFact;
+  ov.onclick = (e) => {
+    if (e.target === ov) closeFluFact();
+  };
+  ov.onkeydown = fluCardKeydown;
+  ov.querySelector(".ff-close").focus(); // move focus into the dialog
+}
+
+// Escape closes; Tab is trapped inside the dialog.
+function fluCardKeydown(e) {
+  if (e.key === "Escape") {
+    e.preventDefault();
+    closeFluFact();
+    return;
+  }
+  if (e.key !== "Tab") return;
+  const ov = document.getElementById("flu-fact");
+  const items = ov.querySelectorAll("a[href], button:not([disabled])");
+  if (!items.length) return;
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
+function closeFluFact() {
+  const ov = document.getElementById("flu-fact");
+  if (ov) {
+    ov.classList.remove("show");
+    ov.onkeydown = null;
+    ov.onclick = null;
+    ov.innerHTML = "";
+  }
+  fluFactOpen = false;
+  overlayPaused = false; // resume movement
+  keys.up = keys.down = keys.left = keys.right = false;
+  zoneCooldown = true; // if opened at the Information desk, re-arm on walk-off
+  const back = fluFactReturnEl;
+  fluFactReturnEl = null;
+  if (back && typeof back.focus === "function") back.focus();
 }
 
 // Walk-in VaxFacts+ clinic: a celebratory "you made it!" overlay (confetti) that

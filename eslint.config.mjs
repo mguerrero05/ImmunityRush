@@ -12,6 +12,8 @@ export default [
       sourceType: "script",
       globals: {
         ...globals.browser,
+        // Provided by fluFacts.js (a classic script loaded before script.js).
+        FluFacts: "readonly",
       },
     },
     rules: {
