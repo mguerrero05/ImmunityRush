@@ -2225,7 +2225,12 @@ body {
   border-radius: 18px;
   padding: 22px;
   text-align: center;
+  width: 100%;
   max-width: 320px;
+  max-height: 100%; /* never taller than the screen... */
+  overflow-y: auto; /* ...scroll inside so buttons stay reachable with big fonts */
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
   box-shadow: var(--shadow);
 }
 .popup-box h3 {
