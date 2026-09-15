@@ -2452,18 +2452,54 @@ body {
   text-align: center;
 }
 .end-feedback-note {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #12507e;
-  margin-bottom: 10px;
-  line-height: 1.4;
+  margin-bottom: 12px;
+  line-height: 1.45;
   text-shadow: 0 1px 8px rgba(255, 255, 255, 0.95);
 }
-.end-feedback-btn {
-  display: inline-block;
-  width: auto;
-  padding: 12px 24px;
+/* Big, bright, attention-grabbing survey call-to-action (higher specificity so it
+   wins over the shared .btn-primary styling). */
+.end-feedback .end-feedback-btn {
+  display: block;
+  width: 100%;
+  max-width: 330px;
+  margin: 4px auto 0;
+  padding: 17px 22px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
   text-decoration: none;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ff9d3c 0%, #ff6a2b 100%);
+  box-shadow: 0 8px 22px rgba(255, 106, 43, 0.5);
+  animation: surveyPulse 1.5s ease-in-out infinite;
+}
+.end-feedback .end-feedback-btn:hover {
+  filter: brightness(1.06);
+}
+.end-feedback .end-feedback-btn:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+@keyframes surveyPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 8px 22px rgba(255, 106, 43, 0.5);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 12px 32px rgba(255, 106, 43, 0.72);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .end-feedback .end-feedback-btn {
+    animation: none;
+  }
 }
 .end-feedback-contact {
   font-size: 13px;

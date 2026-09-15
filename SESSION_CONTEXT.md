@@ -1026,3 +1026,11 @@
   eslint.config.mjs adds FluFacts global. CSS `.flu-fact-overlay/.ff-*/.flu-facts-btn/.sr-only`
   appended. Checks: node --check + `npm run lint` clean + `npm test` 10/10 + Prettier. Open future:
   optionally read the fact card aloud, shrink maze-bg.png, embed-safe fullscreen toggle.
+- 2026-09-15 (session 58 — maze art v4 + prominent survey button): Cache now **v=29**. (1) User
+  replaced assets/maze/maze-bg.png again (1584×993, ~2.08MB) — bumped its tag maze-bg.png?v=3 → **?v=4**
+  in style.css + script.js. (2) SURVEY BUTTON made big/bright/pulsing to drive clicks: rewrote
+  `.end-feedback .end-feedback-btn` (higher specificity than shared .btn-primary) — full-width block,
+  18px bold, orange gradient (#ff9d3c→#ff6a2b), white border, glow + `surveyPulse` scale animation
+  (disabled under prefers-reduced-motion). Survey URL UNCHANGED (form content refresh keeps the same
+  link: .../1FAIpQLSfrckoSIZNCC4et6XoOeuSm-xwcxGe2pJPyyj3vrTgl3ZrZFA/viewform). Dev preview: `npm run
+  dev` serves http://localhost:5678.
