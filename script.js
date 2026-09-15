@@ -845,7 +845,10 @@ function beginGame() {
   startRunTimer();
   keys.up = keys.down = keys.left = keys.right = false; // clear any stale key state
   startMazeLoop();
-  maybeStartTutorial(); // first-time coach-mark onboarding
+  // Show the coach-mark onboarding at the start of EVERY run (this is a
+  // presentation / multi-user game, so most players are seeing it for the first
+  // time). Anyone who doesn't need it can press Skip.
+  startTutorial(true);
 }
 
 /* =========================================================
