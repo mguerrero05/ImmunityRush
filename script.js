@@ -666,12 +666,68 @@ function playSound(type) {
 // hard to read. It uses the device's own volume — turn it up to hear it. `speechOn`
 // lets us disable it globally if needed.
 let speechOn = true;
+let chosenVoice = null;
+
+// Voice quality depends on what the device/browser provides. We pick the most
+// natural-sounding voice available, preferring known high-quality ones (Chrome's
+// "Google" voices, Edge/Windows "Natural" neural voices, and Apple's enhanced
+// voices) and falling back to any English voice. Best results are in Chrome or
+// Edge, which ship genuinely natural voices; a plain browser may only have a
+// robotic one, which no in-page code can replace without an external service.
+const PREFERRED_VOICES = [
+  "google us english",
+  "google uk english female",
+  "microsoft ava",
+  "microsoft aria",
+  "microsoft jenny",
+  "microsoft emma",
+  "microsoft michelle",
+  "natural", // Edge/Windows neural voices are named "... Online (Natural)"
+  "samantha",
+  "ava",
+  "allison",
+  "serena",
+  "karen",
+  "moira",
+];
+function pickBestVoice() {
+  const synth = window.speechSynthesis;
+  const voices = synth && synth.getVoices ? synth.getVoices() : [];
+  if (!voices.length) return null;
+  const english = voices.filter((v) => /^en([-_]|$)/i.test(v.lang));
+  const pool = english.length ? english : voices;
+  for (const name of PREFERRED_VOICES) {
+    const hit = pool.find((v) => v.name.toLowerCase().includes(name));
+    if (hit) return hit;
+  }
+  // Otherwise prefer a local en-US/en-CA voice, else the first English voice.
+  return (
+    pool.find((v) => /en[-_](us|ca)/i.test(v.lang) && v.localService) ||
+    pool.find((v) => /en[-_](us|ca)/i.test(v.lang)) ||
+    pool[0]
+  );
+}
+function refreshVoice() {
+  const v = pickBestVoice();
+  if (v) chosenVoice = v;
+}
+// Voices load asynchronously in some browsers — re-pick when they arrive.
+try {
+  if (window.speechSynthesis) {
+    refreshVoice();
+    window.speechSynthesis.addEventListener("voiceschanged", refreshVoice);
+  }
+} catch (e) {
+  /* speech not available — ignore */
+}
+
 function speak(text) {
   if (!speechOn || !text) return;
   try {
     const synth = window.speechSynthesis;
     if (!synth) return;
     synth.cancel(); // drop any line still playing so corrections don't stack up
+    if (!chosenVoice) refreshVoice(); // in case voices arrived late
     // Strip emoji / symbols so the voice reads only the words.
     const clean = String(text)
       .replace(/[^\p{L}\p{N}\p{P}\s]/gu, " ")
@@ -679,8 +735,15 @@ function speak(text) {
       .trim();
     if (!clean) return;
     const u = new SpeechSynthesisUtterance(clean);
-    u.rate = 0.98;
-    u.pitch = 1;
+    if (chosenVoice) {
+      u.voice = chosenVoice;
+      u.lang = chosenVoice.lang; // match the voice's language for correct pronunciation
+    } else {
+      u.lang = "en-US";
+    }
+    u.rate = 0.92; // a touch slower reads clearer and less clipped
+    u.pitch = 1.02;
+    u.volume = 1;
     synth.speak(u);
   } catch (e) {
     /* speech not available — ignore */
@@ -2239,46 +2302,26 @@ function fluBuildCard(fact) {
     return;
   }
   const label = FluFacts.categoryLabels[fact.category] || "FLU FACT";
-  const { sources, missing } = FluFacts.getSourcesFor(fact, FluFacts.healthSources);
+  // NOTE: sources are intentionally NOT shown on the card (handled separately).
+  // The source data still lives in fluFacts.js; we keep this dev-only check so a
+  // broken sourceId warns in the console without ever appearing to players.
+  const { missing } = FluFacts.getSourcesFor(fact, FluFacts.healthSources);
   if (missing.length) {
     console.warn(
       `[FluFacts] fact "${fact.id}" references missing source(s): ${missing.join(", ")}`,
     );
   }
-  const primary = sources[0] ? sources[0].organization : "Public health sources";
-  const srcLinks = sources
-    .map(
-      (s) =>
-        `<a class="ff-src-link" href="${s.url}" target="_blank" rel="noopener noreferrer">` +
-        `${escapeHtml(s.organization)} — ${escapeHtml(s.title)}` +
-        ` <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a>`,
-    )
-    .join("");
   ov.innerHTML =
     '<div class="ff-card">' +
     `<div class="ff-cat">${escapeHtml(label)}</div>` +
     `<h2 class="ff-title" id="ff-title">${escapeHtml(fact.title)}</h2>` +
     `<p class="ff-body" id="ff-body">${escapeHtml(fact.body)}</p>` +
-    `<button class="ff-src-toggle" type="button" aria-expanded="false">` +
-    `Source: ${escapeHtml(primary)} <span class="ff-caret" aria-hidden="true">▾</span></button>` +
-    '<div class="ff-sources" hidden>' +
-    `<div class="ff-src-list">${srcLinks}</div>` +
-    `<p class="ff-disclaimer">${escapeHtml(FluFacts.disclaimer)}</p>` +
-    "</div>" +
     '<div class="ff-actions">' +
     '<button class="btn ff-next" type="button">Next fact</button>' +
     '<button class="btn btn-primary ff-close" type="button">Close</button>' +
     "</div>" +
     "</div>";
   ov.classList.add("show");
-  const toggle = ov.querySelector(".ff-src-toggle");
-  const sourcesBox = ov.querySelector(".ff-sources");
-  toggle.onclick = () => {
-    const opening = sourcesBox.hasAttribute("hidden");
-    if (opening) sourcesBox.removeAttribute("hidden");
-    else sourcesBox.setAttribute("hidden", "");
-    toggle.setAttribute("aria-expanded", opening ? "true" : "false");
-  };
   ov.querySelector(".ff-next").onclick = fluAdvance;
   ov.querySelector(".ff-close").onclick = closeFluFact;
   ov.onclick = (e) => {

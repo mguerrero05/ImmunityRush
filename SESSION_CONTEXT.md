@@ -1033,4 +1033,15 @@
   18px bold, orange gradient (#ff9d3c→#ff6a2b), white border, glow + `surveyPulse` scale animation
   (disabled under prefers-reduced-motion). Survey URL UNCHANGED (form content refresh keeps the same
   link: .../1FAIpQLSfrckoSIZNCC4et6XoOeuSm-xwcxGe2pJPyyj3vrTgl3ZrZFA/viewform). Dev preview: `npm run
-  dev` serves http://localhost:5678.
+  dev` serves http://localhost:5678 (or `python3 -m http.server 5680` for a faithful static preview).
+- 2026-09-15 (session 59 — Flu Facts: hide sources on card + better TTS voice): Cache now **v=30**.
+  (1) FLU FACTS CARD no longer displays the source line/panel/disclaimer (per user — they'll handle
+  sources). `fluBuildCard` now renders only category label + title + body + Next/Close. Source DATA is
+  untouched in fluFacts.js; kept a dev-only console.warn via getSourcesFor for missing sourceIds. The
+  `.ff-src-*`/`.ff-sources`/`.ff-disclaimer`/`.sr-only` CSS is now unused (left in, harmless). (2) TTS
+  VOICE QUALITY: `speak()` now selects the most natural available voice via `pickBestVoice()` +
+  `PREFERRED_VOICES` (Google US/UK, Microsoft Ava/Aria/Jenny/Emma/Michelle, "Natural" neural, Apple
+  Samantha/Ava/Allison/etc.), preferring English + localService; re-picks on `voiceschanged`. Utterance
+  now rate 0.92, pitch 1.02, lang matched to the voice. NOTE: quality is device/browser-dependent —
+  Chrome/Edge have genuinely natural voices; a plain browser may only offer robotic ones (can't be
+  replaced in-page without an external TTS service = cost/dependency). All checks clean; tests 10/10.
