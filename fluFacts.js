@@ -343,7 +343,57 @@ const FLU_CATEGORY_LABELS = {
   vaccine: "VACCINE FACT",
   "higher-risk": "WHO'S AT RISK",
   care: "CARE & TREATMENT",
+  "hand-hygiene": "HAND HYGIENE",
 };
+
+/* -----------------------------------------------------------------------------
+   HAND-HYGIENE FACTS — shown at the maze's hand-wash station (same rotating
+   Next/Close card as the Information desk). Same shape as FluFact; these have no
+   external source registry entries (sourceIds left empty). Edit the wording here.
+   ----------------------------------------------------------------------------- */
+/** @type {FluFact[]} */
+const HANDHYGIENE_FACTS = [
+  {
+    id: "hh-abhr-envelope",
+    category: "hand-hygiene",
+    title: "ABHR inactivates the flu virus",
+    body: "Alcohol-based hand rub (ABHR) rapidly disrupts the influenza virus's lipid envelope, rendering the virus inactive.",
+    sourceIds: [],
+    priority: "core",
+  },
+  {
+    id: "hh-gloves",
+    category: "hand-hygiene",
+    title: "Gloves don't replace hand hygiene",
+    body: "Glove use does not replace hand hygiene. Perform hand hygiene immediately after removing gloves to reduce the risk of cross-transmission.",
+    sourceIds: [],
+    priority: "core",
+  },
+  {
+    id: "hh-missed-areas",
+    category: "hand-hygiene",
+    title: "Don't miss these spots",
+    body: "During hand hygiene, focus on commonly missed areas: the fingertips, thumbs, and spaces between the fingers, and apply enough ABHR to completely cover all surfaces of both hands.",
+    sourceIds: [],
+    priority: "core",
+  },
+  {
+    id: "hh-cdiff",
+    category: "hand-hygiene",
+    title: "C. difficile needs soap and water",
+    body: "When caring for patients with suspected or confirmed C. difficile, wear gloves and wash your hands with soap and water after glove removal—particularly during an outbreak.",
+    sourceIds: [],
+    priority: "core",
+  },
+  {
+    id: "hh-abhr-vs-soap",
+    category: "hand-hygiene",
+    title: "ABHR vs. frequent washing",
+    body: "ABHR is generally more effective at reducing microbial contamination and causes less skin irritation than frequent handwashing with soap and water.",
+    sourceIds: [],
+    priority: "core",
+  },
+];
 
 // Shown in the Sources / About view. Educational only — not personal advice.
 const FLU_DISCLAIMER =
@@ -423,6 +473,7 @@ function fluValidateContent(facts, sources) {
 
 const FLU_API = {
   fluFacts: FLU_FACTS,
+  handHygieneFacts: HANDHYGIENE_FACTS,
   healthSources: HEALTH_SOURCES,
   categoryLabels: FLU_CATEGORY_LABELS,
   disclaimer: FLU_DISCLAIMER,

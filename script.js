@@ -1501,7 +1501,7 @@ function buildImageMaze(worldEl) {
   //  • the hand-wash station (bottom-left) → a friendly read-aloud pop-up
   //  • the Information desk (bottom-centre) → the educational Flu Facts card
   infoZones = [
-    { key: "handwash", x: 160, y: 860, size: 96, kind: "message", ...HANDWASH_INFO },
+    { key: "handwash", x: 160, y: 860, size: 96, kind: "handwash", icon: "🧼" },
     { key: "infodesk", x: 749, y: 865, size: 104, kind: "flufacts", icon: "💡" },
   ];
   infoZones.forEach((z) => {
@@ -2161,14 +2161,8 @@ function markClinicVisited(key) {
 let zoneCooldown = false;
 let linkZones = []; // walk-in website links (e.g. VaxFacts+), built in buildImageMaze
 let infoZones = []; // walk-in info spots (e.g. the hand-wash station), built in buildImageMaze
-
-// EDITABLE: the hand-wash station pop-up (bottom-left of the maze). Change the
-// title/text here; it is shown AND read aloud when the player walks into it.
-const HANDWASH_INFO = {
-  icon: "🧼",
-  title: "Easy to Forget, Important to Remember!",
-  text: "Alcohol-based hand rub (ABHR) physically dissolves the lipid envelope of the influenza virus on contact, rendering it completely inactive.",
-};
+// Hand-wash station content now lives in fluFacts.js (HANDHYGIENE_FACTS) and shows
+// as the same rotating Next/Close card as the Information desk.
 const ZONE_HIT = 56; // trigger box (centred on z.x,z.y) — small, so it only fires inside the room
 function checkZones() {
   const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
@@ -2200,29 +2194,15 @@ function checkZones() {
   }
   for (const z of infoZones) {
     if (overlap(pBox, hitBox(z))) {
-      if (z.kind === "flufacts") {
-        zoneCooldown = true;
-        showFluFact(null); // the Information desk opens the educational Flu Facts card
+      zoneCooldown = true;
+      if (z.kind === "handwash") {
+        showHandHygiene(null); // the hand-wash station opens the hand-hygiene card
       } else {
-        openInfoZonePopup(z);
+        showFluFact(null); // the Information desk opens the educational Flu Facts card
       }
       return;
     }
   }
-}
-
-// Walk-in info spot (e.g. the hand-wash station): a friendly, colourful pop-up
-// that is also read aloud. Reuses the big-message overlay + spoken audio aid.
-function openInfoZonePopup(z) {
-  zoneCooldown = true; // re-arms once the player walks off the spot
-  bigMessage(z.text, {
-    icon: z.icon || "💡",
-    title: z.title,
-    tone: "good",
-    button: true,
-    btnLabel: "Got it ✓",
-  });
-  speak(z.title + ". " + z.text); // read the whole message aloud (title + body)
 }
 
 /* =========================================================
@@ -2234,10 +2214,10 @@ function openInfoZonePopup(z) {
    open; a shuffled no-repeat queue is persisted in sessionStorage for the play
    session; full keyboard + focus management; reduced-motion respected via CSS.
    ========================================================= */
-const FLU_STATE_KEY = "immunityFluFacts"; // per-session rotation state
 let fluFactOpen = false;
 let fluFactReturnEl = null; // element that regains focus when the card closes
 let fluValidatedOnce = false;
+let ffDeck = null; // the deck currently on screen: { facts, stateKey }
 
 function escapeHtml(s) {
   return String(s)
@@ -2246,17 +2226,17 @@ function escapeHtml(s) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
-function loadFluState() {
+function loadFluState(key) {
   try {
-    const raw = sessionStorage.getItem(FLU_STATE_KEY);
+    const raw = sessionStorage.getItem(key);
     return raw ? JSON.parse(raw) : {};
   } catch (e) {
     return {}; // private mode / storage blocked — rotation still works in-memory
   }
 }
-function saveFluState(s) {
+function saveFluState(key, s) {
   try {
-    sessionStorage.setItem(FLU_STATE_KEY, JSON.stringify(s));
+    sessionStorage.setItem(key, JSON.stringify(s));
   } catch (e) {
     /* ignore — non-persistent fallback */
   }
@@ -2268,24 +2248,48 @@ function fluValidateOnce() {
   if (problems.length) console.warn("[FluFacts] content issues:\n" + problems.join("\n"));
 }
 
-// Open the pop-up on the next unseen fact. `triggerEl` regains focus on close.
-function showFluFact(triggerEl) {
+// Two decks share the same card: the Information desk (educational flu facts) and
+// the hand-wash station (hand-hygiene facts). Each keeps its own no-repeat
+// rotation in its own sessionStorage key. Built lazily so FluFacts is loaded.
+function fluDeck() {
+  return { facts: FluFacts.fluFacts, stateKey: "immunityFluFacts" };
+}
+function handHygieneDeck() {
+  return { facts: FluFacts.handHygieneFacts, stateKey: "immunityHandHygiene" };
+}
+
+// Open the card on the given deck's next unseen fact. `triggerEl` regains focus
+// on close (falling back to the element with id `fallbackFocusId`).
+function openFactCard(deck, triggerEl, fallbackFocusId) {
   if (fluFactOpen || !window.FluFacts) return;
   fluValidateOnce();
-  fluFactReturnEl = triggerEl || document.getElementById("flu-facts-btn") || null;
+  ffDeck = deck;
+  fluFactReturnEl =
+    triggerEl || (fallbackFocusId && document.getElementById(fallbackFocusId)) || null;
   fluFactOpen = true;
   overlayPaused = true; // pause maze movement while reading
   keys.up = keys.down = keys.left = keys.right = false;
-  const res = FluFacts.pickNext(loadFluState(), FluFacts.fluFacts, Math.random);
-  saveFluState(res.state);
+  const res = FluFacts.pickNext(loadFluState(deck.stateKey), deck.facts, Math.random);
+  saveFluState(deck.stateKey, res.state);
   fluBuildCard(res.fact);
 }
 
-// "Next fact" — advance the rotation and repaint the same card in place.
-function fluAdvance() {
+// Information desk / "Flu Facts" button → educational flu facts.
+function showFluFact(triggerEl) {
   if (!window.FluFacts) return;
-  const res = FluFacts.pickNext(loadFluState(), FluFacts.fluFacts, Math.random);
-  saveFluState(res.state);
+  openFactCard(fluDeck(), triggerEl, "flu-facts-btn");
+}
+// Hand-wash station → hand-hygiene facts (same Next/Close card).
+function showHandHygiene(triggerEl) {
+  if (!window.FluFacts) return;
+  openFactCard(handHygieneDeck(), triggerEl, null);
+}
+
+// "Next fact" — advance the current deck's rotation and repaint the card in place.
+function fluAdvance() {
+  if (!window.FluFacts || !ffDeck) return;
+  const res = FluFacts.pickNext(loadFluState(ffDeck.stateKey), ffDeck.facts, Math.random);
+  saveFluState(ffDeck.stateKey, res.state);
   fluBuildCard(res.fact);
 }
 
