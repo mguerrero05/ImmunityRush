@@ -2311,6 +2311,7 @@ function clearMiniTimers() {
 // Return to maze from any mini-game.
 function exitMiniGame() {
   clearMiniTimers();
+  stopSpeak();
   currentMini = null;
   showScreen("screen-maze");
   zoneCooldown = true; // keep armed-off until the player walks off the zone
@@ -2399,6 +2400,7 @@ function beginSprintRound() {
     '<div class="sprint-progress"><div class="sprint-progress-fill" id="sprint-fill"></div></div>' +
     '<div class="spr3-runner character-stage" data-facing="back"></div>';
   buildCharacter(stage.querySelector(".spr3-runner"));
+  buildSprintLegend(stage); // always-visible "collect vs avoid" key
   sprint = {
     score: 0,
     time: 60,
@@ -2431,6 +2433,23 @@ function beginSprintRound() {
   sprintActive = true;
   cancelAnimationFrame(sprintFrame);
   sprintLoop();
+}
+
+// Always-on legend so players know what to COLLECT vs AVOID — uses the real
+// in-game icon art (not stand-in emoji), split into two clearly-labelled rows.
+function buildSprintLegend(stage) {
+  const uniq = [];
+  SPRINT_COLLECT.forEach((v) => {
+    if (!uniq.includes(v.icon)) uniq.push(v.icon);
+  });
+  const good = uniq.map((i) => SPRINT_ICONS[i]).join("");
+  const bad = SPRINT_OBSTACLES.map((v) => SPRINT_ICONS[v.icon]).join("");
+  const leg = document.createElement("div");
+  leg.className = "spr-legend";
+  leg.innerHTML =
+    `<div class="spr-leg-row"><span class="spr-leg-tag good">✅ Collect</span>${good}</div>` +
+    `<div class="spr-leg-row"><span class="spr-leg-tag bad">🚫 Avoid</span>${bad}</div>`;
+  stage.appendChild(leg);
 }
 
 // Touch / mouse gestures for the sprint stage: swipe to change lane, swipe up
@@ -3351,7 +3370,9 @@ function peekCard(el, done) {
   ov.classList.remove("show");
   void ov.offsetWidth;
   ov.classList.add("show");
+  speak(el.dataset.fact); // spoken audio aid for the fact
   ov.querySelector(".mem-peek-btn").onclick = () => {
+    stopSpeak();
     ov.classList.remove("show");
     done();
   };
@@ -4106,6 +4127,7 @@ function rgShowQuestion() {
   ov.querySelectorAll(".rg-opt").forEach((btn) => {
     btn.onclick = () => rgAnswer(parseInt(btn.dataset.i, 10), btn);
   });
+  speak(q.question); // spoken audio aid — the QUESTION only (not the options)
   const first = ov.querySelector(".rg-opt");
   if (first) first.focus();
 }
@@ -4151,6 +4173,7 @@ function rgAnswer(idx, btn) {
 }
 
 function rgAfterQuestion() {
+  stopSpeak();
   rgCloseOverlay("rg-question");
   rg.question = false;
   if (rg.day >= RECOVERY_QUESTIONS.length) {
