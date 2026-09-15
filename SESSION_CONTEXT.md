@@ -967,3 +967,32 @@
   rgHasMove() is false, so the player is never stuck. All deploys node --check + ESLint + Prettier clean.
   NOTE: some token corridors overlap roamer patrols (by design/acceptable). Still-open future items:
   shrink maze-bg.png (2.56MB), optional embed-safe fullscreen toggle button.
+- 2026-09-14 (session 56 — end-page CTAs, TTS audio aid, readable rationales, sprint legend, more
+  fixes): Cache now **v=24**. (1) ENDING PAGE (#screen-end .end-card): replaced copy with the
+  "Protect yourself, your family and your coworkers..." 3-paragraph version; removed the inline
+  "Visit shn.ca/vaxfacts" link; added a teal **`.btn-vaxfacts`** button "💬 Have Questions? Talk to
+  VaxFacts+" BELOW the green "💉 Ready to Get Vaccinated?" button (primary CTA first). (2) SPOKEN AUDIO
+  AID (Web Speech API): new `speak(text)`/`stopSpeak()` + `speechOn` (default true) near playSound;
+  strips emoji, cancels prior utterance. Reads correction/rationale pop-ups aloud. Wired via a new
+  `readAloud` opt on `bigMessage` (Darts feedback) and direct `speak()` calls in Flu Freeze correction,
+  Memory peek card (`peekCard` reads `el.dataset.fact`), and Recovery question (`rgShowQuestion` reads
+  `q.question` ONLY — not options). `stopSpeak()` on closeBigMessage, freeze dismiss, mem "Got it",
+  rgAfterQuestion, exitMiniGame. Onboarding "Clinics & challenges" step now says "🔊 Turn your volume
+  up — when you make a mistake, the correction is read aloud." (3) RATIONALE READABILITY: `bigMessage`
+  gained `onClose`, `btnLabel`, `readAloud` opts + `bigMsgOnClose`. Darts feedback (both branches) and
+  Flu Freeze correction now WAIT for a "Got it ✓" button (no fast auto-dismiss) with a long safety
+  timeout (freeze 12s; darts uses button-mode's 8s min). Darts finishes only after the LAST rationale
+  is closed (onClose:finishDarts). Bigger fonts: `.mg-hint` 12→14.5px, `.mg-correction-text` 14→16px,
+  new `.mg-correction-btn`. (4) FREEZE MYTH REINFORCEMENT FIXED: correction card no longer reprints the
+  myth (`item.data.text`) — now shows "💡 Did you know?" + the correct fact (`item.data.feedback`)
+  only. (5) TOKENS SPREAD across the whole map via scratchpad region-bucketed picker (6 regions):
+  buildImageMaze collectibles now shield[485,325] heart[1005,285] family[1165,325] speed[505,525]
+  wellness[1165,585] family[545,905]. (6) MEMORY-CLINIC ROAMER: moved the one camping the Memory door
+  from x960(450-900) to a central-right corridor {x:780,min:380,max:620,vy}; H roamer max 1200→1180.
+  (7) MEMORY BACKDROP FULL-SCREEN FIX: removed `#memory-stage{position:relative}` (line ~1691) which
+  overrode `.mg-stage`'s `position:absolute` full-bleed, collapsing the stage to card-tray width on
+  desktop and shrinking the clinic backdrop; the absolute already provides the positioning context for
+  #mem-peek/::before/::after. (8) HOSPITAL SPRINT LEGEND: new `buildSprintLegend(stage)` (called in
+  beginSprintRound) appends a `.spr-legend` (two rows, real SPRINT_ICONS art) "✅ Collect / 🚫 Avoid",
+  pinned top-centre, pointer-events:none. All deploys node --check + ESLint + Prettier clean. Open
+  future: extend TTS if wanted, shrink maze-bg.png, embed-safe fullscreen toggle.
