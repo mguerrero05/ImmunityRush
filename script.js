@@ -3533,7 +3533,7 @@ function startRecovery() {
   rg = rgNewState();
   currentMini = "recovery";
   showScreen("screen-recovery");
-  rg.board = rgGen();
+  rgGenSolvable(); // always start with a board that has a possible match
   rgRender();
   rgUpdateHud();
   rgUpdateDays();
@@ -3682,6 +3682,44 @@ function rgGen() {
   return b;
 }
 
+// Is there at least one swap that would make a match? (Tries every adjacent swap,
+// checks for a match, then swaps back.) Guarantees the player is never stuck.
+function rgHasMove() {
+  const B = rg.board;
+  const sw = (r1, c1, r2, c2) => {
+    const t = B[r1][c1];
+    B[r1][c1] = B[r2][c2];
+    B[r2][c2] = t;
+  };
+  for (let r = 0; r < RG_SIZE; r++) {
+    for (let c = 0; c < RG_SIZE; c++) {
+      if (c + 1 < RG_SIZE) {
+        sw(r, c, r, c + 1);
+        const has = rgFindMatches().length > 0;
+        sw(r, c, r, c + 1);
+        if (has) return true;
+      }
+      if (r + 1 < RG_SIZE) {
+        sw(r, c, r + 1, c);
+        const has = rgFindMatches().length > 0;
+        sw(r, c, r + 1, c);
+        if (has) return true;
+      }
+    }
+  }
+  return false;
+}
+
+// Fill rg.board with a layout that has NO ready-made matches but DOES have at
+// least one available move.
+function rgGenSolvable() {
+  for (let i = 0; i < 80; i++) {
+    rg.board = rgGen();
+    if (rgHasMove()) return;
+  }
+  // Extremely unlikely to reach here; the last board still has no free matches.
+}
+
 function rgCell(r, c) {
   return document.querySelector(`#rg-board .rg-tile[data-r="${r}"][data-c="${c}"]`);
 }
@@ -3822,6 +3860,12 @@ function rgResolveStep() {
   const matches = rgFindMatches();
   if (!matches.length) {
     rg.busy = false;
+    // No matches left AND no possible move -> reshuffle so the player is never stuck.
+    if (!rgHasMove()) {
+      toast("No moves left — shuffling the blocks! 🔀", 2000);
+      rgGenSolvable();
+      rgRender();
+    }
     rgCheckMeter();
     return;
   }
