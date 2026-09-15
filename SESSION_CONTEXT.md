@@ -996,3 +996,33 @@
   beginSprintRound) appends a `.spr-legend` (two rows, real SPRINT_ICONS art) "✅ Collect / 🚫 Avoid",
   pinned top-centre, pointer-events:none. All deploys node --check + ESLint + Prettier clean. Open
   future: extend TTS if wanted, shrink maze-bg.png, embed-safe fullscreen toggle.
+- 2026-09-15 (session 57 — hand-wash trigger, TTS in Memory/Recovery, sprint legend, new maze art,
+  Flu Facts system): Cache now **v=27**. (1) READ-ALOUD EXTENDED: Memory peek (`peekCard` speaks
+  `el.dataset.fact`, stops on "Got it") and Recovery question (`rgShowQuestion` speaks `q.question`
+  ONLY, not options; `stopSpeak` in rgAfterQuestion/exitMiniGame). (2) HOSPITAL SPRINT LEGEND:
+  `buildSprintLegend(stage)` in beginSprintRound → `.spr-legend` two rows (real SPRINT_ICONS)
+  "✅ Collect / 🚫 Avoid", top-centre, pointer-events:none. (3) NEW MAZE ART: user replaced
+  assets/maze/maze-bg.png (now 1584×993, ~2.23MB; stretched to the 1586×992 world so positions/mask
+  stay aligned). Bumped its tag maze-bg.png?v=2 → **?v=3** in BOTH style.css (#maze-world.img-mode)
+  and script.js (preloadHeavyArt). If walls/rooms ever move in a new version, rebuild the collision
+  mask (assets/maze/build-collision.mjs) + re-verify clinic/roamer/token/handwash/infodesk coords.
+  (4) HAND-WASH WALK-IN TRIGGER: `infoZones` array + `HANDWASH_INFO` (editable) + `openInfoZonePopup`.
+  Bottom-left station at {x:160,y:860,size:96,kind:"message"}; friendly tone-good bigMessage + read
+  aloud (speak title+text). `.info-zone` pulsing marker CSS; checkZones hitBox now honours z.size.
+  (5) FLU FACTS SYSTEM (big feature, fully tested): NEW **fluFacts.js** = centralized FLU_FACTS (28)
+  + HEALTH_SOURCES (10) joined by sourceIds, JSDoc types, category labels, disclaimer, and pure logic
+  (fluShuffle/fluBuildQueue/fluPickNext/fluGetSourcesFor/fluValidateContent) — exposes window.FluFacts
+  (assigns via typeof-window guard). Loaded before script.js in index.html. script.js controller
+  (after openInfoZonePopup): `showFluFact(triggerEl)`, `fluAdvance`, `fluBuildCard`, `fluCardKeydown`,
+  `closeFluFact`, `escapeHtml`, sessionStorage `immunityFluFacts`. Triggers: Information-desk walk-in
+  infoZone {x:749,y:865,kind:"flufacts"} + reachable `#flu-facts-btn` (bottom-right maze). One card at
+  a time (fluFactOpen guard), overlayPaused pauses movement, no-repeat shuffled queue (core-first),
+  focus trap + Esc + focus-return, ARIA dialog, collapsible Sources+disclaimer, new-tab links with
+  sr-only note, 44px targets, reduced-motion. NO auto TTS on the fact card (spec: don't add sound
+  unless player-gated). Content preserved verbatim; annual-review comment in fluFacts.js. NEW
+  **tests/fluFacts.test.mjs** (node --test, loads fluFacts.js via vm) — 10 tests: shuffle
+  determinism/immutability, core-first queue, no-repeat full cycle, reset-after-exhaustion, purity,
+  missing-source graceful, content-integrity. package.json `"test":"node --test tests/*.test.mjs"`;
+  eslint.config.mjs adds FluFacts global. CSS `.flu-fact-overlay/.ff-*/.flu-facts-btn/.sr-only`
+  appended. Checks: node --check + `npm run lint` clean + `npm test` 10/10 + Prettier. Open future:
+  optionally read the fact card aloud, shrink maze-bg.png, embed-safe fullscreen toggle.
