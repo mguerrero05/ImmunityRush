@@ -1078,3 +1078,10 @@
   (one comma added in #3). (3) END-SCREEN SURVEY invite text (index.html .end-feedback-note) changed to
   "Please take two minutes to share your feedback with us!..." (anonymous, research note). Survey link/
   button unchanged. Checks: node --check + ESLint clean + tests 10/10 + Prettier.
+- 2026-09-17 (session 62 — remove soap-and-water HH facts): Cache now **v=39**. Per user (hospital SME:
+  ABHR is used in hospital; soap & water only when visibly soiled): removed the "ABHR vs. frequent
+  washing" hand-hygiene fact (`hh-abhr-vs-soap`) from HANDHYGIENE_FACTS (Hand Hygiene room now 4 facts),
+  and removed the "Clean hands help" soap-and-water flu fact (`clean-hands`) from FLU_FACTS (Facts room).
+  KEPT the C. difficile hand-hygiene fact (`hh-cdiff`) which correctly requires soap and water for
+  spores (the only remaining soap-and-water mention). Tests use `.length` dynamically so 10/10 still
+  pass; ESLint clean. (User feedback: "The game looks AMAZING!")
