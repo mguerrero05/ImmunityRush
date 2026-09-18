@@ -2440,17 +2440,13 @@ function openLinkZonePopup(z) {
    it. Opened from the Run Complete screen and the VaxFacts+ clinic popup.
    ========================================================= */
 const VACCINE_INFO = {
-  title: "Ready to Get Your Flu Vaccine?",
-  intro:
-    "Protect yourself, your patients, and those around you with your annual flu vaccine. Flu shots are free and available at your local pharmacy and at SHN.",
+  title: "Ready for Your Flu Vaccine?",
+  intro: "Free flu vaccines are available to SHN staff starting October 15.",
   // Where/when to get vaccinated at work.
   whs: {
-    heading: "Free Flu Shots — Workplace Health & Safety",
-    intro:
-      "Every SHN site has a Workplace Health & Safety (WHS) office offering free flu shots — no appointment needed, just drop in.",
-    hours: ["Monday – Friday", "7:30 a.m. – 3:30 p.m."],
-    hoursNote: "Before and during flu season (usually starting sometime in October).",
-    locationsHeading: "WHS Office Locations",
+    heading: "Workplace Health & Safety",
+    hours: ["Monday–Friday | 7:30 a.m.–3:30 p.m."],
+    hoursNote: "No appointment required.",
     locations: [
       {
         hospital: "Centenary",
@@ -2471,18 +2467,12 @@ const VACCINE_INFO = {
   },
   // Where to get your questions answered.
   vaxfacts: {
-    heading: "Have Questions? VaxFacts+ Clinic",
-    intro: "Book an appointment to ask questions about the influenza vaccine.",
-    points: [
-      "One-to-one phone consultation with a doctor",
-      "Judgement-free conversation in a safe space",
-      "Facts that help you make informed decisions",
-    ],
-    linkLabel: "Visit shn.ca/vaxfacts",
+    heading: "Have Questions?",
+    intro: "Book a confidential phone appointment with a physician at the VaxFacts+ Clinic.",
+    linkLabel: "Visit VaxFacts+",
     linkUrl: "https://www.shn.ca/vaxfacts/",
   },
-  footnote:
-    "This game is for flu-season awareness. For advice about your own health, talk to a health care provider.",
+  footnote: "For personal medical advice, speak with a healthcare provider.",
 };
 
 function renderVaccineInfo() {
@@ -2510,23 +2500,17 @@ function renderVaccineInfo() {
     })
     .join("");
   const vf = v.vaxfacts;
-  const points = vf.points
-    .map((p) => `<li><span class="vinfo-ico">•</span>${esc(p)}</li>`)
-    .join("");
   card.innerHTML =
     `<h2 class="vinfo-title">${esc(v.title)}</h2>` +
     `<p class="vinfo-intro">${esc(v.intro)}</p>` +
     // ---- Workplace Health & Safety (get vaccinated) ----
     `<div class="vinfo-section"><h3 class="vinfo-h">${esc(w.heading)}</h3>` +
-    `<p class="vinfo-note-line">${esc(w.intro)}</p>` +
     `<div class="vinfo-hours">${hours}</div>` +
     `<p class="vinfo-note-line">${esc(w.hoursNote)}</p>` +
-    `<h4 class="vinfo-subh">${esc(w.locationsHeading)}</h4>` +
     `<ul class="vinfo-list vinfo-offices">${offices}</ul></div>` +
     // ---- VaxFacts+ (questions) ----
     `<div class="vinfo-section"><h3 class="vinfo-h">${esc(vf.heading)}</h3>` +
     `<p class="vinfo-note-line">${esc(vf.intro)}</p>` +
-    `<ul class="vinfo-list">${points}</ul>` +
     `<a class="vinfo-link" href="${esc(vf.linkUrl)}" target="_blank" rel="noopener noreferrer">` +
     `${esc(vf.linkLabel)} ↗<span class="sr-only"> (opens in a new tab)</span></a></div>` +
     // ---- footnote ----
