@@ -2718,6 +2718,53 @@ body {
   display: flex;
   gap: 8px;
 }
+/* WHS office blocks: hospital name, location detail, and a tappable phone line. */
+.vinfo-subh {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--shn-blue);
+  margin: 10px 0 2px;
+}
+.vinfo-offices li {
+  display: block;
+  padding: 9px 0;
+  border-bottom: 1px dashed #e3eef8;
+}
+.voff-name {
+  font-weight: 800;
+  color: var(--shn-blue);
+  font-size: 15px;
+}
+.voff-detail {
+  color: #2c4a63;
+  font-size: 13.5px;
+  line-height: 1.4;
+  margin: 2px 0 4px;
+}
+.voff-phone {
+  display: inline-block;
+  font-weight: 700;
+  color: var(--shn-blue-2);
+  text-decoration: none;
+  font-size: 14px;
+  min-height: 32px;
+}
+.voff-phone:hover {
+  text-decoration: underline;
+}
+.vinfo-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 800;
+  color: var(--shn-blue-2);
+  text-decoration: underline;
+}
+.vinfo-link:focus-visible,
+.voff-phone:focus-visible {
+  outline: 2px solid var(--shn-blue-2);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 .vinfo-card .menu {
   margin-top: 16px;
 }

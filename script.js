@@ -2442,51 +2442,94 @@ function openLinkZonePopup(z) {
 const VACCINE_INFO = {
   title: "Ready to Get Your Flu Vaccine?",
   intro:
-    "Protect yourself, your patients, and those around you by getting your annual flu vaccine.",
-  clinicsHeading: "SHN Workplace Health & Safety Clinics",
-  clinicsIntro: "Flu vaccines will be available beginning October 15.",
-  hoursHeading: "Clinic Hours",
-  hours: ["Monday–Friday", "7:30 a.m. – 3:30 p.m."],
-  hoursNote: "No appointment is required—simply drop in during clinic hours.",
-  locationsHeading: "Office Locations",
-  locations: [
-    { hospital: "General Hospital", detail: "(Office location to be added)" },
-    { hospital: "Centenary Hospital", detail: "(Office location to be added)" },
-    { hospital: "Birchmount Hospital", detail: "(Office location to be added)" },
-  ],
-  otherHeading: "Other Options",
-  other: [{ icon: "💊", text: "Flu vaccines are also available at your local pharmacy." }],
+    "Protect yourself, your patients, and those around you with your annual flu vaccine. Flu shots are free and available at your local pharmacy and at SHN.",
+  // Where/when to get vaccinated at work.
+  whs: {
+    heading: "Free Flu Shots — Workplace Health & Safety",
+    intro:
+      "Every SHN site has a Workplace Health & Safety (WHS) office offering free flu shots — no appointment needed, just drop in.",
+    hours: ["Monday – Friday", "7:30 a.m. – 3:30 p.m."],
+    hoursNote: "Before and during flu season (usually starting sometime in October).",
+    locationsHeading: "WHS Office Locations",
+    locations: [
+      {
+        hospital: "Centenary",
+        detail: "1st floor, across from the service elevators",
+        phone: "416-284-8131 ext. 67314",
+      },
+      {
+        hospital: "General",
+        detail: "Tower 8",
+        phone: "416-438-2911 ext. 88137",
+      },
+      {
+        hospital: "Birchmount",
+        detail: "Level 1, across from the pharmacy near the elevators",
+        phone: "416-495-2400 ext. 72473",
+      },
+    ],
+  },
+  // Where to get your questions answered.
+  vaxfacts: {
+    heading: "Have Questions? VaxFacts+ Clinic",
+    intro: "Book an appointment to ask questions about the influenza vaccine.",
+    points: [
+      "One-to-one phone consultation with a doctor",
+      "Judgement-free conversation in a safe space",
+      "Facts that help you make informed decisions",
+    ],
+    linkLabel: "Visit shn.ca/vaxfacts",
+    linkUrl: "https://www.shn.ca/vaxfacts/",
+  },
   footnote:
-    "Additional Workplace Health & Safety clinic details, office locations, and direct SHN links will be added here once they become available.",
+    "This game is for flu-season awareness. For advice about your own health, talk to a health care provider.",
 };
 
 function renderVaccineInfo() {
   const card = document.getElementById("vaccine-info-card");
   if (!card) return;
   const v = VACCINE_INFO;
-  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const hours = v.hours.map((h) => `<div class="vinfo-hours-line">${esc(h)}</div>`).join("");
-  const locations = v.locations
-    .map(
-      (l) =>
-        `<li><span class="vinfo-loc-name">🏥 ${esc(l.hospital)}</span><span class="vinfo-loc-detail">${esc(l.detail)}</span></li>`,
-    )
+  const esc = (s) =>
+    String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  const w = v.whs;
+  const hours = w.hours.map((h) => `<div class="vinfo-hours-line">${esc(h)}</div>`).join("");
+  const offices = w.locations
+    .map((l) => {
+      const tel = l.phone.split(/ext/i)[0].replace(/\D/g, ""); // dial the main number
+      return (
+        "<li>" +
+        `<div class="voff-name">🏥 ${esc(l.hospital)}</div>` +
+        `<div class="voff-detail">${esc(l.detail)}</div>` +
+        `<a class="voff-phone" href="tel:${tel}">📞 ${esc(l.phone)}</a>` +
+        "</li>"
+      );
+    })
     .join("");
-  const other = v.other
-    .map((o) => `<li><span class="vinfo-ico">${esc(o.icon)}</span>${esc(o.text)}</li>`)
+  const vf = v.vaxfacts;
+  const points = vf.points
+    .map((p) => `<li><span class="vinfo-ico">•</span>${esc(p)}</li>`)
     .join("");
   card.innerHTML =
     `<h2 class="vinfo-title">${esc(v.title)}</h2>` +
     `<p class="vinfo-intro">${esc(v.intro)}</p>` +
-    `<div class="vinfo-section"><h3 class="vinfo-h">${esc(v.clinicsHeading)}</h3>` +
-    `<p class="vinfo-note-line">${esc(v.clinicsIntro)}</p></div>` +
-    `<div class="vinfo-section"><h3 class="vinfo-h">${esc(v.hoursHeading)}</h3>` +
+    // ---- Workplace Health & Safety (get vaccinated) ----
+    `<div class="vinfo-section"><h3 class="vinfo-h">${esc(w.heading)}</h3>` +
+    `<p class="vinfo-note-line">${esc(w.intro)}</p>` +
     `<div class="vinfo-hours">${hours}</div>` +
-    `<p class="vinfo-note-line">${esc(v.hoursNote)}</p></div>` +
-    `<div class="vinfo-section"><h3 class="vinfo-h">${esc(v.locationsHeading)}</h3>` +
-    `<ul class="vinfo-list vinfo-locations">${locations}</ul></div>` +
-    `<div class="vinfo-section"><h3 class="vinfo-h">${esc(v.otherHeading)}</h3>` +
-    `<ul class="vinfo-list">${other}</ul></div>` +
+    `<p class="vinfo-note-line">${esc(w.hoursNote)}</p>` +
+    `<h4 class="vinfo-subh">${esc(w.locationsHeading)}</h4>` +
+    `<ul class="vinfo-list vinfo-offices">${offices}</ul></div>` +
+    // ---- VaxFacts+ (questions) ----
+    `<div class="vinfo-section"><h3 class="vinfo-h">${esc(vf.heading)}</h3>` +
+    `<p class="vinfo-note-line">${esc(vf.intro)}</p>` +
+    `<ul class="vinfo-list">${points}</ul>` +
+    `<a class="vinfo-link" href="${esc(vf.linkUrl)}" target="_blank" rel="noopener noreferrer">` +
+    `${esc(vf.linkLabel)} ↗<span class="sr-only"> (opens in a new tab)</span></a></div>` +
+    // ---- footnote ----
     `<div class="vinfo-footnote"><span class="vinfo-ico">ℹ️</span>${esc(v.footnote)}</div>` +
     `<div class="menu"><button class="btn btn-primary" id="vinfo-back" type="button">Back</button></div>`;
   card.querySelector("#vinfo-back").onclick = closeVaccineInfo;
