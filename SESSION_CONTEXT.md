@@ -1085,3 +1085,18 @@
   KEPT the C. difficile hand-hygiene fact (`hh-cdiff`) which correctly requires soap and water for
   spores (the only remaining soap-and-water mention). Tests use `.length` dynamically so 10/10 still
   pass; ESLint clean. (User feedback: "The game looks AMAZING!")
+- 2026-09-17 (session 63 — vaccine info page = real SHN details): Cache now **v=41**. Rewrote the
+  in-game "Ready for Your Flu Vaccine?" page (`VACCINE_INFO` + `renderVaccineInfo`, opened via
+  openVaccineInfo from the Run Complete 💉 button + the VaxFacts+ congrats popup). Restructured data:
+  `whs` {heading, hours[], hoursNote, locations[{hospital, detail, phone}]} + `vaxfacts` {heading,
+  intro, linkLabel, linkUrl} + footnote. Iterated to the user's FINAL approved copy: title "Ready for
+  Your Flu Vaccine?"; intro "Free flu vaccines are available to SHN staff starting October 15.";
+  Workplace Health & Safety — "Monday–Friday | 7:30 a.m.–3:30 p.m." / "No appointment required." /
+  Centenary 1st floor across from service elevators 416-284-8131 ext.67314, General Tower 8
+  416-438-2911 ext.88137, Birchmount Level 1 across from pharmacy near elevators 416-495-2400
+  ext.72473; "Have Questions?" — "Book a confidential phone appointment with a physician at the
+  VaxFacts+ Clinic." + link "Visit VaxFacts+" → https://www.shn.ca/vaxfacts/; footnote "For personal
+  medical advice, speak with a healthcare provider." Phones are tappable tel: links (dial the main
+  number, ext shown as text); VaxFacts link opens new tab (rel noopener noreferrer + sr-only note). New
+  CSS: `.vinfo-subh`/`.vinfo-offices li`/`.voff-name`/`.voff-detail`/`.voff-phone`/`.vinfo-link`. To
+  edit later: change the VACCINE_INFO object. Checks clean.
