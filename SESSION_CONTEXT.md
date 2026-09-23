@@ -1100,3 +1100,12 @@
   number, ext shown as text); VaxFacts link opens new tab (rel noopener noreferrer + sr-only note). New
   CSS: `.vinfo-subh`/`.vinfo-offices li`/`.voff-name`/`.voff-detail`/`.voff-phone`/`.vinfo-link`. To
   edit later: change the VACCINE_INFO object. Checks clean.
+- 2026-09-23 (session 64 — remove ventilation + soap/water facts; sent fact inventory): Cache now
+  **v=42**. Per user: removed anything about "opening windows"/ventilation or soap & water from the
+  content. fluFacts.js: deleted the `ventilation` fact ("Cleaner air can help"), dropped "improving
+  ventilation," from the `layer-protection` fact body, and deleted the `hh-cdiff` C. difficile fact
+  (the last soap-and-water mention). Now: Flu Facts = 26 (was 27), Hand Hygiene = 3 (was 4: ABHR
+  inactivates flu, gloves don't replace HH, don't miss these spots). Verified NO soap/water/ventilation
+  strings remain anywhere (fluFacts/script/index). Tests use `.length` dynamically → 10/10 still pass.
+  Also compiled & sent the user the full in-game fact inventory (Flu Facts, Hand Hygiene, Recovery quiz
+  7Q, Darts 6 facts/6 myths, Freeze 17 true/10 myths, Memory 6) for building a survey.
