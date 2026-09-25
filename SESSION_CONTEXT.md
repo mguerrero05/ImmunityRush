@@ -1109,3 +1109,11 @@
   strings remain anywhere (fluFacts/script/index). Tests use `.length` dynamically → 10/10 still pass.
   Also compiled & sent the user the full in-game fact inventory (Flu Facts, Hand Hygiene, Recovery quiz
   7Q, Darts 6 facts/6 myths, Freeze 17 true/10 myths, Memory 6) for building a survey.
+- 2026-09-25 (session 65 — mini-game intro popups + shuffle Recovery answers): Cache now **v=43**.
+  (1) The mini-game "Start?" pop-up (`openZonePopup`) no longer shows a random flu fact — new
+  `MINIGAME_INTRO` map (keyed by zone.key: darts/freeze/sprint/memory) gives each a short description;
+  falls back to rand(FACTS) if a key is missing. (2) RECOVERY DAY answer order was always correct-first
+  (all RECOVERY_QUESTIONS have correctIndex:0). `rgShowQuestion` now shuffles the DISPLAY order
+  (Fisher-Yates over an index array) while each button's data-i keeps the ORIGINAL index — so
+  rgAnswer(idx===correctIndex) and the VaxFacts remove-a-wrong-option booster are unchanged. Checks
+  clean; tests 10/10.
