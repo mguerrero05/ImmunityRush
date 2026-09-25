@@ -2532,10 +2532,22 @@ function closeVaccineInfo() {
 }
 
 // Pop-up asking the player to start a mini-game.
+// Short description of each mini-game, shown on the "Start?" pop-up instead of a
+// random flu fact (which felt out of place there).
+const MINIGAME_INTRO = {
+  darts:
+    "Throw darts at the TRUE flu-vaccine statements to lock in every colour — watch out for the myths!",
+  freeze: "Read each floating statement and freeze only the TRUE ones. Leave the myths alone!",
+  sprint:
+    "Run your shift! Switch lanes, jump and duck to grab the good items and dodge the flu obstacles before time runs out.",
+  memory:
+    "Flip the cards to find matching pairs — and pick up a flu-vaccine fact with every match.",
+};
+
 function openZonePopup(zone) {
   zoneCooldown = true;
   stopMazeLoop();
-  showPopup(zone.label, rand(FACTS), [
+  showPopup(zone.label, MINIGAME_INTRO[zone.key] || rand(FACTS), [
     {
       text: "Start",
       primary: true,
@@ -4408,10 +4420,19 @@ function rgShowQuestion() {
     rg.vaxHelp = false;
   }
   const ov = rgOverlay("rg-question");
-  const opts = q.options
-    .map((o, i) =>
-      removed.has(i) ? "" : `<button type="button" class="rg-opt" data-i="${i}">${o}</button>`,
-    )
+  // Shuffle the DISPLAY order so the correct answer isn't always first. data-i
+  // keeps the ORIGINAL index, so answer-checking (idx === correctIndex) and the
+  // VaxFacts "remove a wrong option" booster still work unchanged.
+  const order = q.options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = order[i];
+    order[i] = order[j];
+    order[j] = t;
+  }
+  const opts = order
+    .filter((i) => !removed.has(i))
+    .map((i) => `<button type="button" class="rg-opt" data-i="${i}">${q.options[i]}</button>`)
     .join("");
   ov.innerHTML = `
     <div class="rg-card" role="dialog" aria-modal="true" aria-label="Recovery day ${rg.day + 1} question">
