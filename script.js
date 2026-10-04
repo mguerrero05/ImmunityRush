@@ -878,7 +878,7 @@ function rotateSlogan(elId) {
 // supported) means the first paint is immediate.
 function preloadHeavyArt() {
   const urls = [
-    "assets/maze/maze-bg.png?v=4", // the maze floor (must match the CSS url)
+    "assets/maze/maze-bg.png?v=5", // the maze floor (must match the CSS url)
     "assets/backgrounds/sick-home-bg.png", // Recovery Week backdrop
   ];
   urls.forEach((u) => {
