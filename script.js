@@ -2921,6 +2921,31 @@ function sprintLoop() {
   sprintFrame = requestAnimationFrame(sprintLoop);
 }
 
+// A non-blocking reminder pinned near the TOP of the Sprint stage. Unlike the
+// full-screen bigMessage, it does NOT pause the runner or cover the middle, so the
+// player can read it AND still see what's rushing up next.
+let sprintBannerT = null;
+function sprintBanner(text, opts = {}) {
+  const stage = document.getElementById("sprint-stage");
+  if (!stage) return;
+  let b = document.getElementById("sprint-banner");
+  if (!b) {
+    b = document.createElement("div");
+    b.id = "sprint-banner";
+    stage.appendChild(b);
+  }
+  b.className = "sprint-banner " + (opts.tone || "");
+  b.innerHTML =
+    (opts.icon ? `<span class="sb-ico">${opts.icon}</span>` : "") +
+    (opts.title ? `<span class="sb-title">${opts.title}</span>` : "") +
+    `<span class="sb-text">${text}</span>`;
+  b.classList.remove("show");
+  void b.offsetWidth; // restart the fade-in
+  b.classList.add("show");
+  clearTimeout(sprintBannerT);
+  sprintBannerT = setTimeout(() => b.classList.remove("show"), opts.duration || 1700);
+}
+
 function sprintHit(o, stage) {
   stage = stage || document.getElementById("sprint-stage");
   const r = stage.getBoundingClientRect();
@@ -2933,7 +2958,12 @@ function sprintHit(o, stage) {
     floatText(`+${o.data.score}`, cx, cy, "#ffd34d");
     burst(cx, cy, "#ffd34d");
     playSound("success");
-    bigMessage(o.data.msg, { icon: "🎉", title: `+${o.data.score}`, tone: "good", duration: 1500 });
+    sprintBanner(o.data.msg, {
+      icon: "🎉",
+      title: `+${o.data.score}`,
+      tone: "good",
+      duration: 1500,
+    });
   } else {
     if (sprint.hitT > 0) return; // brief grace so one stumble isn't punished twice
     sprint.hitT = 45;
@@ -2942,7 +2972,7 @@ function sprintHit(o, stage) {
     playSound("hit");
     shake();
     floatText("-50", cx, cy, "#ff6b6b");
-    bigMessage(o.data.msg, { icon: "⚠️", title: "-50", tone: "warn", duration: 1600 });
+    sprintBanner(o.data.msg, { icon: "⚠️", title: "-50", tone: "warn", duration: 1700 });
   }
   document.getElementById("sprint-score").textContent = sprint.score;
 }

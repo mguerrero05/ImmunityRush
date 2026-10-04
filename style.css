@@ -6416,3 +6416,51 @@ img {
     opacity: 0.6;
   }
 }
+
+/* Hospital Sprint hit/collect reminder — a non-blocking banner near the TOP of the
+   stage (above where obstacles appear), so the player reads it and still sees
+   what's coming. */
+.sprint-banner {
+  position: absolute;
+  top: 86px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  z-index: 8;
+  max-width: 90%;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(9, 32, 56, 0.82);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.sprint-banner.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.sprint-banner .sb-ico {
+  margin-right: 4px;
+}
+.sprint-banner .sb-title {
+  font-weight: 800;
+  margin-right: 6px;
+}
+.sprint-banner.good {
+  background: rgba(23, 122, 64, 0.9);
+}
+.sprint-banner.warn {
+  background: rgba(197, 94, 30, 0.92);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sprint-banner {
+    transition: none;
+  }
+}
