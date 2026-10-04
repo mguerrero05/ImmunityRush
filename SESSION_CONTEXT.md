@@ -1126,3 +1126,14 @@
   `.sprint-banner` appended. (2) VACCINE INFO page (VACCINE_INFO.vaxfacts.intro): "Book a confidential
   phone appointment with a physician at the VaxFacts+ Clinic." → "Book a confidential phone appointment
   with a VaxFacts+ physician or your family doctor." Checks clean.
+- 2026-10-04 (session 67 — home + maze backdrop swaps): Cache now **v=47**. User replaced BOTH
+  backdrops (visual updates only). (1) home-bg.png (1536×1024, same dims as before) → bumped tag
+  home-bg.png?v=1 → **?v=2** in index.html. Decoded the PNG in Node to confirm the menu buttons still
+  sit on their % click areas (blue Start button detected at top 55.7% = old 55.8%; Leaderboard/
+  Instructions/Customize/VaxFacts all line up) — NO hit-area changes needed. NOTE: only Start Game is a
+  blue button now; Leaderboard/Instructions/Customize are WHITE buttons. (2) maze-bg.png (1584×993,
+  same dims) → bumped maze-bg.png?v=4 → **?v=5** in style.css + script.js. Pixel-diffed old vs new
+  (Node PNG decoder): only 1.6% changed, all localized to signage (Vaccine Darts sign; Pharmacy
+  "CLOSED" sign removed; VaxFacts+ sign restyled). WALLS UNCHANGED → collision mask (wallmask.js) still
+  valid, no rebuild, all clinic/roamer/token/handwash/infodesk positions still aligned. Reusable: to
+  verify a future maze swap, decode + grid-diff (scripts were in /tmp). Checks clean.
