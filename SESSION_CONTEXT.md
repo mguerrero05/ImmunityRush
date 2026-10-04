@@ -1117,3 +1117,12 @@
   (Fisher-Yates over an index array) while each button's data-i keeps the ORIGINAL index — so
   rgAnswer(idx===correctIndex) and the VaxFacts remove-a-wrong-option booster are unchanged. Checks
   clean; tests 10/10.
+- 2026-10-04 (session 66 — Sprint top banner + vaccine-info wording): Cache now **v=45**. (1) HOSPITAL
+  SPRINT hit/collect reminder: was a full-screen centered `bigMessage` that set overlayPaused (sprintLoop
+  checks overlayPaused → it FROZE the runner ~1.5s and covered the middle). Replaced with new
+  `sprintBanner(text,{icon,title,tone,duration})` — a non-blocking `#sprint-banner` pinned near the TOP
+  of the stage (top:86px, z-index 8, pointer-events:none, fades in/out; .good green / .warn orange), so
+  the runner keeps moving and the player sees what's coming. Both sprintHit branches now call it. CSS
+  `.sprint-banner` appended. (2) VACCINE INFO page (VACCINE_INFO.vaxfacts.intro): "Book a confidential
+  phone appointment with a physician at the VaxFacts+ Clinic." → "Book a confidential phone appointment
+  with a VaxFacts+ physician or your family doctor." Checks clean.
