@@ -2468,7 +2468,8 @@ const VACCINE_INFO = {
   // Where to get your questions answered.
   vaxfacts: {
     heading: "Have Questions?",
-    intro: "Book a confidential phone appointment with a physician at the VaxFacts+ Clinic.",
+    intro:
+      "Book a confidential phone appointment with a VaxFacts+ physician or your family doctor.",
     linkLabel: "Visit VaxFacts+",
     linkUrl: "https://www.shn.ca/vaxfacts/",
   },
