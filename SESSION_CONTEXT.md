@@ -1146,3 +1146,7 @@
   pointerdown + touchstart so clicking the embedded game captures keyboard focus. Backstop if ever
   needed = parent-side: iframe.addEventListener('load',()=>this.focus()) on the SharePoint page. Checks
   clean.
+- 2026-10-19 (session 69 — home backdrop re-swap): Cache now **v=49**. User replaced home-bg.png again
+  (corrected art: new "Immunity Rush" bubble title + "Scarborough Health Network" SHN logo). Same dims
+  1536×1024; decoded to confirm the blue Start button at top 55.9% still matches the 55.8% click area
+  (whole button stack unchanged) — no hit-area edits. Bumped home-bg.png?v=2 → **?v=3** in index.html.
