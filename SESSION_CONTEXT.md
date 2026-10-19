@@ -1150,3 +1150,15 @@
   (corrected art: new "Immunity Rush" bubble title + "Scarborough Health Network" SHN logo). Same dims
   1536×1024; decoded to confirm the blue Start button at top 55.9% still matches the 55.8% click area
   (whole button stack unchanged) — no hit-area edits. Bumped home-bg.png?v=2 → **?v=3** in index.html.
+- 2026-10-19 (session 70 — leaderboard persists for the event + best-per-player): Cache now **v=50**.
+  Real issue: the shared board was date-scoped (`scores/<YYYY-MM-DD>` via boardPath) so it RESET every
+  day — user's presentation scores kept vanishing. Fix: `boardPath()` now returns a FIXED path
+  `scores/${BOARD_KEY}` with `const BOARD_KEY = "2026-flu-season"` — ONE continuous board that persists
+  for the whole event/month (no daily reset). To start fresh for a new event, bump BOARD_KEY or use
+  ?admin=1 "Clear board". ALSO (user picked it): new `bestPerPlayer(rows)` helper (sorts desc, keeps
+  first row per uppercased initials) applied in subscribeOnlineBoard (+error fallback),
+  renderLeaderboard local fallback, and showEndTop (online + both local) — board DISPLAYS each
+  player once at their best, but ALL attempts are still RECORDED in Firebase (non-destructive). Note:
+  players identified only by 3-letter initials, so identical initials merge. No Firebase console work
+  needed (rules already allow r/w; tiny records well under free 1GB; only the ~100 concurrent-connection
+  cap matters for a big simultaneous crowd → optional Blaze upgrade). Checks clean.
