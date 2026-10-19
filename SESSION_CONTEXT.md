@@ -1137,3 +1137,12 @@
   "CLOSED" sign removed; VaxFacts+ sign restyled). WALLS UNCHANGED → collision mask (wallmask.js) still
   valid, no rebuild, all clinic/roamer/token/handwash/infodesk positions still aligned. Reusable: to
   verify a future maze swap, decode + grid-diff (scripts were in /tmp). Checks clean.
+- 2026-10-19 (session 68 — fix SharePoint iframe arrow-key scrolling): Cache now **v=48**. Issue
+  (reported via a dev, James): embedded in SharePoint via iframe, arrow keys scrolled the HOST page
+  instead of moving the player (iframe wasn't capturing keyboard focus + game didn't preventDefault).
+  Fixed ENTIRELY IN-GAME (no SharePoint changes needed): in setupControls' keydown handler, now
+  `preventDefault()` on arrowup/down/left/right + space (guarded to skip when target is INPUT/TEXTAREA/
+  contentEditable so typing initials still works); and added `grabFocus` = `window.focus()` on window
+  pointerdown + touchstart so clicking the embedded game captures keyboard focus. Backstop if ever
+  needed = parent-side: iframe.addEventListener('load',()=>this.focus()) on the SharePoint page. Checks
+  clean.
