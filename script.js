@@ -4653,13 +4653,30 @@ function saveScore(initials, score) {
   return rank;
 }
 
+// Keep only each player's BEST score — one row per initials. So replaying never
+// fills the board with duplicates; a person only appears once, at their highest.
+// (Players are identified by their 3-letter initials, so identical initials are
+// treated as the same player.) Sorts internally, highest first.
+function bestPerPlayer(rows) {
+  const sorted = (rows || []).slice().sort((a, b) => b.score - a.score);
+  const seen = new Set();
+  const out = [];
+  for (const r of sorted) {
+    const key = String(r.initials || "").toUpperCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(r);
+  }
+  return out;
+}
+
 // Render a list of {initials, score} rows into the leaderboard. Uses textContent
 // (never innerHTML) so tampered online initials can't inject markup.
 function paintLeaderboard(scores, loading) {
   const list = document.getElementById("leaderboard-list");
   list.innerHTML = "";
   if (loading) {
-    list.innerHTML = `<li class="empty">Loading today's board…</li>`;
+    list.innerHTML = `<li class="empty">Loading the leaderboard…</li>`;
     return;
   }
   if (!scores.length) {
@@ -4685,17 +4702,17 @@ function renderLeaderboard() {
   if (subscribeOnlineBoard()) {
     paintLeaderboard([], true); // show "Loading…" until the first snapshot lands
   } else {
-    paintLeaderboard(getScores(), false);
+    paintLeaderboard(bestPerPlayer(getScores()), false);
   }
   maybeShowAdminReset();
 }
 
 /* =========================================================
    7b. ONLINE SHARED LEADERBOARD (Firebase Realtime Database)
-   One live board shared by every device on the same link. Scores are scoped to
-   today's date so the board is fresh each day. Everything here is best-effort:
-   if the SDK didn't load or the network is down, the game silently uses the
-   on-device board instead.
+   One live board shared by every device on the same link. It is ONE continuous
+   board (see BOARD_KEY) that persists for the whole event — it does NOT reset
+   daily. Everything here is best-effort: if the SDK didn't load or the network is
+   down, the game silently uses the on-device board instead.
    ========================================================= */
 /* global firebase */ // provided by the Firebase compat scripts in index.html
 const FIREBASE_CONFIG = {
@@ -4720,11 +4737,13 @@ function initFirebase() {
   }
 }
 
-// Today's board path, e.g. "scores/2026-08-06" (local date).
+// The shared board is now ONE CONTINUOUS board for the whole event — it no longer
+// resets daily, so scores stay for as long as people are playing (e.g. the month
+// of the rollout). To start a completely fresh board for a NEW event/season, bump
+// BOARD_KEY below (or use the ?admin=1 "Clear board" button to wipe this one).
+const BOARD_KEY = "2026-flu-season";
 function boardPath() {
-  const d = new Date();
-  const p = (n) => String(n).padStart(2, "0");
-  return `scores/${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  return `scores/${BOARD_KEY}`;
 }
 
 // Push this run's score to the shared board (best-effort).
@@ -4754,10 +4773,9 @@ function subscribeOnlineBoard() {
         if (v.initials != null)
           rows.push({ initials: String(v.initials).slice(0, 3), score: Number(v.score) || 0 });
       });
-      rows.sort((a, b) => b.score - a.score);
-      paintLeaderboard(rows.slice(0, 20), false);
+      paintLeaderboard(bestPerPlayer(rows).slice(0, 20), false);
     },
-    () => paintLeaderboard(getScores(), false), // error -> fall back to local
+    () => paintLeaderboard(bestPerPlayer(getScores()), false), // error -> fall back to local
   );
   return true;
 }
@@ -4796,7 +4814,7 @@ function showEndTop() {
     endTopRef = null;
   }
   if (!fbDB) {
-    paint(getScores());
+    paint(bestPerPlayer(getScores()));
     return;
   }
   endTopRef = fbDB.ref(boardPath());
@@ -4809,15 +4827,14 @@ function showEndTop() {
         if (v.initials != null)
           rows.push({ initials: String(v.initials).slice(0, 3), score: Number(v.score) || 0 });
       });
-      rows.sort((a, b) => b.score - a.score);
-      paint(rows);
+      paint(bestPerPlayer(rows));
     },
-    () => paint(getScores()),
+    () => paint(bestPerPlayer(getScores())),
   );
 }
 
 // Admin-only reset: add ?admin=1 to the URL to reveal a "Clear board" button on
-// the Leaderboard screen (so you can wipe today's board before the competition).
+// the Leaderboard screen (so you can wipe the whole board before an event).
 function isAdmin() {
   try {
     return new URLSearchParams(location.search).get("admin") === "1";
