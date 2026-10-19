@@ -4914,7 +4914,16 @@ function saveCharacter() {
 function setupControls() {
   // Keyboard.
   document.addEventListener("keydown", (e) => {
+    // Don't hijack keys while the player is typing (e.g. the initials field).
+    const tag = (e.target && e.target.tagName) || "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || (e.target && e.target.isContentEditable)) return;
     const k = e.key.toLowerCase();
+    // Stop arrow keys / space from scrolling the page. This is essential when the
+    // game is embedded in an iframe (e.g. SharePoint): without it, arrow keys
+    // scroll the HOST page instead of moving the player.
+    if (["arrowup", "arrowdown", "arrowleft", "arrowright", " ", "spacebar"].includes(k)) {
+      e.preventDefault();
+    }
     if (["arrowup", "w"].includes(k)) keys.up = true;
     if (["arrowdown", "s"].includes(k)) {
       keys.down = true;
@@ -4929,7 +4938,6 @@ function setupControls() {
       sprintMove(1);
     }
     if (k === " " || k === "spacebar") {
-      e.preventDefault();
       sprintJump();
     }
   });
@@ -4961,6 +4969,19 @@ function setupControls() {
 
   // Tap anywhere in the sprint stage to jump.
   // (Sprint jump/slide are handled by the stage's pointer handlers in beginSprintRound.)
+
+  // When the game is embedded in an iframe (e.g. SharePoint), grab keyboard focus
+  // on any interaction so the arrow keys drive the game — not the host page. (A
+  // click inside an iframe normally focuses it; this makes that reliable.)
+  const grabFocus = () => {
+    try {
+      window.focus();
+    } catch (e) {
+      /* ignore */
+    }
+  };
+  window.addEventListener("pointerdown", grabFocus);
+  window.addEventListener("touchstart", grabFocus, { passive: true });
 }
 
 /* =========================================================
