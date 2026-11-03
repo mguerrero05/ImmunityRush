@@ -4705,6 +4705,7 @@ function renderLeaderboard() {
     paintLeaderboard(bestPerPlayer(getScores()), false);
   }
   maybeShowAdminReset();
+  maybeShowStats();
 }
 
 /* =========================================================
@@ -4849,15 +4850,15 @@ function maybeShowAdminReset() {
   const btn = document.createElement("button");
   btn.id = "lb-clear";
   btn.className = "btn";
-  btn.textContent = "Clear board (today)";
+  btn.textContent = "Clear board";
   btn.onclick = () => {
     if (!fbDB) {
       toast("Online board not connected.");
       return;
     }
     showPopup(
-      "Clear today's shared board?",
-      "This removes every score for today. This cannot be undone.",
+      "Clear the shared board?",
+      "This removes every score on the board. This cannot be undone.",
       [
         {
           text: "Clear it",
@@ -4876,6 +4877,81 @@ function maybeShowAdminReset() {
     );
   };
   menu.appendChild(btn);
+}
+
+// ?stats=1 : show how many plays + unique players have been recorded. Counts the
+// current continuous event board PLUS the legacy per-day buckets (Oct 15 2026 →
+// today) from before the board became continuous. "Plays" = completed runs that
+// saved a score; "players" = unique initials (an approximation, since two people
+// can share initials).
+function isStats() {
+  try {
+    return new URLSearchParams(location.search).get("stats") === "1";
+  } catch (e) {
+    return false;
+  }
+}
+function statsBuckets() {
+  const list = [BOARD_KEY];
+  const p = (n) => String(n).padStart(2, "0");
+  const start = new Date("2026-10-15T00:00:00");
+  const today = new Date();
+  for (let d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
+    list.push(`${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`);
+  }
+  return list;
+}
+function maybeShowStats() {
+  if (!isStats()) return;
+  let box = document.getElementById("lb-stats");
+  if (!box) {
+    box = document.createElement("div");
+    box.id = "lb-stats";
+    box.className = "lb-stats";
+    const title = document.querySelector("#screen-leaderboard .screen-title");
+    if (title) title.insertAdjacentElement("afterend", box);
+  }
+  if (!fbDB) {
+    box.textContent = "Online board not connected — can't read stats on this device.";
+    return;
+  }
+  box.textContent = "Counting plays…";
+  const buckets = statsBuckets();
+  let plays = 0;
+  const players = new Set();
+  let pending = buckets.length;
+  let anyError = false;
+  const done = () => {
+    if (anyError && plays === 0) {
+      box.innerHTML =
+        "⚠️ Couldn't read the online board. The Firebase security rules may have expired " +
+        "or blocked reads — check the Console → Realtime Database → Rules.";
+      return;
+    }
+    box.innerHTML =
+      `<div class="lb-stats-big"><b>${plays}</b> total plays</div>` +
+      `<div class="lb-stats-big"><b>${players.size}</b> unique players <span>(by initials)</span></div>` +
+      `<div class="lb-stats-note">Since Oct 15, 2026 · counts completed runs that saved a score</div>`;
+  };
+  buckets.forEach((key) => {
+    fbDB.ref("scores/" + key).once(
+      "value",
+      (snap) => {
+        snap.forEach((c) => {
+          const v = c.val() || {};
+          if (v.initials != null) {
+            plays++;
+            players.add(String(v.initials).toUpperCase());
+          }
+        });
+        if (--pending === 0) done();
+      },
+      () => {
+        anyError = true;
+        if (--pending === 0) done();
+      },
+    );
+  });
 }
 
 /* =========================================================
