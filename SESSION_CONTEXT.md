@@ -1162,3 +1162,18 @@
   players identified only by 3-letter initials, so identical initials merge. No Firebase console work
   needed (rules already allow r/w; tiny records well under free 1GB; only the ~100 concurrent-connection
   cap matters for a big simultaneous crowd → optional Blaze upgrade). Checks clean.
+- 2026-11-07 (session 71 — ?stats=1 play counter + SharePoint keyboard note; FIREBASE RULES ISSUE
+  FOUND): Cache now **v=52**. (Also session 68 earlier: fixed SharePoint iframe arrow-key scrolling —
+  keydown preventDefault on arrows/space guarded against INPUT/TEXTAREA + window.focus() on
+  pointerdown/touchstart.) Built `?stats=1` admin view on the Leaderboard screen: `maybeShowStats()`
+  (+`isStats()`, `statsBuckets()` = BOARD_KEY + per-day buckets 2026-10-15→today) reads via SDK `.once`,
+  totals plays + unique initials, paints `#lb-stats` box (CSS `.lb-stats*`). Also relabeled admin clear
+  button "Clear board (today)"→"Clear board" + popup text (board no longer daily). ⚠️ IMPORTANT UNRESOLVED
+  ISSUE: Firebase REST reads return "Permission denied", and in-game the online board read FAILS → the
+  leaderboard FALLS BACK TO LOCAL scores (so it's NOT actually shared across devices right now, and new
+  plays likely aren't writing to the cloud). The user's SURVEY data is on Google Forms (unaffected); only
+  the shared leaderboard + play-count metric are affected. Per user request, removed the visible
+  "couldn't read the online board" warning (now `box.remove()` silently on failure). FIX NEEDED: user to
+  set Realtime Database Rules in Firebase Console to `{"rules":{"scores":{".read":true,".write":true}}}`
+  (or a safer add-only variant) and Publish — likely the old test-mode rules expired. Awaiting user to
+  check/paste current rules. Checks clean.
