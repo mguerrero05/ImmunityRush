@@ -4923,9 +4923,9 @@ function maybeShowStats() {
   let anyError = false;
   const done = () => {
     if (anyError && plays === 0) {
-      box.innerHTML =
-        "⚠️ Couldn't read the online board. The Firebase security rules may have expired " +
-        "or blocked reads — check the Console → Realtime Database → Rules.";
+      // Couldn't read the online board — show nothing (never surface an error to
+      // viewers). Check the stats via the Firebase Console instead.
+      box.remove();
       return;
     }
     box.innerHTML =
